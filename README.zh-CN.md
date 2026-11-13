@@ -12,16 +12,9 @@ Kiko CLI 是 [Kimi Code CLI](https://github.com/MoonshotAI/kimi-code) 的定制�
 - **定制**：kiko 自有改动在同步上游时保留，不被覆盖。
 - **下游**：`kiko-desktop` 的 CLI 基础。
 
-## 开发
+## 使用
 
-仓库结构与上游一致。构建、测试与使用说明参见[上游 README](https://github.com/MoonshotAI/kimi-code#readme)与[文档](https://moonshotai.github.io/kimi-code/zh/)。
-
-同步上游：
-
-```bash
-git fetch upstream
-git merge upstream/main
-```
+使用方式与上游 Kimi Code CLI 一致，参见[上游文档](https://moonshotai.github.io/kimi-code/zh/)。
 
 ## 许可
 
