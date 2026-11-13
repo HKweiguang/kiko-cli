@@ -1,4 +1,4 @@
-# 为 kimi-code 贡献代码
+# 为 kiko-cli 贡献代码
 
 [English version](CONTRIBUTING.md)
 
@@ -6,7 +6,7 @@
 
 ## 开始之前
 
-Kimi Code 对 CLI/TUI 行为、agent 工作流和公开 API 已有自己的主张。如果你的改动会改变这些方向，请先开 issue 对齐，再投入时间写 PR。
+Kiko CLI 对 CLI/TUI 行为、agent 工作流和公开 API 已有自己的主张。如果你的改动会改变这些方向，请先开 issue 对齐，再投入时间写 PR。
 
 我们对 AI 辅助贡献与手写代码一视同仁。**你应该理解自己提交的内容**——改了什么、边界情况下表现如何、为什么适合这个代码库。如果你解释不清楚，这个 PR 就还没准备好接受评审。
 
@@ -40,8 +40,8 @@ Kimi Code 对 CLI/TUI 行为、agent 工作流和公开 API 已有自己的主�
 前置要求：Node.js >= 24.15.0、pnpm 10.33.0、Git。
 
 ```sh
-git clone https://github.com/MoonshotAI/kimi-code.git
-cd kimi-code
+git clone https://github.com/HKweiguang/kiko-cli.git
+cd kiko-cli
 pnpm install
 ```
 
