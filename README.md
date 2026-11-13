@@ -1,5 +1,7 @@
 # Kiko CLI
 
+[English](./README.md) · [中文](./README.zh-CN.md)
+
 Kiko CLI is a customized branch of [Kimi Code CLI](https://github.com/MoonshotAI/kimi-code), carrying Kiko's own enhancements for a terminal coding agent.
 
 > Status: aligned with upstream `main`; Kiko-specific changes have not landed yet.
