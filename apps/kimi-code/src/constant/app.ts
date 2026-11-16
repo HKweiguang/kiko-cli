@@ -2,9 +2,9 @@ import { ErrorCodes, type HostUiCapability } from '@moonshot-ai/kimi-code-sdk';
 
 import { currentKimiManagedRuntimeAuth, currentKimiProfile } from '#/utils/region';
 
-export const PRODUCT_NAME = 'Kimi Code';
+export const PRODUCT_NAME = 'Kiko';
 export const CLI_COMMAND_NAME = 'kiko';
-export const PROCESS_NAME = 'kimi-code';
+export const PROCESS_NAME = 'kiko';
 
 // Used in telemetry app names and HTTP User-Agent headers.
 export const CLI_USER_AGENT_PRODUCT = 'kimi-code-cli';

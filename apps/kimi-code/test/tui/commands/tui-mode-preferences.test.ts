@@ -65,7 +65,7 @@ describe('tui mode preference commands', () => {
     expect(host.track).toHaveBeenCalledWith('tui_mode_switch', { tui_mode: 'fullscreen' });
     expect(host.showStatus).toHaveBeenCalledWith('TUI mode set to fullscreen.', 'success');
     expect(host.showNotice).toHaveBeenCalledWith(
-      'TUI mode takes effect after restarting Kimi Code.',
+      'TUI mode takes effect after restarting Kiko.',
     );
   });
 
@@ -81,7 +81,7 @@ describe('tui mode preference commands', () => {
     expect(host.setAppState).toHaveBeenCalledWith({ tuiMode: 'regular' });
     expect(host.track).toHaveBeenCalledWith('tui_mode_switch', { tui_mode: 'regular' });
     expect(host.showNotice).toHaveBeenCalledWith(
-      'TUI mode takes effect after restarting Kimi Code.',
+      'TUI mode takes effect after restarting Kiko.',
     );
   });
 

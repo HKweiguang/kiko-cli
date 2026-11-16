@@ -18,10 +18,10 @@ const LEGACY_REAUTH_NOTICE_KEY = "kimi.legacyMigration.reauthNotice.v1";
 const LEGACY_WARNING_NOTICE_KEY = "kimi.legacyMigration.warningNotice.v1";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  outputChannel = vscode.window.createOutputChannel("Kimi Code");
+  outputChannel = vscode.window.createOutputChannel("Kiko");
   const remoteInfo = vscode.env.remoteName ? ` (remote: ${vscode.env.remoteName})` : "";
   const version = VSCodeSettings.getExtensionConfig().version;
-  log(`Kimi Code ${version} activating${remoteInfo}`);
+  log(`Kiko ${version} activating${remoteInfo}`);
   context.subscriptions.push(activateExtensionTelemetry({ version, log }));
 
   provider = new KimiWebviewProvider(
@@ -141,11 +141,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   ).catch((error) => {
     logError("Unable to check for legacy Kimi data", error);
   });
-  log("Kimi Code activated");
+  log("Kiko activated");
 }
 
 export async function deactivate(): Promise<void> {
-  log("Kimi Code deactivating");
+  log("Kiko deactivating");
   try {
     await provider?.shutdown();
   } finally {
@@ -214,10 +214,10 @@ function legacyReauthNotice(
   const mcpLogins = discovery.notices.mcpOauthServersRequiringReauth.length;
   if (kimiLogins === 0 && mcpLogins === 0) return null;
   if (kimiLogins > 0 && mcpLogins > 0) {
-    return "Legacy OAuth credentials are not copied. Sign in to Kimi Code and authorize your MCP servers again.";
+    return "Legacy OAuth credentials are not copied. Sign in to Kiko and authorize your MCP servers again.";
   }
   return kimiLogins > 0
-    ? "Legacy OAuth credentials are not copied. Sign in to Kimi Code again."
+    ? "Legacy OAuth credentials are not copied. Sign in to Kiko again."
     : "Legacy MCP OAuth credentials are not copied. Authorize those MCP servers again.";
 }
 
