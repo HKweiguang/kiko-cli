@@ -234,7 +234,7 @@ async function publishTakeoverMarker(target: string): Promise<boolean> {
  * lock is gone or unreadable. Lets a downloader that failed to acquire the
  * lock distinguish "another instance is staging the SAME version" (its
  * outcome is ours — report success) from "a different version is in flight"
- * (must not be reported as success to a foreground `kimi upgrade`).
+ * (must not be reported as success to a foreground `kiko upgrade`).
  */
 export async function readUpdateInstallLockVersion(
   filePath: string = getUpdateInstallLockFile(),

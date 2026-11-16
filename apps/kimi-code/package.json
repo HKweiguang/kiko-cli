@@ -23,14 +23,13 @@
     "tui"
   ],
   "bin": {
-    "kimi": "dist/main.mjs"
+    "kiko": "dist/main.mjs"
   },
   "files": [
     "dist",
     "dist-web",
     "native",
     "scripts/postinstall.mjs",
-    "scripts/postinstall",
     "README.md"
   ],
   "type": "module",

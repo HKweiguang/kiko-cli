@@ -1,5 +1,5 @@
 /**
- * `kimi export`
+ * `kiko export`
  *
  * Verifies the CLI layer: argument handling, previous-session confirmation,
  * error reporting, and delegation to the session export implementation.
@@ -225,7 +225,7 @@ async function runExport(
   }
 }
 
-describe('kimi export', () => {
+describe('kiko export', () => {
   it('delegates a named session export and prints the resulting zip path', async () => {
     const output = join(tmp, 'out.zip');
     const { deps, stdout, stderr, exitCodes, exportInputs, listedWorkDirs } = makeDeps();

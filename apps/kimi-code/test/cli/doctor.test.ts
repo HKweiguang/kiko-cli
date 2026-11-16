@@ -88,7 +88,7 @@ auto_install = true
   );
 }
 
-describe('kimi doctor', () => {
+describe('kiko doctor', () => {
   it('skips missing default config files without failing', async () => {
     const { deps, stdout, stderr } = makeDeps();
 
@@ -320,7 +320,7 @@ max_context_size = "large"
   });
 });
 
-describe('kimi doctor (default v2 config validation)', () => {
+describe('kiko doctor (default v2 config validation)', () => {
   afterEach(() => {
     delete process.env['KIMI_LOOP_MAX_RETRIES_PER_STEP'];
     delete process.env['KIMI_LOOP_MAX_ATTEMPTS_PER_STEP'];

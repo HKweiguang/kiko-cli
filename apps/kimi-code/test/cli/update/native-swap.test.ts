@@ -760,7 +760,7 @@ describe('maybeRelaunchWithStagedNativeUpdate', () => {
   });
 
   it('applies a manually staged update even when automatic updates are disabled by env', async () => {
-    // The opt-out targets automatic updates; an explicit `kimi upgrade`
+    // The opt-out targets automatic updates; an explicit `kiko upgrade`
     // stages with manual: true and must still apply.
     await seedStagedUpdate(exePath, STAGED_VERSION, { manual: true });
     const { calls, spawnImpl } = createSpawnMock({});

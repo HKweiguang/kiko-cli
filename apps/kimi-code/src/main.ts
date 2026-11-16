@@ -1,7 +1,7 @@
 /**
  * Kimi Code process entry.
  *
- * `kimi exec-server` (or the explicit `--listen stdio` spelling) is the
+ * `kiko exec-server` (or the explicit `--listen stdio` spelling) is the
  * remote-executor light entry, and the SSH askpass helper is another light
  * entry: the engine's SSH password retry re-enters this binary as
  * `SSH_ASKPASS`, recognised by its environment rather than argv. Both

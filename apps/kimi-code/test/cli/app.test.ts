@@ -13,7 +13,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('kimi app', () => {
+describe('kiko app', () => {
   it.each([undefined, '.', '../project', '/tmp/项目 & a#b%'])('opens a new desktop chat for %s', async (path) => {
     const program = new Command('kimi');
     registerAppCommand(program);
@@ -34,7 +34,7 @@ describe('kimi app', () => {
       const program = new Command('kimi');
       registerAppCommand(program);
       await program.parseAsync(['node', 'kimi', 'app']);
-      expect(write).toHaveBeenCalledWith(expect.stringContaining('kimi install-desktop'));
+      expect(write).toHaveBeenCalledWith(expect.stringContaining('kiko install-desktop'));
       expect(process.exitCode).toBe(1);
     } finally {
       process.exitCode = exitCode;

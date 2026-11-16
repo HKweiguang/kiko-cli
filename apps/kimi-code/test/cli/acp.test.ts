@@ -1,5 +1,5 @@
 /**
- * `kimi acp`
+ * `kiko acp`
  *
  * Verifies that the ACP sub-command is registered on the program and that
  * the action wires `@moonshot-ai/acp-server`'s `runAcpServer` (the real server
@@ -26,7 +26,7 @@ class ExitCalled extends Error {
   }
 }
 
-describe('kimi acp', () => {
+describe('kiko acp', () => {
   let exitSpy: ReturnType<typeof vi.spyOn>;
   let stderrSpy: ReturnType<typeof vi.spyOn>;
 

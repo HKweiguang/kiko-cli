@@ -1,5 +1,5 @@
 /**
- * Scenario: the `kimi exec-server` light entry (bare or with the explicit
+ * Scenario: the `kiko exec-server` light entry (bare or with the explicit
  * `--listen stdio` spelling) — argv
  * pre-dispatch shape, transport validation, hidden Commander subcommand, and
  * the import-graph rule that keeps the SDK mega-module out of the executor
