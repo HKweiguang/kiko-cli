@@ -1047,7 +1047,7 @@ export class KimiTUI {
     if (environmentId !== undefined && environmentId !== 'local') {
       return `Connecting to ${environmentId}…`;
     }
-    return 'Preparing Kimi Code…';
+    return 'Preparing Kiko…';
   }
 
   private startClipboardImageHintController(): void {
@@ -4651,7 +4651,7 @@ export class KimiTUI {
     openUrl(auth.verificationUriComplete);
     this.state.transcriptContainer.addChild(
       new DeviceCodeBoxComponent({
-        title: 'Sign in to Kimi Code',
+        title: 'Sign in to Kiko',
         url: auth.verificationUriComplete,
         code: auth.userCode,
         hint: 'Press Ctrl-C to cancel',
@@ -5561,7 +5561,7 @@ export class KimiTUI {
     this.patchLivePane({ pendingApproval: { data: payload } });
     this.sessionEventHandler.notifications.setPrompt(true);
     notifyTerminalOnce(this.state, `approval:${payload.id}`, {
-      title: 'Kimi Code approval required',
+      title: 'Kiko approval required',
       body: payload.tool_name,
     });
     const panel = new ApprovalPanelComponent(
@@ -5642,7 +5642,7 @@ export class KimiTUI {
     this.patchLivePane({ pendingQuestion: { data: payload } });
     this.sessionEventHandler.notifications.setPrompt(true);
     notifyTerminalOnce(this.state, `question:${payload.id}`, {
-      title: 'Kimi Code needs your answer',
+      title: 'Kiko needs your answer',
       body: payload.questions[0]?.question,
     });
     const dialog = new QuestionDialogComponent(

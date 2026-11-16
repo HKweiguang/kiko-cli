@@ -1544,7 +1544,7 @@ describe('KimiTUI message flow', () => {
       expect(stripSgr(picker().render(80).join(' '))).toContain('Session still in use');
     });
     expect(stripSgr(picker().render(120).join(' '))).toContain(
-      'If another Kimi Code process is still running, taking over may mix up the history.',
+      'If another Kiko process is still running, taking over may mix up the history.',
     );
     if (takeOver) picker().handleInput('\u001B[B');
     picker().handleInput('\r');
@@ -12513,7 +12513,7 @@ capabilities = ["image_in", "video_in"]
       expect(getStatus).toHaveBeenCalledTimes(previousStatusCalls + 1);
       const output = stripSgr(driver.state.transcriptContainer.render(120).join('\n'));
       expect(output).toContain(' Status ');
-      expect(output).toContain('>_ Kimi Code');
+      expect(output).toContain('>_ Kiko');
       expect(output).toContain('Model');
       expect(output).toContain('thinking high');
       expect(output).toContain('Permissions  Never Ask');
@@ -13346,8 +13346,8 @@ capabilities = ["image_in", "video_in"]
     });
     const picker = driver.state.editorContainer.children[0];
     const pickerOutput = stripSgr((picker as TabbedModelSelectorComponent).render(120).join('\n'));
-    expect(pickerOutput).toMatch(/Kimi K2\s+Kimi Code ← current/);
-    expect(pickerOutput).toMatch(/❯ Kimi Turbo\s+Kimi Code/);
+    expect(pickerOutput).toMatch(/Kimi K2\s+Kiko ← current/);
+    expect(pickerOutput).toMatch(/❯ Kimi Turbo\s+Kiko/);
     (picker as TabbedModelSelectorComponent).handleInput('t');
     (picker as TabbedModelSelectorComponent).handleInput('u');
     const filteredOutput = stripSgr((picker as TabbedModelSelectorComponent).render(120).join('\n'));

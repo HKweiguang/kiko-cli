@@ -108,7 +108,7 @@ export async function runAcpServerWithStream(
       homeDir,
       configPath,
       clientIdentity: {
-        productName: opts.agentInfo?.name ?? 'kimi-code-acp',
+        productName: opts.agentInfo?.name ?? 'kiko-acp',
         version: opts.agentInfo?.version ?? '0.0.0',
         platform: 'kimi_code_cli',
       },

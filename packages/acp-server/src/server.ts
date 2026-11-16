@@ -690,7 +690,7 @@ function parseSetSessionModelParams(params: unknown): SetSessionModelParams {
  * the legacy `extMethod` / `extNotification` fallbacks.
  */
 export function createAcpAgentApp(getServer: () => AcpServer | Promise<AcpServer>): AgentApp {
-  return agent({ name: 'kimi-code-acp' })
+  return agent({ name: 'kiko-acp' })
     .onRequest(methods.agent.initialize, async (ctx) => (await getServer()).initialize(ctx.params))
     .onRequest(methods.agent.authenticate, async (ctx) => (await getServer()).authenticate(ctx.params))
     .onRequest(methods.agent.logout, async (ctx) => (await getServer()).logout(ctx.params))

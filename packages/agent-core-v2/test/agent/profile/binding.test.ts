@@ -133,7 +133,7 @@ describe('AgentProfileService.bind', () => {
     expect(svc.data().modelAlias).toBe(MOCK_MODEL);
     expect(svc.isRunnable()).toBe(true);
     expect(svc.getActiveToolNames()?.length).toBeGreaterThan(0);
-    expect(svc.getSystemPrompt()).toContain('Kimi Code CLI');
+    expect(svc.getSystemPrompt()).toContain('Kiko CLI');
   });
 
   it('unions discovered agent profiles into the bound subagents for the main agent', async () => {
@@ -341,7 +341,7 @@ describe('AgentProfileService.bind', () => {
       profileName: DEFAULT_AGENT_PROFILE_NAME,
       modelAlias: MOCK_MODEL,
       thinkingEffort: 'on',
-      systemPrompt: expect.stringContaining('Kimi Code CLI'),
+      systemPrompt: expect.stringContaining('Kiko CLI'),
       activeToolNames: expect.arrayContaining(['Read', 'Write', 'Bash']),
       disallowedTools: [],
     });
