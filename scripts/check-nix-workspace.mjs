@@ -11,6 +11,7 @@ import { resolve, join } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const FLAKE_NIX = join(ROOT, "flake.nix");
+const NIX_WORKFLOW = join(ROOT, ".github", "workflows", "nix-build.yml");
 const START_PKG = "@moonshot-ai/kimi-code";
 
 /**
@@ -197,6 +198,17 @@ function checkFlakeIdentity(content) {
   return errors;
 }
 
+function checkNixWorkflowIdentity(content) {
+  const errors = [];
+  if (/\.#kimi-code\b/.test(content)) {
+    errors.push("nix-build.yml still references the old .#kimi-code flake output");
+  }
+  if (!/nix build \.#kiko\b/.test(content)) {
+    errors.push("nix-build.yml must build the .#kiko flake output");
+  }
+  return errors;
+}
+
 function main() {
   const globs = getWorkspaceGlobs();
   const dirs = expandGlobsSafe(globs);
@@ -214,6 +226,7 @@ function main() {
   const flakeContent = readFileSync(FLAKE_NIX, "utf8");
   const flake = parseFlakeNix(flakeContent);
   const identityErrors = checkFlakeIdentity(flakeContent);
+  const workflowErrors = checkNixWorkflowIdentity(readFileSync(NIX_WORKFLOW, "utf8"));
   const flakeNameSet = new Set(flake.names);
   const flakePathSet = new Set(flake.paths);
 
@@ -239,12 +252,23 @@ function main() {
   const ok =
     missingNames.length === 0 &&
     missingPaths.length === 0 &&
-    identityErrors.length === 0;
+    identityErrors.length === 0 &&
+    workflowErrors.length === 0;
 
   if (!ok) {
     if (identityErrors.length > 0) {
       console.error("❌ flake.nix package identity is not kiko.\n");
       for (const error of identityErrors) {
+        console.error(`  - ${error}`);
+      }
+      console.error("");
+    }
+
+    if (workflowErrors.length > 0) {
+      console.error(
+        "❌ .github/workflows/nix-build.yml does not match the flake package identity.\n"
+      );
+      for (const error of workflowErrors) {
         console.error(`  - ${error}`);
       }
       console.error("");
@@ -292,6 +316,7 @@ function main() {
     `✅ All ${closureNames.length} recursive workspace dependencies are present in flake.nix.`
   );
   console.log("✅ flake.nix exposes only the kiko package identity and executable.");
+  console.log("✅ .github/workflows/nix-build.yml builds the .#kiko flake output.");
 }
 
 main();
