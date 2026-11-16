@@ -11,6 +11,7 @@ import { resolve, join } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const FLAKE_NIX = join(ROOT, "flake.nix");
+const NIX_WORKFLOW = join(ROOT, ".github", "workflows", "nix-build.yml");
 const START_PKG = "@moonshot-ai/kimi-code";
 
 /**
@@ -123,9 +124,7 @@ function resolveWorkspaceDeps(workspaceMap, startName) {
 /**
  * Parse workspaceNames and workspacePaths from flake.nix.
  */
-function parseFlakeNix() {
-  const content = readFileSync(FLAKE_NIX, "utf8");
-
+function parseFlakeNix(content) {
   function extractArray(label) {
     const regex = new RegExp(
       `${label}\\s*=\\s*\\[(.*?)\\]`,
@@ -157,6 +156,59 @@ function parseFlakeNix() {
   };
 }
 
+const FLAKE_IDENTITY_RULES = {
+  forbidden: [
+    [/pname\s*=\s*"kimi-code"/, 'derivation still sets pname = "kimi-code"'],
+    [
+      /^\s*(?:inherit\s+)?kimi-code\s*(?:=|;)/m,
+      'package or app attribute "kimi-code" is still exposed',
+    ],
+    [/^\s*default\s*=\s*kimi-code\s*;/m, "packages default still points at kimi-code"],
+    [/\.kimi-code\}\/bin\//, "app program still targets packages.<system>.kimi-code"],
+    [
+      /apps\.\$\{pkgs\.system\}\.kimi-code/,
+      "app default still targets apps.<system>.kimi-code",
+    ],
+    [/\$out\/bin\/kimi(?=[\s"'])/, "a kimi executable is still installed"],
+    [/mainProgram\s*=\s*"kimi"/, 'mainProgram is still "kimi"'],
+  ],
+  required: [
+    [/pname\s*=\s*"kiko"/, 'derivation must set pname = "kiko"'],
+    [/^\s*inherit\s+kiko\s*;/m, "packages.<system>.kiko must be exposed"],
+    [/^\s*default\s*=\s*kiko\s*;/m, "packages default must point at kiko"],
+    [/^\s*kiko\s*=\s*\{\s*$/m, "apps.<system>.kiko must be exposed"],
+    [
+      /apps\.\$\{pkgs\.system\}\.kiko\s*;/m,
+      "app default must point at apps.<system>.kiko",
+    ],
+    [/\.kiko\}\/bin\/kiko"/, "app program must execute packages.<system>.kiko"],
+    [/\$out\/bin\/kiko(?=[\s"'])/, "the kiko executable must be installed at $out/bin/kiko"],
+    [/mainProgram\s*=\s*"kiko"/, 'mainProgram must be "kiko"'],
+  ],
+};
+
+function checkFlakeIdentity(content) {
+  const errors = [];
+  for (const [pattern, message] of FLAKE_IDENTITY_RULES.forbidden) {
+    if (pattern.test(content)) errors.push(message);
+  }
+  for (const [pattern, message] of FLAKE_IDENTITY_RULES.required) {
+    if (!pattern.test(content)) errors.push(message);
+  }
+  return errors;
+}
+
+function checkNixWorkflowIdentity(content) {
+  const errors = [];
+  if (/\.#kimi-code\b/.test(content)) {
+    errors.push("nix-build.yml still references the old .#kimi-code flake output");
+  }
+  if (!/nix build \.#kiko\b/.test(content)) {
+    errors.push("nix-build.yml must build the .#kiko flake output");
+  }
+  return errors;
+}
+
 function main() {
   const globs = getWorkspaceGlobs();
   const dirs = expandGlobsSafe(globs);
@@ -171,7 +223,10 @@ function main() {
   /** @type {string[]} */
   const closureNames = [...closure].sort((a, b) => a.localeCompare(b));
 
-  const flake = parseFlakeNix();
+  const flakeContent = readFileSync(FLAKE_NIX, "utf8");
+  const flake = parseFlakeNix(flakeContent);
+  const identityErrors = checkFlakeIdentity(flakeContent);
+  const workflowErrors = checkNixWorkflowIdentity(readFileSync(NIX_WORKFLOW, "utf8"));
   const flakeNameSet = new Set(flake.names);
   const flakePathSet = new Set(flake.paths);
 
@@ -194,40 +249,64 @@ function main() {
     missingPaths.unshift({ name: START_PKG, path: `./${startDir}` });
   }
 
-  const ok = missingNames.length === 0 && missingPaths.length === 0;
+  const ok =
+    missingNames.length === 0 &&
+    missingPaths.length === 0 &&
+    identityErrors.length === 0 &&
+    workflowErrors.length === 0;
 
   if (!ok) {
-    console.error("❌ flake.nix workspace lists are out of sync.\n");
-
-    if (missingNames.length > 0) {
-      console.error(
-        "The following workspace packages are missing from flake.nix workspaceNames:"
-      );
-      for (const n of missingNames) {
-        console.error(`  - ${n}`);
+    if (identityErrors.length > 0) {
+      console.error("❌ flake.nix package identity is not kiko.\n");
+      for (const error of identityErrors) {
+        console.error(`  - ${error}`);
       }
       console.error("");
     }
 
-    if (missingPaths.length > 0) {
+    if (workflowErrors.length > 0) {
       console.error(
-        "The following workspace paths are missing from flake.nix workspacePaths:"
+        "❌ .github/workflows/nix-build.yml does not match the flake package identity.\n"
       );
-      for (const { name, path } of missingPaths) {
-        console.error(`  - ${path}  (${name})`);
+      for (const error of workflowErrors) {
+        console.error(`  - ${error}`);
       }
       console.error("");
     }
 
-    console.error(
-      "Please add the missing entries to both workspaceNames and workspacePaths in flake.nix."
-    );
-    console.error(
-      `\nExpected workspaceNames (${flake.names.length + missingNames.length} total):`
-    );
-    const expectedNames = new Set([...flake.names, ...missingNames.map((m) => m)]);
-    for (const n of [...expectedNames].sort((a, b) => a.localeCompare(b))) {
-      console.error(`  ${n}`);
+    if (missingNames.length > 0 || missingPaths.length > 0) {
+      console.error("❌ flake.nix workspace lists are out of sync.\n");
+
+      if (missingNames.length > 0) {
+        console.error(
+          "The following workspace packages are missing from flake.nix workspaceNames:"
+        );
+        for (const n of missingNames) {
+          console.error(`  - ${n}`);
+        }
+        console.error("");
+      }
+
+      if (missingPaths.length > 0) {
+        console.error(
+          "The following workspace paths are missing from flake.nix workspacePaths:"
+        );
+        for (const { name, path } of missingPaths) {
+          console.error(`  - ${path}  (${name})`);
+        }
+        console.error("");
+      }
+
+      console.error(
+        "Please add the missing entries to both workspaceNames and workspacePaths in flake.nix."
+      );
+      console.error(
+        `\nExpected workspaceNames (${flake.names.length + missingNames.length} total):`
+      );
+      const expectedNames = new Set([...flake.names, ...missingNames.map((m) => m)]);
+      for (const n of [...expectedNames].sort((a, b) => a.localeCompare(b))) {
+        console.error(`  ${n}`);
+      }
     }
 
     process.exit(1);
@@ -236,6 +315,8 @@ function main() {
   console.log(
     `✅ All ${closureNames.length} recursive workspace dependencies are present in flake.nix.`
   );
+  console.log("✅ flake.nix exposes only the kiko package identity and executable.");
+  console.log("✅ .github/workflows/nix-build.yml builds the .#kiko flake output.");
 }
 
 main();

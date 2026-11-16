@@ -127,8 +127,8 @@
             else
               throw "Unsupported Kimi Code native target for ${pkgs.stdenv.hostPlatform.system}";
 
-          kimi-code = pkgs.stdenv.mkDerivation (finalAttrs: {
-            pname = "kimi-code";
+          kiko = pkgs.stdenv.mkDerivation (finalAttrs: {
+            pname = "kiko";
             version = appPackageJson.version;
 
             src = lib.fileset.toSource {
@@ -226,17 +226,17 @@
           });
         in
         {
-          inherit kimi-code;
-          default = kimi-code;
+          inherit kiko;
+          default = kiko;
         }
       );
 
       apps = forAllSystems (pkgs: {
-        kimi-code = {
+        kiko = {
           type = "app";
-          program = "${self.packages.${pkgs.system}.kimi-code}/bin/kiko";
+          program = "${self.packages.${pkgs.system}.kiko}/bin/kiko";
         };
-        default = self.apps.${pkgs.system}.kimi-code;
+        default = self.apps.${pkgs.system}.kiko;
       });
 
       devShells = forAllSystems (pkgs: {
