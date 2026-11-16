@@ -62,6 +62,7 @@ import {
   IMcpManagementService,
   IMcpOAuthService,
   ISessionManager,
+  ISessionLockService,
   IWorkspaceInstanceManager,
   IEnvironmentService,
   IWorkspaceService,
@@ -1520,6 +1521,36 @@ key = "${titleOAuthRef.key}"
     }
   });
 
+  it('resumes an occupied session read-only and keeps prompt writes locked', async () => {
+    const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-resume-occupied-'));
+    const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
+    tempDirs.push(homeDir, workDir);
+    const owner = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
+    const harness = createKimiHarness({ homeDir, identity: TEST_IDENTITY });
+
+    try {
+      await owner.createSession({ id: 'ses_resume_occupied', workDir });
+      await owner.importContext({
+        sessionId: 'ses_resume_occupied',
+        content: 'persisted occupied history',
+        source: "session 'owner'",
+      });
+      await owner.closeSession({ sessionId: 'ses_resume_occupied' });
+      owner.engineAccessor.get(ISessionLockService).hold('ses_resume_occupied');
+
+      const resumed = await harness.resumeSession({ id: 'ses_resume_occupied' });
+      expect(JSON.stringify(resumed.getResumeState()?.agents[MAIN_AGENT_ID]?.replay))
+        .toContain('persisted occupied history');
+      expect(owner.engineAccessor.get(ISessionLockService).held('ses_resume_occupied')).toBe(true);
+      await expect(resumed.prompt('must not write while occupied')).rejects.toMatchObject({
+        code: ErrorCodes.SESSION_OCCUPIED,
+      });
+    } finally {
+      await harness.close();
+      await owner.close();
+    }
+  });
+
   it('folds the resumed main agent replay from the persisted wire on cold and live resumes', async () => {
     const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-resume-fold-'));
     const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
@@ -2465,12 +2496,12 @@ key = "${titleOAuthRef.key}"
       latestProject.additional_dirs = [extraDir, failureDir];
       await writeFile(projectsPath, JSON.stringify(latestProjects), 'utf8');
       const failureReloadDirs = vi.spyOn(currentProgram().dirs, 'reload');
-      vi.spyOn(currentProgram().instructions, 'reload').mockRejectedValueOnce(
-        new Error('instructions reload failed'),
-      );
+      const instructionsReload = vi.spyOn(currentProgram().instructions, 'reload');
+      instructionsReload.mockRejectedValue(new Error('instructions reload failed'));
       await expect(client.reloadSession({ sessionId: 'ses_dirs_reload' })).rejects.toThrow(
         'instructions reload failed',
       );
+      instructionsReload.mockRestore();
       expect(getLiveSessionById(client.engineAccessor, 'ses_dirs_reload')).toBe(beforeFailure);
       expect(failureReloadDirs).toHaveBeenCalledTimes(1);
       expect(dirsReminders()).toHaveLength(2);

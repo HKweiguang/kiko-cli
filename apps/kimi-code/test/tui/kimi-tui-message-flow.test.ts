@@ -11,6 +11,7 @@ import {
   deleteAllKittyImages,
   resetCapabilitiesCache,
   setCapabilities,
+  setKittyProtocolActive,
   type TuiMouseEvent,
 } from '@moonshot-ai/pi-tui';
 import {
@@ -42,7 +43,7 @@ import { MOON_SPINNER_FRAMES } from '#/tui/constant/rendering';
 import { promptApiKey, promptPlatformSelection } from '#/tui/commands/prompts';
 import { applyTranscriptConfigChoice } from '#/tui/commands/config';
 import type { SlashCommandHost } from '#/tui/commands/dispatch';
-import type { TranscriptConfig } from '#/tui/config';
+import type { FollowUpBehavior, FollowUpDelivery, TranscriptConfig } from '#/tui/config';
 import { isReadonlyBash } from '#/utils/readonly-bash';
 import {
   AgentSwarmProgressComponent,
@@ -78,9 +79,6 @@ import type { SurveyController } from '#/tui/controllers/survey-controller';
 import { handleFeedbackCommand } from '#/tui/commands/info';
 import { copyTextToClipboard } from '#/utils/clipboard/clipboard-text';
 import { openUrl } from '#/utils/open-url';
-import { createFeedbackArchivePath } from '../../src/feedback/archive';
-import { packageCodebase, scanCodebase } from '../../src/feedback/codebase';
-import { uploadArchive } from '../../src/feedback/upload';
 import {
   promptFeedbackAttachment,
   promptFeedbackInput,
@@ -102,27 +100,6 @@ vi.mock('#/tui/commands/prompts', async (importOriginal) => {
     ...actual,
     promptFeedbackInput: vi.fn(),
     promptFeedbackAttachment: vi.fn(),
-  };
-});
-
-vi.mock('../../src/feedback/codebase', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../src/feedback/codebase')>();
-  return {
-    ...actual,
-    scanCodebase: vi.fn().mockResolvedValue(undefined),
-    packageCodebase: vi.fn(),
-  };
-});
-
-vi.mock('../../src/feedback/upload', () => ({
-  uploadArchive: vi.fn(),
-}));
-
-vi.mock('../../src/feedback/archive', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../src/feedback/archive')>();
-  return {
-    ...actual,
-    createFeedbackArchivePath: vi.fn(actual.createFeedbackArchivePath),
   };
 });
 
@@ -183,7 +160,7 @@ interface MessageDriver {
     handleEvent(event: Event, sendQueued: (item: QueuedMessage) => void): void;
   };
   init(): Promise<boolean>;
-  handleUserInput(text: string): void;
+  handleUserInput(text: string, delivery?: FollowUpDelivery): void;
   restoreInputText(text: string, inlineSkillActivations?: readonly InlineSkillActivation[]): void;
   toggleToolOutputExpansion(): void;
   appendTranscriptEntry(entry: TranscriptEntry): void;
@@ -407,6 +384,23 @@ function makeHarness(session = makeSession(), overrides: Record<string, unknown>
       return interactiveAgentScope.run(agentId, fn);
     }),
     getExperimentalFeatures: vi.fn(async () => []),
+    feedbackAvailability: vi.fn(
+      async (): Promise<
+        | { kind: 'ready'; session?: { sessionId: string; sessionDir: string; files: readonly string[] } }
+        | { kind: 'needs-login' }
+        | { kind: 'error'; message: string }
+      > => ({ kind: 'ready' }),
+    ),
+    submitFeedback: vi.fn(
+      async (): Promise<
+        | { kind: 'ok'; feedbackId: number; attachmentFailed?: boolean }
+        | { kind: 'error'; message: string }
+        | { kind: 'needs-login' }
+      > => ({
+        kind: 'ok',
+        feedbackId: 3,
+      }),
+    ),
     auth: {
       status: vi.fn(async () => ({
         providers: [{ providerName: 'managed:kimi-code', hasToken: true }],
@@ -414,14 +408,6 @@ function makeHarness(session = makeSession(), overrides: Record<string, unknown>
       login: vi.fn(),
       logout: vi.fn(),
       getManagedUsage: vi.fn(),
-      submitFeedback: vi.fn(
-        async (): Promise<
-          { kind: 'ok'; feedbackId: number } | { kind: 'error'; status?: number; message: string }
-        > => ({
-          kind: 'ok',
-          feedbackId: 3,
-        }),
-      ),
     },
     ...overrides,
   };
@@ -632,14 +618,6 @@ function emitTurn(driver: MessageDriver, turnId: number, between?: () => void): 
     { type: 'turn.ended', agentId: 'main', turnId, reason: 'completed' } as Event,
     () => {},
   );
-}
-
-async function makeExportedSessionZip(content = 'session zip'): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'kimi-code-feedback-export-'));
-  tempDirs.push(dir);
-  const zipPath = join(dir, 'session.zip');
-  await writeFile(zipPath, content);
-  return zipPath;
 }
 
 afterEach(async () => {
@@ -3194,9 +3172,7 @@ command = "vim"
 
   it('prints the sign-up page and GitHub Issues links when not signed in', async () => {
     const { driver, harness } = await makeDriver(makeSession());
-    harness.auth.status.mockResolvedValueOnce({
-      providers: [{ providerName: 'managed:kimi-code', hasToken: false }],
-    });
+    harness.feedbackAvailability.mockResolvedValueOnce({ kind: 'needs-login' });
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
     vi.mocked(openUrl).mockClear();
@@ -3205,7 +3181,7 @@ command = "vim"
 
     expect(openUrl).not.toHaveBeenCalled();
     expect(promptFeedbackInput).not.toHaveBeenCalled();
-    expect(harness.auth.submitFeedback).not.toHaveBeenCalled();
+    expect(harness.submitFeedback).not.toHaveBeenCalled();
     const transcript = stripSgr(renderTranscript(driver));
     expect(transcript).toContain("You're not signed in");
     expect(transcript).toContain('https://www.kimi.com/code');
@@ -3214,7 +3190,7 @@ command = "vim"
 
   it('falls back to GitHub Issues when the sign-in status cannot be read', async () => {
     const { driver, harness } = await makeDriver(makeSession());
-    harness.auth.status.mockRejectedValueOnce(new Error('token storage unavailable'));
+    harness.feedbackAvailability.mockRejectedValueOnce(new Error('token storage unavailable'));
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockClear();
     vi.mocked(openUrl).mockClear();
@@ -3224,7 +3200,7 @@ command = "vim"
     expect(openUrl).toHaveBeenCalledTimes(1);
     expect(openUrl).toHaveBeenCalledWith('https://github.com/MoonshotAI/kimi-code/issues');
     expect(promptFeedbackInput).not.toHaveBeenCalled();
-    expect(harness.auth.submitFeedback).not.toHaveBeenCalled();
+    expect(harness.submitFeedback).not.toHaveBeenCalled();
     const transcript = stripSgr(renderTranscript(driver));
     expect(transcript).toContain('Opening GitHub Issues as fallback');
   });
@@ -3242,12 +3218,12 @@ command = "vim"
     };
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'none');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 7 });
+    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
+    harness.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 7 });
 
     await handleFeedbackCommand(feedbackDriver as any);
 
-    expect(harness.auth.submitFeedback).toHaveBeenCalledOnce();
+    expect(harness.submitFeedback).toHaveBeenCalledOnce();
     const transcript = stripSgr(renderTranscript(driver));
     expect(transcript).toContain('Feedback ID: 7');
   });
@@ -3257,12 +3233,12 @@ command = "vim"
     driver.state.appState.environment = { environmentId: 'dev-box', type: 'ssh', status: 'ready' };
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'none');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 9 });
+    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
+    harness.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 9 });
 
     await handleFeedbackCommand(feedbackDriver as any);
 
-    expect(promptFeedbackAttachment).toHaveBeenCalledWith(expect.anything(), true);
+    expect(promptFeedbackAttachment).toHaveBeenCalledWith(expect.anything(), true, undefined);
     const transcript = stripSgr(renderTranscript(driver));
     expect(transcript).toContain('Codebase attachment is not supported for remote sessions');
   });
@@ -3271,276 +3247,60 @@ command = "vim"
     const { driver, harness } = await makeDriver(makeSession());
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'none');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
+    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
+    harness.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
     harness.track.mockClear();
 
     await handleFeedbackCommand(feedbackDriver as any);
 
-    expect(harness.auth.submitFeedback).toHaveBeenCalledWith(
+    expect(harness.submitFeedback).toHaveBeenCalledWith(
       expect.objectContaining({
         content: 'useful feedback',
         sessionId: 'ses-1',
         version: 'kimi-code-0.0.0-test',
         model: 'k2',
       }),
+      'k2',
     );
     expect(harness.track).toHaveBeenCalledWith('feedback_submitted', undefined);
     const transcript = stripSgr(renderTranscript(driver));
     expect(transcript).toContain('Feedback ID: 3');
   });
 
-  it('submits text feedback before preparing requested attachments', async () => {
+  it('forwards the session file preview from feedbackAvailability to the picker and submitFeedback', async () => {
     const { driver, harness } = await makeDriver(makeSession());
+    const preview = {
+      sessionId: 'ses-1',
+      sessionDir: '/tmp/sessions/ses-1',
+      files: ['agents/main/wire.jsonl', 'state.json'],
+    };
+    harness.feedbackAvailability.mockResolvedValueOnce({ kind: 'ready', session: preview });
     const feedbackDriver = driver as unknown as FeedbackDriver;
-    vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
-    harness.listSessions.mockResolvedValueOnce([{ id: 'ses-1', sessionDir: '/tmp/session-a' }] as never);
-
-    const zipPath = await makeExportedSessionZip();
-    let resolveExport!: () => void;
-    const exportBlocked = new Promise<{
-      zipPath: string;
-      entries: string[];
-      sessionDir: string;
-      manifest: Record<string, never>;
-    }>((resolve) => {
-      resolveExport = () => {
-        resolve({
-          zipPath,
-          entries: ['manifest.json', 'state.json'],
-          sessionDir: '/tmp/session-a',
-          manifest: {},
-        });
-      };
-    });
-    harness.exportSession.mockImplementationOnce(() => exportBlocked);
-
-    let settled = false;
-    const command = handleFeedbackCommand(feedbackDriver as any).then(() => {
-      settled = true;
-    });
-
-    await vi.waitFor(() => {
-      expect(harness.exportSession).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'ses-1',
-          includeGlobalLog: true,
-          version: '0.0.0-test',
-        }),
-      );
-    });
-    expect(harness.auth.submitFeedback).toHaveBeenCalledWith(
-      expect.objectContaining({ content: 'useful feedback' }),
-    );
-    expect(harness.auth.submitFeedback.mock.invocationCallOrder[0]).toBeLessThan(
-      harness.exportSession.mock.invocationCallOrder[0]!,
-    );
-    expect(settled).toBe(false);
-
-    resolveExport();
-    await command;
-  });
-
-  it('waits for the codebase upload to finish before returning', async () => {
-    const { driver, harness } = await makeDriver(makeSession());
-    const feedbackDriver = driver as unknown as FeedbackDriver;
-    vi.mocked(scanCodebase).mockReset();
-    harness.exportSession.mockReset();
-    vi.mocked(packageCodebase).mockReset();
-    vi.mocked(uploadArchive).mockReset();
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
     vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs+codebase');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
-    harness.listSessions.mockResolvedValueOnce([
-      { id: 'ses-1', sessionDir: '/tmp/session-a' },
-    ] as never);
-
-    vi.mocked(scanCodebase).mockResolvedValueOnce({
-      root: '/tmp/proj-a',
-      files: [{ path: 'keep.ts', size: 4 }],
-      fingerprint: 'fp-123',
-      usedGitIgnore: false,
-    } as any);
-    const sessionZipPath = await makeExportedSessionZip();
-    harness.exportSession.mockResolvedValueOnce({
-      zipPath: sessionZipPath,
-      entries: ['manifest.json', 'state.json'],
-      sessionDir: '/tmp/session-a',
-      manifest: {},
+    harness.submitFeedback.mockResolvedValueOnce({
+      kind: 'ok',
+      feedbackId: 3,
+      attachmentFailed: true,
     });
-    vi.mocked(packageCodebase).mockResolvedValueOnce({
-      path: '/tmp/fake-codebase.zip',
-      size: 4,
-      sha256: 'hash-123',
-      fingerprint: 'fp-123',
-      fileCount: 1,
-    });
-
-    let resolveCodebaseUpload!: () => void;
-    const codebaseUploadBlocked = new Promise<void>((resolve) => {
-      resolveCodebaseUpload = resolve;
-    });
-    vi.mocked(uploadArchive).mockImplementation((_api, archive) => {
-      if (archive.path === sessionZipPath) return Promise.resolve();
-      return codebaseUploadBlocked;
-    });
-
-    let settled = false;
-    const command = handleFeedbackCommand(feedbackDriver as any).then(() => {
-      settled = true;
-    });
-
-    await vi.waitFor(() => {
-      expect(uploadArchive).toHaveBeenCalledTimes(2);
-    });
-    expect(settled).toBe(false);
-
-    resolveCodebaseUpload();
-    await command;
-    expect(settled).toBe(true);
-    expect(uploadArchive).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({ path: sessionZipPath }),
-      3,
-      { filename: 'session.zip' },
-    );
-    expect(uploadArchive).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({ path: '/tmp/fake-codebase.zip' }),
-      3,
-      { filename: 'repo.zip' },
-    );
-    expect(harness.auth.submitFeedback).toHaveBeenCalledWith(
-      expect.not.objectContaining({ info: expect.anything() }),
-    );
-  });
-
-  it('uploads session logs when codebase scanning fails but the session directory is available', async () => {
-    const { driver, harness } = await makeDriver(makeSession());
-    const feedbackDriver = driver as unknown as FeedbackDriver;
-    vi.mocked(scanCodebase).mockReset();
-    harness.exportSession.mockReset();
-    vi.mocked(packageCodebase).mockReset();
-    vi.mocked(uploadArchive).mockReset();
-    vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs+codebase');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
-    harness.listSessions.mockResolvedValueOnce([{ id: 'ses-1', sessionDir: '/tmp/session-a' }] as never);
-    const sessionZipPath = await makeExportedSessionZip();
-    vi.mocked(scanCodebase).mockRejectedValueOnce(new Error('scan failed'));
-    harness.exportSession.mockResolvedValueOnce({
-      zipPath: sessionZipPath,
-      entries: ['manifest.json', 'state.json'],
-      sessionDir: '/tmp/session-a',
-      manifest: {},
-    });
-
-    await handleFeedbackCommand(feedbackDriver as any);
-
-    expect(harness.exportSession).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'ses-1', includeGlobalLog: true }),
-    );
-    expect(packageCodebase).not.toHaveBeenCalled();
-    expect(uploadArchive).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({ path: sessionZipPath }),
-      3,
-      { filename: 'session.zip' },
-    );
-    const transcript = stripSgr(renderTranscript(driver));
-    expect(transcript).toContain('Feedback ID: 3');
-    expect(transcript).toContain('attachment upload failed');
-  });
-
-  it('keeps archive-path creation failures as partial failures without the GitHub fallback', async () => {
-    const { driver, harness } = await makeDriver(makeSession());
-    const feedbackDriver = driver as unknown as FeedbackDriver;
-    vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
-    harness.listSessions.mockResolvedValueOnce([{ id: 'ses-1', sessionDir: '/tmp/session-a' }] as never);
-    vi.mocked(createFeedbackArchivePath).mockRejectedValueOnce(new Error('cache dir not writable'));
     vi.mocked(openUrl).mockClear();
 
     await handleFeedbackCommand(feedbackDriver as any);
 
     expect(openUrl).not.toHaveBeenCalled();
-    const transcript = stripSgr(renderTranscript(driver));
-    expect(transcript).toContain('Feedback submitted, thank you!');
-    expect(transcript).toContain('Feedback ID: 3');
-    expect(transcript).toContain('attachment upload failed');
-  });
-
-  it('tells the user when feedback is sent but codebase packaging fails', async () => {
-    const { driver, harness } = await makeDriver(makeSession());
-    const feedbackDriver = driver as unknown as FeedbackDriver;
-    vi.mocked(scanCodebase).mockReset();
-    vi.mocked(packageCodebase).mockReset();
-    harness.exportSession.mockReset();
-    vi.mocked(uploadArchive).mockReset();
-    vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs+codebase');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
-    harness.listSessions.mockResolvedValueOnce([{ id: 'ses-1', sessionDir: '/tmp/session-a' }] as never);
-    const sessionZipPath = await makeExportedSessionZip();
-
-    vi.mocked(scanCodebase).mockResolvedValueOnce({
-      root: '/tmp/proj-a',
-      files: [{ path: 'keep.ts', size: 4 }],
-      fingerprint: 'fp-123',
-      usedGitIgnore: false,
-    } as any);
-    harness.exportSession.mockResolvedValueOnce({
-      zipPath: sessionZipPath,
-      entries: ['manifest.json', 'state.json'],
-      sessionDir: '/tmp/session-a',
-      manifest: {},
-    });
-    vi.mocked(packageCodebase).mockRejectedValueOnce(new Error('zip failed'));
-
-    await handleFeedbackCommand(feedbackDriver as any);
-
-    const calls = harness.auth.submitFeedback.mock.calls as unknown as Array<[Record<string, unknown>]>;
-    expect(calls[0]?.[0]?.['info']).toBeUndefined();
-    expect(uploadArchive).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({ path: sessionZipPath }),
-      3,
-      { filename: 'session.zip' },
+    expect(harness.feedbackAvailability).toHaveBeenCalledWith('k2', 'ses-1');
+    expect(promptFeedbackAttachment).toHaveBeenCalledWith(expect.anything(), false, preview);
+    expect(harness.submitFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: 'useful feedback',
+        sessionId: 'ses-1',
+        attachmentLevel: 'logs+codebase',
+        workDir: '/tmp/proj-a',
+      }),
+      'k2',
     );
     const transcript = stripSgr(renderTranscript(driver));
-    expect(transcript).toContain('Feedback ID: 3');
-    expect(transcript).toContain('attachment upload failed');
-  });
-
-  it('tells the user when the codebase upload fails', async () => {
-    const { driver, harness } = await makeDriver(makeSession());
-    const feedbackDriver = driver as unknown as FeedbackDriver;
-    vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs+codebase');
-    harness.auth.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 3 });
-
-    vi.mocked(scanCodebase).mockResolvedValueOnce({
-      root: '/tmp/proj-a',
-      files: [{ path: 'keep.ts', size: 4 }],
-      fingerprint: 'fp-123',
-      usedGitIgnore: false,
-    } as any);
-    vi.mocked(packageCodebase).mockResolvedValueOnce({
-      path: '/tmp/fake-codebase.zip',
-      size: 4,
-      sha256: 'hash-123',
-      fingerprint: 'fp-123',
-      fileCount: 1,
-    });
-    vi.mocked(uploadArchive).mockRejectedValueOnce(new Error('upload failed'));
-
-    await handleFeedbackCommand(feedbackDriver as any);
-
-    expect(harness.auth.submitFeedback).toHaveBeenCalledOnce();
-    const transcript = stripSgr(renderTranscript(driver));
+    expect(transcript).toContain('Feedback submitted, thank you!');
     expect(transcript).toContain('Feedback ID: 3');
     expect(transcript).toContain('attachment upload failed');
   });
@@ -3549,10 +3309,9 @@ command = "vim"
     const { driver, harness } = await makeDriver(makeSession());
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'none');
-    harness.auth.submitFeedback.mockResolvedValueOnce({
+    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
+    harness.submitFeedback.mockResolvedValueOnce({
       kind: 'error',
-      status: 500,
       message: 'backend says no',
     });
 
@@ -3568,8 +3327,8 @@ command = "vim"
     const { driver, harness } = await makeDriver(makeSession());
     const feedbackDriver = driver as unknown as FeedbackDriver;
     vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'useful feedback' }));
-    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'none');
-    harness.auth.submitFeedback.mockRejectedValueOnce(new Error('socket hangup'));
+    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
+    harness.submitFeedback.mockRejectedValueOnce(new Error('socket hangup'));
     vi.mocked(openUrl).mockClear();
 
     await expect(handleFeedbackCommand(feedbackDriver as any)).rejects.toThrow('socket hangup');
@@ -3587,8 +3346,31 @@ command = "vim"
 
     await handleFeedbackCommand(feedbackDriver as any);
 
-    expect(harness.auth.submitFeedback).not.toHaveBeenCalled();
+    expect(harness.submitFeedback).not.toHaveBeenCalled();
     expect(harness.track).not.toHaveBeenCalledWith('feedback_submitted', undefined);
+  });
+
+  it('submits feedback through the engine when it reports the channel is ready', async () => {
+    const { driver, harness } = await makeDriver(makeSession());
+    harness.feedbackAvailability.mockResolvedValueOnce({ kind: 'ready' });
+    driver.state.appState.model = 'registry_kimi/k3';
+    const feedbackDriver = driver as unknown as FeedbackDriver;
+    vi.mocked(promptFeedbackInput).mockImplementation(async () => ({ value: 'custom feedback' }));
+    vi.mocked(promptFeedbackAttachment).mockImplementation(async () => 'logs');
+    harness.submitFeedback.mockResolvedValueOnce({ kind: 'ok', feedbackId: 11 });
+
+    await handleFeedbackCommand(feedbackDriver as any);
+
+    expect(harness.auth.status).not.toHaveBeenCalled();
+    expect(harness.submitFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: 'custom feedback',
+        model: 'registry_kimi/k3',
+      }),
+      'registry_kimi/k3',
+    );
+    const transcript = stripSgr(renderTranscript(driver));
+    expect(transcript).toContain('Feedback ID: 11');
   });
 
   it('tracks blocked slash commands as invalid without counting them as executed commands', async () => {
@@ -7789,6 +7571,517 @@ command = "vim"
     await (driver as unknown as { staging: { drain(): Promise<void> } }).staging.drain();
     expect(harness.deleteFile).not.toHaveBeenCalledWith('file-v1');
     expect(driver.state.queuedMessages).toEqual([]);
+  });
+
+  describe('steer-draft delivery', () => {
+    const occupied = (): KimiError => new KimiError(ErrorCodes.SESSION_OCCUPIED, 'in use');
+    type Picker = { handleInput(data: string): void; render(width: number): string[] };
+    const picker = (driver: MessageDriver): Picker => driver.state.editorContainer.children[0] as Picker;
+    const userEntries = (driver: MessageDriver) =>
+      driver.state.transcriptEntries.filter((entry) => entry.kind === 'user');
+
+    async function reviewSkillDriver(overrides: Record<string, unknown> = {}) {
+      const session = makeSession({
+        listSkills: vi.fn(async () => [
+          { name: 'review', description: 'Review skill', path: '/tmp/review', source: 'user' },
+        ]),
+        ...overrides,
+      });
+      const made = await makeDriver(session);
+      await (
+        made.driver as unknown as { refreshSkillCommands(s: unknown): Promise<void> }
+      ).refreshSkillCommands(session);
+      return made;
+    }
+
+    it('steers only the draft and leaves queued messages in place', async () => {
+      const { driver, session } = await makeDriver();
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.handleUserInput('queued note');
+
+      driver.handleUserInput('look at the failing test first', 'steer-draft');
+
+      expect(session.steer).toHaveBeenCalledExactlyOnceWith('look at the failing test first');
+      await vi.waitFor(() => {
+        expect(userEntries(driver)).toEqual([
+          expect.objectContaining({ content: 'look at the failing test first' }),
+        ]);
+      });
+      expect(driver.state.queuedMessages).toEqual([{ text: 'queued note', agentId: 'main' }]);
+      expect(session.prompt).not.toHaveBeenCalled();
+    });
+
+    it('steers only the draft in tower mode instead of the whole queue', async () => {
+      const steer = pendingSteer();
+      const { driver } = await makeDriver(steer.session);
+      driver.state.appState.towerMode = true;
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.state.queuedMessages = [{ text: 'queued objective', agentId: 'main' }];
+
+      driver.handleUserInput('draft objective', 'steer-draft');
+      steer.resolve();
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(steer.session.steer).toHaveBeenCalledExactlyOnceWith('draft objective');
+      expect(driver.state.queuedMessages).toEqual([{ text: 'queued objective', agentId: 'main' }]);
+    });
+
+    it('steers draft media and releases the upload when the turn ends', async () => {
+      const { driver, session, harness } = await makeDriver();
+      const imageStore = (driver as unknown as { imageStore: ImageAttachmentStore }).imageStore;
+      const attachment = stagedImage(imageStore, 'file-draft');
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.streamingUI.setTurnId('7');
+
+      driver.handleUserInput(`check ${attachment.placeholder}`, 'steer-draft');
+
+      expect(session.steer).toHaveBeenCalledWith([
+        { type: 'text', text: 'check ' },
+        { type: 'image_url', imageUrl: { url: 'kimi-file://file-draft' } },
+      ]);
+      expect(harness.deleteFile).not.toHaveBeenCalled();
+      driver.sessionEventHandler.handleEvent(
+        { type: 'turn.ended', agentId: 'main', turnId: 7, reason: 'completed' } as Event,
+        () => {},
+      );
+      await vi.waitFor(() => {
+        expect(harness.deleteFile).toHaveBeenCalledExactlyOnceWith('file-draft');
+      });
+      expect(driver.state.queuedMessages).toEqual([]);
+    });
+
+    it('steers a skill draft through promptWithSkills', async () => {
+      const { driver, session } = await reviewSkillDriver();
+      driver.state.appState.streamingPhase = 'waiting';
+
+      driver.handleUserInput('/skill:review src/app.ts', 'steer-draft');
+
+      await vi.waitFor(() => {
+        expect(session.promptWithSkills).toHaveBeenCalledWith(
+          '/skill:review src/app.ts',
+          [{ name: 'review', args: 'src/app.ts' }],
+          { steerIfActive: true },
+        );
+      });
+      expect(session.steer).not.toHaveBeenCalled();
+      expect(driver.state.queuedMessages).toEqual([]);
+    });
+
+    it('steers an unknown slash command as a plain message', async () => {
+      const { driver, session } = await makeDriver();
+      driver.state.appState.streamingPhase = 'waiting';
+
+      driver.handleUserInput('/foo bar', 'steer-draft');
+
+      await vi.waitFor(() => {
+        expect(session.steer).toHaveBeenCalledExactlyOnceWith('/foo bar');
+      });
+      expect(driver.state.queuedMessages).toEqual([]);
+    });
+
+    it('queues the draft with an error when the steer fails', async () => {
+      const session = makeSession({
+        steer: vi.fn(async () => {
+          throw new Error('network down');
+        }),
+      });
+      const { driver } = await makeDriver(session);
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.streamingUI.setTurnId('1');
+
+      driver.handleUserInput('look here', 'steer-draft');
+
+      await vi.waitFor(() => {
+        expect(driver.state.queuedMessages).toEqual([{ text: 'look here', agentId: 'main' }]);
+      });
+      expect(stripSgr(renderTranscript(driver))).toContain('Failed to steer: network down');
+      expect(userEntries(driver)).toEqual([]);
+    });
+
+    it('keeps submission order when a draft steer fails after later input was queued', async () => {
+      const steer = pendingSteer();
+      const { driver } = await makeDriver(steer.session);
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.streamingUI.setTurnId('1');
+      driver.handleUserInput('queued before');
+
+      driver.handleUserInput('first draft', 'steer-draft');
+      driver.handleUserInput('second draft', 'steer-draft');
+      expect(steer.session.steer).toHaveBeenCalledOnce();
+      steer.reject(new Error('network down'));
+
+      await vi.waitFor(() => {
+        expect(driver.state.queuedMessages).toEqual([
+          { text: 'queued before', agentId: 'main' },
+          { text: 'first draft', agentId: 'main' },
+          { text: 'second draft', agentId: 'main' },
+        ]);
+      });
+    });
+
+    it('shows a failed skill draft once after it is requeued and dispatched with its media', async () => {
+      process.env['KIMI_CODE_HOME'] = await makeTempHome();
+      const promptWithSkills = vi
+        .fn(async (_input: unknown, _skills: unknown, _options?: unknown) => {})
+        .mockRejectedValueOnce(new Error('network down'));
+      const { driver, session } = await reviewSkillDriver({ promptWithSkills });
+      const imageStore = (driver as unknown as { imageStore: ImageAttachmentStore }).imageStore;
+      const attachment = imageStore.addImage(new Uint8Array([0xaa, 0xbb]), 'image/png', 1, 1);
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.streamingUI.setTurnId('1');
+      const text = `/skill:review ${attachment.placeholder}`;
+
+      driver.handleUserInput(text, 'steer-draft');
+
+      await vi.waitFor(() => {
+        expect(driver.state.queuedMessages).toHaveLength(1);
+      });
+      expect(userEntries(driver)).toEqual([]);
+      driver.sessionEventHandler.handleEvent(
+        { type: 'turn.ended', agentId: 'main', turnId: 1, reason: 'completed' } as Event,
+        (item) => {
+          driver.sendQueuedMessage(session, item);
+        },
+      );
+
+      await vi.waitFor(() => {
+        expect(promptWithSkills).toHaveBeenCalledTimes(2);
+      });
+      const skills = promptWithSkills.mock.calls[1]?.[1] as Array<{ args?: string }>;
+      const staged = /Attached image file: (\S+)/.exec(skills[0]?.args ?? '')?.[1];
+      expect(staged !== undefined && existsSync(staged)).toBe(true);
+      expect(userEntries(driver)).toEqual([expect.objectContaining({ content: text })]);
+    });
+
+    it('gives an occupied draft back to the editor without queueing it', async () => {
+      const session = makeSession({ steer: vi.fn(async () => {}).mockRejectedValueOnce(occupied()) });
+      const { driver } = await makeDriver(session);
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.streamingUI.setTurnId('1');
+
+      driver.handleUserInput('look here', 'steer-draft');
+      await vi.waitFor(() => {
+        expect(stripSgr(picker(driver).render(80).join(' '))).toContain('Session in use');
+      });
+      picker(driver).handleInput('\u001B[B');
+      picker(driver).handleInput('\r');
+
+      await vi.waitFor(() => {
+        expect(driver.state.editor.getText()).toBe('look here');
+      });
+      expect(driver.state.queuedMessages).toEqual([]);
+      expect(userEntries(driver)).toEqual([]);
+      expect(session.steer).toHaveBeenCalledOnce();
+    });
+
+    it('retries an occupied draft steer', async () => {
+      const session = makeSession({ steer: vi.fn(async () => {}).mockRejectedValueOnce(occupied()) });
+      const { driver } = await makeDriver(session);
+      driver.state.appState.streamingPhase = 'waiting';
+      driver.streamingUI.setTurnId('1');
+
+      driver.handleUserInput('look here', 'steer-draft');
+      await vi.waitFor(() => {
+        expect(stripSgr(picker(driver).render(80).join(' '))).toContain('Session in use');
+      });
+      picker(driver).handleInput('\r');
+
+      await vi.waitFor(() => {
+        expect(session.steer).toHaveBeenCalledTimes(2);
+      });
+      expect(session.steer).toHaveBeenLastCalledWith('look here');
+      await vi.waitFor(() => {
+        expect(userEntries(driver)).toEqual([expect.objectContaining({ content: 'look here' })]);
+      });
+      expect(driver.state.queuedMessages).toEqual([]);
+    });
+
+    it('steers input queued in tower mode while the draft was in flight once it lands', async () => {
+      const steer = pendingSteer();
+      const { driver } = await makeDriver(steer.session);
+      driver.state.appState.towerMode = true;
+      driver.state.appState.streamingPhase = 'waiting';
+
+      driver.handleUserInput('draft objective', 'steer-draft');
+      driver.handleUserInput('next objective');
+      expect(driver.state.queuedMessages).toEqual([{ text: 'next objective', agentId: 'main' }]);
+      steer.resolve();
+
+      await vi.waitFor(() => {
+        expect(steer.session.steer).toHaveBeenCalledTimes(2);
+      });
+      expect(steer.session.steer).toHaveBeenNthCalledWith(2, 'next objective');
+    });
+
+    it('lets the /btw panel take the draft instead of steering', async () => {
+      const { driver, session } = await makeDriver();
+      driver.handleUserInput('/btw');
+      await vi.waitFor(() => {
+        expect(session.startBtw).toHaveBeenCalledWith();
+      });
+      driver.state.appState.streamingPhase = 'waiting';
+
+      driver.handleUserInput('what are you doing?', 'steer-draft');
+
+      await vi.waitFor(() => {
+        expect(session.prompt).toHaveBeenCalledWith('what are you doing?');
+      });
+      expect(session.steer).not.toHaveBeenCalled();
+      expect(driver.state.queuedMessages).toEqual([]);
+    });
+
+    it('lets the idle cache hint intercept the draft instead of steering', async () => {
+      const { driver, session } = await makeDriver();
+      driver.state.appState.availableModels = {
+        k2: { model: 'example-model', provider: 'example-provider', maxContextSize: 100 },
+      };
+      driver.state.appState.availableProviders = {
+        'example-provider': { type: 'kimi', oauth: { key: 'kimi-code', storage: 'file' } },
+      };
+      driver.state.appState.contextTokens = 150000;
+      const peek = vi.spyOn(cacheHintConfig, 'peekCacheHintConfig').mockReturnValue({
+        version: 1,
+        config: { 'example-model': { min_tokens_to_hint: 100000, cache_duration: 600 } },
+      });
+      (driver as unknown as { cacheHint: { recordActivity(): void } }).cacheHint.recordActivity();
+      const now = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1200_000);
+      try {
+        driver.handleUserInput('hello again', 'steer-draft');
+
+        expect(driver.state.editorContainer.children[0]).toBeInstanceOf(CacheHintDialogComponent);
+        expect(session.steer).not.toHaveBeenCalled();
+        expect(session.prompt).not.toHaveBeenCalled();
+      } finally {
+        now.mockRestore();
+        peek.mockRestore();
+      }
+    });
+
+    describe('through the editor keys', () => {
+      const CTRL_ENTER = '\u001B[13;5u';
+      const CTRL_Q = '\u0011';
+
+      async function busyDriver(followUpBehavior: FollowUpBehavior | undefined) {
+        const made = await makeDriver();
+        made.driver.state.appState.followUpBehavior = followUpBehavior;
+        made.driver.state.appState.streamingPhase = 'waiting';
+        made.driver.handleUserInput('queued note');
+        return made;
+      }
+
+      function press(driver: MessageDriver, text: string, key: string): void {
+        driver.state.editor.setText(text);
+        driver.state.editor.handleInput(key);
+      }
+
+      it.each([
+        [undefined, '\r'],
+        ['queue', '\r'],
+        ['queue', CTRL_Q],
+        ['steer', CTRL_ENTER],
+        ['steer', CTRL_Q],
+      ] as const)('with follow_up_behavior %s, %j queues behind the running turn', async (followUpBehavior, key) => {
+        const { driver, session } = await busyDriver(followUpBehavior);
+
+        press(driver, 'next step', key);
+        await new Promise((resolve) => setImmediate(resolve));
+
+        expect(session.steer).not.toHaveBeenCalled();
+        expect(driver.state.queuedMessages.map((message) => message.text)).toEqual(['queued note', 'next step']);
+      });
+
+      it.each([
+        [undefined, CTRL_ENTER],
+        ['queue', CTRL_ENTER],
+        ['steer', '\r'],
+      ] as const)('with follow_up_behavior %s, %j steers only the draft', async (followUpBehavior, key) => {
+        const { driver, session } = await busyDriver(followUpBehavior);
+
+        press(driver, 'next step', key);
+
+        expect(session.steer).toHaveBeenCalledExactlyOnceWith('next step');
+        await Promise.resolve();
+        expect(driver.state.queuedMessages).toEqual([{ text: 'queued note', agentId: 'main' }]);
+      });
+
+      it.each([
+        ['queue', CTRL_Q],
+        ['steer', CTRL_Q],
+        ['steer', CTRL_ENTER],
+      ] as const)('with follow_up_behavior %s, %j queues in tower mode instead of steering', async (followUpBehavior, key) => {
+        const { driver, session } = await makeDriver();
+        driver.state.appState.followUpBehavior = followUpBehavior;
+        driver.state.appState.towerMode = true;
+        driver.state.appState.streamingPhase = 'waiting';
+
+        press(driver, 'after this turn', key);
+        await new Promise((resolve) => setImmediate(resolve));
+
+        expect(session.steer).not.toHaveBeenCalled();
+        expect(driver.state.queuedMessages.map((message) => message.text)).toEqual(['after this turn']);
+      });
+
+      it('queues tower Enter behind a message queued with Ctrl-Q', async () => {
+        const { driver, session } = await makeDriver();
+        driver.state.appState.towerMode = true;
+        driver.state.appState.streamingPhase = 'waiting';
+
+        press(driver, 'after this turn', CTRL_Q);
+        press(driver, 'next objective', '\r');
+        await new Promise((resolve) => setImmediate(resolve));
+
+        expect(session.steer).not.toHaveBeenCalled();
+        expect(driver.state.queuedMessages.map((message) => message.text)).toEqual(['after this turn', 'next objective']);
+      });
+
+      it('keeps a message queued with Ctrl-Q in tower mode once an in-flight draft steer lands', async () => {
+        const steer = pendingSteer();
+        const { driver } = await makeDriver(steer.session);
+        driver.state.appState.towerMode = true;
+        driver.state.appState.streamingPhase = 'waiting';
+
+        press(driver, 'draft objective', CTRL_ENTER);
+        press(driver, 'after this turn', CTRL_Q);
+        steer.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(steer.session.steer).toHaveBeenCalledExactlyOnceWith('draft objective');
+        expect(driver.state.queuedMessages.map((message) => message.text)).toEqual(['after this turn']);
+      });
+
+      it('steers a message queued with Ctrl-Q when Ctrl-S is pressed in tower mode', async () => {
+        const { driver, session } = await makeDriver();
+        driver.state.appState.towerMode = true;
+        driver.state.appState.streamingPhase = 'waiting';
+
+        press(driver, 'after this turn', CTRL_Q);
+        driver.state.editor.handleInput('\u0013');
+
+        expect(session.steer).toHaveBeenCalledExactlyOnceWith('after this turn');
+      });
+
+      it.each([undefined, 'queue'] as const)('keeps tower Enter steering the queue with follow_up_behavior %s', async (followUpBehavior) => {
+        const { driver, session } = await makeDriver();
+        driver.state.appState.followUpBehavior = followUpBehavior;
+        driver.state.appState.towerMode = true;
+        driver.state.appState.streamingPhase = 'waiting';
+        driver.state.queuedMessages = [{ text: 'queued objective', agentId: 'main' }];
+
+        press(driver, 'next objective', '\r');
+
+        expect(session.steer).toHaveBeenCalledExactlyOnceWith('queued objective\n\nnext objective');
+        await vi.waitFor(() => {
+          expect(driver.state.queuedMessages).toEqual([]);
+        });
+      });
+
+      it.each(['\r', CTRL_ENTER, CTRL_Q])('sends %j straight away while idle in steer mode', async (key) => {
+        const { driver, session } = await makeDriver();
+        driver.state.appState.followUpBehavior = 'steer';
+
+        press(driver, 'hello', key);
+
+        expect(session.prompt).toHaveBeenCalledOnce();
+        expect(session.prompt.mock.calls[0]?.[0]).toBe('hello');
+        expect(session.steer).not.toHaveBeenCalled();
+      });
+
+      it.each([true, false])(
+        'describes the submit keys in /help after the chosen behavior (Ctrl-Enter recognized: %s)',
+        async (ctrlEnterRecognized) => {
+          const { driver } = await makeDriver();
+          driver.state.appState.followUpBehavior = 'steer';
+          setKittyProtocolActive(ctrlEnterRecognized);
+
+          try {
+            driver.handleUserInput('/help');
+
+            await vi.waitFor(() => {
+              expect(driver.state.editorContainer.render(120).map(stripSgr)).toContainEqual(
+                expect.stringMatching(/^\s+Enter\s+Submit; steers into the running turn$/),
+              );
+            });
+            const lines = driver.state.editorContainer.render(120).map(stripSgr);
+            expect(lines).toContainEqual(expect.stringMatching(/^\s+Ctrl-Q\s+Submit; queues while Kimi is working$/));
+            expect(lines.some((line) => /^\s+Ctrl-Enter\s+Submit; queues while Kimi is working$/.test(line))).toBe(
+              ctrlEnterRecognized,
+            );
+          } finally {
+            setKittyProtocolActive(false);
+          }
+        },
+      );
+    });
+
+    describe('falls back to the plain Enter path', () => {
+      type Setup = (driver: MessageDriver) => void;
+      const busy: Setup = (driver) => {
+        driver.state.appState.streamingPhase = 'waiting';
+      };
+      const cases: ReadonlyArray<readonly [string, Setup, string]> = [
+        ['while a shell command runs', (driver) => { driver.state.appState.streamingPhase = 'shell'; }, 'note'],
+        ['while compacting', (driver) => { busy(driver); driver.state.appState.isCompacting = true; }, 'note'],
+        ['for a slash command that is not a message', busy, '/compact'],
+      ];
+
+      it.each(cases)('%s', async (_label, setup, text) => {
+        const run = async (delivery: FollowUpDelivery) => {
+          const { driver, session } = await makeDriver();
+          setup(driver);
+          driver.handleUserInput(text, delivery);
+          await new Promise((resolve) => setImmediate(resolve));
+          return {
+            queued: driver.state.queuedMessages,
+            steer: session.steer.mock.calls,
+            prompt: session.prompt.mock.calls,
+          };
+        };
+
+        const steered = await run('steer-draft');
+        expect(steered).toEqual(await run('default'));
+        expect(steered.steer).toEqual([]);
+        expect(steered.queued).toHaveLength(1);
+      });
+
+      it('in bash mode', async () => {
+        const { driver, session } = await makeDriver();
+        busy(driver);
+        driver.state.appState.inputMode = 'bash';
+        driver.state.editor.inputMode = 'bash';
+
+        driver.handleUserInput('ls', 'steer-draft');
+
+        expect(session.steer).not.toHaveBeenCalled();
+        expect(driver.state.queuedMessages).toEqual([{ text: 'ls', agentId: 'main', mode: 'bash' }]);
+      });
+
+      it('while an earlier draft steer is in flight', async () => {
+        const steer = pendingSteer();
+        const { driver } = await makeDriver(steer.session);
+        busy(driver);
+
+        driver.handleUserInput('first', 'steer-draft');
+        driver.handleUserInput('second', 'steer-draft');
+
+        expect(steer.session.steer).toHaveBeenCalledExactlyOnceWith('first');
+        expect(driver.state.queuedMessages).toEqual([{ text: 'second', agentId: 'main' }]);
+        steer.resolve();
+        await vi.waitFor(() => {
+          expect(userEntries(driver)).toEqual([expect.objectContaining({ content: 'first' })]);
+        });
+        expect(driver.state.queuedMessages).toEqual([{ text: 'second', agentId: 'main' }]);
+      });
+
+      it('while idle', async () => {
+        const { driver, session } = await makeDriver();
+
+        driver.handleUserInput('hello', 'steer-draft');
+
+        expect(session.prompt).toHaveBeenCalledOnce();
+        expect(session.prompt.mock.calls[0]?.[0]).toBe('hello');
+        expect(session.steer).not.toHaveBeenCalled();
+      });
+    });
   });
 
   it('drops failed WaitFor input when the session changed meanwhile', async () => {
