@@ -70,7 +70,7 @@ for (const sumFile of sumFiles.sort()) {
   // kimi-code-darwin-arm64.zip.sha256 → darwin-arm64
   const target = basename(sumFile, '.sha256').replace(/^kimi-code-/, '').replace(/\.zip$/, '');
   const zipName = `kimi-code-${target}.zip`;
-  const exeName = target.startsWith('win32') ? 'kimi.exe' : 'kimi';
+  const exeName = target.startsWith('win32') ? 'kiko.exe' : 'kiko';
   // The CDN bare-binary layout carries the .exe suffix on Windows
   // (src/constant/app.ts); the updater's fallback downloads this filename.
   const binaryName = target.startsWith('win32') ? `kimi-code-${target}.exe` : `kimi-code-${target}`;

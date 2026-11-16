@@ -18,7 +18,7 @@ const packageScript = resolve(appRoot, 'scripts/native/package.mjs');
 const manifestScript = resolve(appRoot, 'scripts/native/produce-manifest.mjs');
 const artifactsDir = resolve(appRoot, 'dist-native/artifacts');
 const target = 'test-zip-artifact';
-const executableName = process.platform === 'win32' ? 'kimi.exe' : 'kimi';
+const executableName = process.platform === 'win32' ? 'kiko.exe' : 'kiko';
 const fakeBinary = resolve(appRoot, 'dist-native/bin', target, executableName);
 
 function sha256(bytes: Buffer | string): string {
@@ -175,7 +175,7 @@ describe('native release artifacts', () => {
     try {
       const binaryContent = Buffer.from('fake windows binary');
       const zip = new ZipFile();
-      zip.addBuffer(binaryContent, 'kimi.exe');
+      zip.addBuffer(binaryContent, 'kiko.exe');
       zip.end();
       await pipeline(
         zip.outputStream,

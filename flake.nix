@@ -206,21 +206,21 @@
               runHook preInstall
 
               install -Dm755 \
-                "apps/kimi-code/dist-native/bin/${nativeTarget}/kimi" \
-                "$out/bin/kimi"
+                "apps/kimi-code/dist-native/bin/${nativeTarget}/kiko" \
+                "$out/bin/kiko"
 
               runHook postInstall
             '';
 
             postInstall = ''
-              wrapProgram $out/bin/kimi --prefix PATH : ${lib.makeBinPath [ pkgs.ripgrep pkgs.fd ]}
+              wrapProgram $out/bin/kiko --prefix PATH : ${lib.makeBinPath [ pkgs.ripgrep pkgs.fd ]}
             '';
 
             meta = {
               description = "Kimi Code CLI";
               homepage = "https://github.com/MoonshotAI/kimi-code";
               license = lib.licenses.mit;
-              mainProgram = "kimi";
+              mainProgram = "kiko";
               platforms = systems;
             };
           });
@@ -234,7 +234,7 @@
       apps = forAllSystems (pkgs: {
         kimi-code = {
           type = "app";
-          program = "${self.packages.${pkgs.system}.kimi-code}/bin/kimi";
+          program = "${self.packages.${pkgs.system}.kimi-code}/bin/kiko";
         };
         default = self.apps.${pkgs.system}.kimi-code;
       });
