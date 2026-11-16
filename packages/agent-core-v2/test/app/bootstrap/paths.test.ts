@@ -242,7 +242,7 @@ describe('migrateKimiCodeHome', () => {
 
     expect(() =>
       migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 20 }),
-    ).toThrow(/another kiko process is migrating/);
+    ).toThrow(/could not acquire the data-home migration lock/);
     expect(existsSync(join(fixture, '.kiko'))).toBe(false);
     expect(existsSync(join(legacy, 'config.toml'))).toBe(true);
   });
@@ -262,7 +262,7 @@ describe('migrateKimiCodeHome', () => {
 
     expect(() =>
       migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 20 }),
-    ).toThrow(/another kiko process is migrating/);
+    ).toThrow(/could not acquire the data-home migration lock/);
     expect(existsSync(lockPath)).toBe(true);
     expect(existsSync(join(fixture, '.kiko'))).toBe(false);
   });
@@ -286,6 +286,42 @@ describe('migrateKimiCodeHome', () => {
     expect(existsSync(lockPath)).toBe(false);
   });
 
+  it('times out with an actionable error when the lock file is unreadable', () => {
+    if (process.platform === 'win32' || process.getuid?.() === 0) return;
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const lockPath = join(fixture, '.kiko-migration.lock');
+    writeFileSync(lockPath, '{}', { mode: 0o600 });
+    chmodSync(lockPath, 0o000);
+    const started = Date.now();
+    try {
+      expect(() =>
+        migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 50 }),
+      ).toThrow(/could not acquire the data-home migration lock/);
+      expect(Date.now() - started).toBeLessThan(3000);
+      expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+    } finally {
+      chmodSync(lockPath, 0o600);
+    }
+    expect(readFileSync(lockPath, 'utf-8')).toBe('{}');
+  });
+
+  it('times out with an actionable error when the lock path is a dangling symlink', () => {
+    if (process.platform === 'win32') return;
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const lockPath = join(fixture, '.kiko-migration.lock');
+    symlinkSync(join(fixture, '.missing-lock-target'), lockPath);
+    const started = Date.now();
+
+    expect(() =>
+      migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 50 }),
+    ).toThrow(/could not acquire the data-home migration lock/);
+    expect(Date.now() - started).toBeLessThan(3000);
+    expect(lstatSync(lockPath).isSymbolicLink()).toBe(true);
+    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+  });
+
   it('does not cache lock contention; after the holder completes, resolution uses canonical', () => {
     const fixture = fixtureHome();
     seedLegacyHome(fixture);
@@ -299,7 +335,7 @@ describe('migrateKimiCodeHome', () => {
       withoutVitest(() =>
         resolveKimiHome(undefined, {}, fixture, { migrationLockTimeoutMs: 20 }),
       ),
-    ).toThrow(/another kiko process is migrating/);
+    ).toThrow(/could not acquire the data-home migration lock/);
     expect(existsSync(join(fixture, '.kiko'))).toBe(false);
 
     rmSync(lockPath);
@@ -425,6 +461,27 @@ describe('migrateKimiCodeHome', () => {
     });
     try {
       withoutVitest(() => migrateKimiCodeHome({ osHomeDir: fixture, env: {} }));
+    } finally {
+      spy.mockRestore();
+    }
+    const output = writes.join('');
+    expect(output).toContain('no .kiko-migration.json');
+    expect(output).toContain('KIKO_HOME=');
+  });
+
+  it('reports the same canonical-exists guidance from the resolveKimiHome path', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    mkdirSync(join(fixture, '.kiko'), { recursive: true });
+    writeFileSync(join(fixture, '.kiko', 'user.toml'), 'mine\n');
+    const writes: string[] = [];
+    const spy = vi.spyOn(process.stderr, 'write').mockImplementation((chunk: unknown) => {
+      writes.push(String(chunk));
+      return true;
+    });
+    try {
+      const home = withoutVitest(() => resolveKimiHome(undefined, {}, fixture));
+      expect(home).toBe(join(fixture, '.kiko'));
     } finally {
       spy.mockRestore();
     }

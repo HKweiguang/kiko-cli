@@ -64,8 +64,10 @@ export class KimiHomeMigrationLockedError extends Error {
 
   constructor(lockPath: string, legacyHome: string, canonicalHome: string) {
     super(
-      `kiko: another kiko process is migrating ${legacyHome} to ${canonicalHome} ` +
-        `(lock: ${lockPath}). Wait for it to finish and retry, or set KIKO_HOME to an explicit data directory.`,
+      `kiko: could not acquire the data-home migration lock at ${lockPath}; ` +
+        `another kiko process may be migrating ${legacyHome} to ${canonicalHome}. ` +
+        `Wait for it to finish, remove a stale lock file if no migration is running, ` +
+        `or set KIKO_HOME to an explicit data directory.`,
     );
     this.name = 'KimiHomeMigrationLockedError';
     this.lockPath = lockPath;
@@ -95,7 +97,12 @@ function resolveDefaultKimiHome(
   const legacy = join(osHomeDir, LEGACY_KIMI_CODE_DATA_DIR_NAME);
   const stable = stableHomes.get(osHomeDir);
   if (stable !== undefined) return stable;
-  if (isCompletedHome(canonical)) return canonical;
+  if (isCompletedHome(canonical)) {
+    if (!hasMigrationMarker(canonical) && isDirectory(legacy)) {
+      reportSignal(`canonical-exists:${osHomeDir}`, canonicalExistsMessage(legacy, canonical));
+    }
+    return canonical;
+  }
   if (!isDirectory(legacy)) return canonical;
   if (!autoMigrationEnabled(env)) return legacy;
   return migrateKimiCodeHome({
@@ -328,7 +335,11 @@ function acquireLock(lockPath: string, timeoutMs: number): LockHandle | undefine
         if (!isAlreadyExists(error)) throw error;
       }
       const raw = readLockRaw(lockPath);
-      if (raw === undefined) continue;
+      if (raw === undefined) {
+        if (Date.now() >= deadline) return undefined;
+        sleepSync(LOCK_POLL_MS);
+        continue;
+      }
       if (isStaleLockContent(raw)) {
         removeLockIfUnchanged(lockPath, raw);
         continue;
