@@ -30,6 +30,7 @@ describe("legacy migration manager (discovery and migration coordination)", () =
 
     expect(discovery.prompt).toMatchObject({
       kind: "legacy-migration",
+      message: expect.stringContaining("sessions into Kiko?"),
       actions: [
         { id: "now", label: "Migrate Now" },
         { id: "later", label: "Later" },
