@@ -323,7 +323,7 @@ Each field (the inline `systemPrompt` and the `systemPromptPath` file) is limite
 
 ### Differences between the two engines
 
-System-prompt contributions take effect on every Kimi Code surface: the interactive TUI, `kimi -p`, and `kimi web` all run on the v2 engine.
+System-prompt contributions take effect on every Kimi Code surface: the interactive TUI, `kiko -p`, and `kiko web` all run on the v2 engine.
 
 <details>
 <summary>Instruction refresh behavior under the two engines</summary>

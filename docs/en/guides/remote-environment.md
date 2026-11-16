@@ -6,7 +6,7 @@ A remote environment lets the Agent read and write files and run Shell commands 
 
 ### 1. Prepare the remote machine
 
-- Install the Kimi Code executor for the target platform at `~/.kimi-code/bin/kimi`.
+- Install the Kimi Code executor for the target platform at `~/.kimi-code/bin/kiko`.
 - Make sure your machine can sign in to the remote machine with SSH keys.
 - Configure users, ports, keys, and jump hosts in `~/.ssh/config` if needed.
 
@@ -30,13 +30,13 @@ remoteBin = "/path/to/kimi"
 ### 3. Create a remote session
 
 ```sh
-kimi --environment dev-box
+kiko --environment dev-box
 ```
 
 To use a different remote directory for one session:
 
 ```sh
-kimi --environment dev-box --environment-cwd /home/me/another-project
+kiko --environment dev-box --environment-cwd /home/me/another-project
 ```
 
 Resuming a session automatically restores its remote environment and working directory. You do not need to repeat these flags.
@@ -47,7 +47,7 @@ After setup:
 - The CLI, model requests, and credentials stay on your machine.
 - Subagents inherit their parent Agent's remote environment.
 
-#### `kimi --environment` and `--environment-cwd`
+#### `kiko --environment` and `--environment-cwd`
 
 - Both flags are creation-only and cannot be combined with `--session` or `--continue`.
 - `--environment-cwd` must be used with `--environment`.
@@ -66,7 +66,7 @@ Connection behavior:
 - The first connection to a new host records its host key. A later key change fails the connection until you fix the entry.
 - The interactive CLI can prompt for an SSH password when the server supports it. The password stays only in the current process memory.
 - Password prompts require OpenSSH 8.4 or later. Independent OTP/MFA and private-key passphrase prompts are not supported.
-- Non-interactive clients such as `kimi -p` do not prompt for passwords. Configure keys or connection sharing in advance.
+- Non-interactive clients such as `kiko -p` do not prompt for passwords. Configure keys or connection sharing in advance.
 
 ## Declare Docker and custom-command environments
 
@@ -104,7 +104,7 @@ See the [`environments` configuration reference](../configuration/config-files.m
 When the remote target is a Windows machine:
 
 - Install [Git for Windows](https://gitforwindows.org/) and the Windows executor on the target.
-- The default executor path is `~/.kimi-code/bin/kimi.exe`.
+- The default executor path is `~/.kimi-code/bin/kiko.exe`.
 - Use a native drive path such as `C:\work\project` for `defaultCwd`.
 - SSH and custom commands are supported; Docker containers are not.
 

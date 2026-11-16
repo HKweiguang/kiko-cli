@@ -96,7 +96,7 @@ timeout = 5
 | --- | --- | --- | --- |
 | `default_model` | `string` | — | 默认模型别名，必须在 `models` 中定义 |
 | `default_permission_mode` | `string` | `manual` | 新会话的默认权限模式，可选 `yolo` / `auto`，见 [交互与权限](../guides/interaction.md#三种权限模式) |
-| `default_plan_mode` | `boolean` | `false` | 新会话是否默认以 [Plan 模式](../guides/interaction.md#plan-模式)启动。非交互模式（`kimi -p`）下不生效 |
+| `default_plan_mode` | `boolean` | `false` | 新会话是否默认以 [Plan 模式](../guides/interaction.md#plan-模式)启动。非交互模式（`kiko -p`）下不生效 |
 | `merge_all_available_skills` | `boolean` | `true` | 是否合并所有目录中的 Agent Skills |
 | `extra_skill_dirs` | `array<string>` | — | 额外 Skill 搜索目录，叠加到默认目录之上 |
 | `extra_agent_dirs` | `array<string>` | — | 额外自定义 Agent 搜索目录，叠加到默认目录之上 |
@@ -296,7 +296,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | --- | --- | --- | --- |
 | `enabled` | `boolean` | `true` | 新会话是否默认开启 Thinking，设为 `false` 可强制关闭 |
 | `effort` | `string` | — | Thinking 强度：`low`/`medium`/`high`/`xhigh`/`max`；不在模型支持列表时回落默认档 |
-| `keep` | `string` | `"all"` | 保留思考透传；`kimi` 以 `thinking.keep` 发送，`anthropic` 以 `clear_thinking_20251015` 编辑发送（走 beta API）；关值可禁用；Thinking 开启时注入，可被同名环境变量覆盖 |
+| `keep` | `string` | `"all"` | 保留思考透传；`kiko` 以 `thinking.keep` 发送，`anthropic` 以 `clear_thinking_20251015` 编辑发送（走 beta API）；关值可禁用；Thinking 开启时注入，可被同名环境变量覆盖 |
 
 <details><summary>已废弃字段</summary>
 
@@ -352,7 +352,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 
 `keep_alive_on_exit` 可被环境变量 `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` 覆盖，`bash_task_timeout_s` 可被 `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` 覆盖，`print_background_mode`、`print_wait_ceiling_s`、`print_max_turns` 可分别被 `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE`、`KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S`、`KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` 覆盖，优先级均高于两个配置节。
 
-在 print 模式（`kimi -p "<prompt>"`）下，只要还有未决的后台任务，Kimi Code 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
+在 print 模式（`kiko -p "<prompt>"`）下，只要还有未决的后台任务，Kimi Code 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
 
 ## `subagent`
 
@@ -590,7 +590,7 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | --- | --- | --- | --- |
 | `type` | `string` | 是 | `"ssh"` |
 | `host` | `string` | 是 | SSH 主机；经系统 `ssh` 启动，`~/.ssh/config`（用户、端口、密钥、`ProxyJump`、`ControlMaster`）照常生效 |
-| `remoteBin` | `string` | 否 | 目标环境上 `kimi` 的路径，POSIX 默认 `~/.kimi-code/bin/kimi`，Windows 默认 `~/.kimi-code/bin/kimi.exe`。支持含空格的绝对路径、目标账户主目录下的 `~/` 路径或目标 `PATH` 中的裸名称（如 `kimi`） |
+| `remoteBin` | `string` | 否 | 目标环境上 `kiko` 的路径，POSIX 默认 `~/.kimi-code/bin/kiko`，Windows 默认 `~/.kimi-code/bin/kiko.exe`。支持含空格的绝对路径、目标账户主目录下的 `~/` 路径或目标 `PATH` 中的裸名称（如 `kiko`） |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值，不在本机校验 |
 
 ### Docker 条目
@@ -600,7 +600,7 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | `type` | `string` | 是 | `"docker"` |
 | `container` | `string` | 是 | 运行中的容器名或 id，经 `docker exec` 接入 |
 | `context` | `string` | 否 | Docker context（例如 `orbstack`） |
-| `remoteBin` | `string` | 否 | 容器内 `kimi` 的路径，默认为容器用户 home 下的 `~/.kimi-code/bin/kimi`；启动命令经 `docker exec … sh -c` 执行，`~` 前缀由容器内的 shell 展开 |
+| `remoteBin` | `string` | 否 | 容器内 `kiko` 的路径，默认为容器用户 home 下的 `~/.kimi-code/bin/kiko`；启动命令经 `docker exec … sh -c` 执行，`~` 前缀由容器内的 shell 展开 |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值 |
 
 ### command 条目
@@ -610,9 +610,9 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | 字段 | 类型 | 是否必填 | 说明 |
 | --- | --- | --- | --- |
 | `command` | `string` | 是 | 启动器可执行文件：按 `PATH` 解析的名称，或绝对路径。解析结果落在工作目录内会被拒绝，项目无法用同名二进制冒名顶替启动器 |
-| `args` | `array<string>` | 否 | 进入目标的启动器参数。某个参数已经调用 `exec-server` 时（例如 `--command "~/.kimi-code/bin/kimi exec-server"`），不再追加，按原样执行 |
+| `args` | `array<string>` | 否 | 进入目标的启动器参数。某个参数已经调用 `exec-server` 时（例如 `--command "~/.kimi-code/bin/kiko exec-server"`），不再追加，按原样执行 |
 | `env` | `table<string, string>` | 否 | 本机启动器进程的环境变量，不会传播到目标环境执行的命令中 |
-| `remoteBin` | `string` | 否 | 目标环境上 `kimi` 的路径，追加在 `args` 之后，默认 `~/.kimi-code/bin/kimi`。应为不含空格和 shell 特殊字符的路径。只有经目标上的 shell 执行参数的启动器（如 ssh）会展开 `~`；`kubectl exec`、`docker exec` 这类原样传递参数的启动器需要绝对路径 |
+| `remoteBin` | `string` | 否 | 目标环境上 `kiko` 的路径，追加在 `args` 之后，默认 `~/.kimi-code/bin/kiko`。应为不含空格和 shell 特殊字符的路径。只有经目标上的 shell 执行参数的启动器（如 ssh）会展开 `~`；`kubectl exec`、`docker exec` 这类原样传递参数的启动器需要绝对路径 |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值 |
 
 ```toml
@@ -637,7 +637,7 @@ defaultCwd = "/home/me/kimi-code"
 [environments.k8s]
 command = "kubectl"
 args = ["exec", "-i", "dev-pod", "--"]
-remoteBin = "/root/.kimi-code/bin/kimi"
+remoteBin = "/root/.kimi-code/bin/kiko"
 defaultCwd = "/workspace"
 ```
 

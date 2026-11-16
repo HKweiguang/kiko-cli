@@ -20,7 +20,7 @@ Overrides the data root directory; the default is `~/.kimi-code`. Once set, the 
 export KIMI_CODE_HOME="/path/to/custom/kimi-code"
 ```
 
-> Make sure the directory is writable. Multiple `kimi` instances sharing the same `KIMI_CODE_HOME` will share config and credential files.
+> Make sure the directory is writable. Multiple `kiko` instances sharing the same `KIMI_CODE_HOME` will share config and credential files.
 
 For the complete data directory structure, see [Data locations](./data-locations.md).
 
@@ -122,7 +122,7 @@ export KIMI_MODEL_API_KEY="YOUR_API_KEY"
 export KIMI_MODEL_BASE_URL="https://api.example.com/v1"
 export KIMI_MODEL_MAX_CONTEXT_SIZE="262144"
 export KIMI_MODEL_CAPABILITIES="image_in,thinking"
-kimi
+kiko
 ```
 
 Complete variable list:
@@ -150,11 +150,11 @@ Switches that control the behavior of subsystems such as telemetry, background t
 | Variable | Purpose | Valid values |
 | --- | --- | --- |
 | `KIMI_DISABLE_TELEMETRY` | Disable anonymous telemetry reporting | `1`, `true`, `yes`, `y` (case-insensitive) |
-| `KIMI_CODE_PASSWORD` | Parallel auth credential for `kimi web`, recommended when binding beyond loopback (see [Security notes](../guides/web.md#security-notes)) | Any non-empty string; when unset, only the token is valid |
-| `KIMI_CODE_SESSION_IDLE_RECLAIM_MS` | How long (ms) a `kimi web` session may stay idle before it is unloaded from memory; the session resumes transparently on next access (default `1800000`; `0` = never unload) | Non-negative integer; invalid values fail fast |
+| `KIMI_CODE_PASSWORD` | Parallel auth credential for `kiko web`, recommended when binding beyond loopback (see [Security notes](../guides/web.md#security-notes)) | Any non-empty string; when unset, only the token is valid |
+| `KIMI_CODE_SESSION_IDLE_RECLAIM_MS` | How long (ms) a `kiko web` session may stay idle before it is unloaded from memory; the session resumes transparently on next access (default `1800000`; `0` = never unload) | Non-negative integer; invalid values fail fast |
 | `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` | Keep background tasks when the session closes; higher priority than `config.toml` (default: stop them on exit) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
 | `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` | Default timeout (seconds) for background `Bash` tasks, also used to re-arm foreground commands moved to the background; higher priority than `[task] bash_task_timeout_s` (`0` = no timeout) | Non-negative integer; invalid values are ignored |
-| `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE` | What `kimi -p` does while background tasks are still pending after the main turn; higher priority than `[task] print_background_mode` | `exit`, `drain`, or `steer`; invalid values are ignored |
+| `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE` | What `kiko -p` does while background tasks are still pending after the main turn; higher priority than `[task] print_background_mode` | `exit`, `drain`, or `steer`; invalid values are ignored |
 | `KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S` | Wall-clock ceiling (seconds) for the print-mode drain/steer wait; higher priority than `[task] print_wait_ceiling_s` | Positive integer; invalid values are ignored |
 | `KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` | Max number of new turns triggered by background-task completions in print mode; higher priority than `[task] print_max_turns` | Positive integer; invalid values are ignored |
 | `KIMI_IMAGE_MAX_EDGE_PX` | Longest-edge ceiling (px) for image compression; higher priority than `[image] max_edge_px` (default `2000`) | Positive integer; invalid values are ignored |
@@ -197,7 +197,7 @@ Switches that control the behavior of subsystems such as telemetry, background t
 | `KIMI_MODEL_TEMPERATURE` | Sampling temperature for every request; `kimi` provider only (global, independent of `KIMI_MODEL_NAME`) | Number, e.g. `0.3` |
 | `KIMI_MODEL_TOP_P` | Nucleus-sampling `top_p` for every request; `kimi` provider only (global) | Number, e.g. `0.95` |
 | `KIMI_MODEL_THINKING_EFFORT` | Force a thinking effort (`thinking.effort`), bypassing the model's declared `support_efforts`; `kimi` provider only | An effort value, e.g. `max` |
-| `KIMI_MODEL_THINKING_KEEP` | Preserved-thinking passthrough: `thinking.keep` on `kimi`, a `clear_thinking_20251015` edit on `anthropic`; overrides `[thinking] keep` | A value the API accepts, e.g. `all`; an off-value (`false`/`0`/`no`/`off`/`none`/`null`) disables it |
+| `KIMI_MODEL_THINKING_KEEP` | Preserved-thinking passthrough: `thinking.keep` on `kiko`, a `clear_thinking_20251015` edit on `anthropic`; overrides `[thinking] keep` | A value the API accepts, e.g. `all`; an off-value (`false`/`0`/`no`/`off`/`none`/`null`) disables it |
 | `KIMI_CODE_LLM_HEADERS_TIMEOUT_MS` | Max time (ms) an LLM request on the `openai` / `openai-responses` / `anthropic` protocols may wait for the response headers (first byte), replacing the HTTP client's default 300 s headers timeout — raise it for long non-streaming thinking; unset keeps the default; the SDK's own total request timeout (default 10 minutes) still caps each attempt; not supported for `google-genai` (its SDK exposes no dispatcher option) or behind a SOCKS proxy (requests still go through the proxy) | Positive integer no greater than 2147483647; invalid values fail the request |
 | `KIMI_CODE_NO_AUTO_UPDATE` | Fully disable the update preflight: no check, background install, or prompt. Legacy alias `KIMI_CLI_NO_AUTO_UPDATE` also honored | Truthy: `1`/`true`/`yes`/`on` |
 | `KIMI_CODE_CLIPBOARD_OSC52` | Also copy through your terminal (OSC 52); try it when copying does not work over a remote connection. In tmux, also add `set -g set-clipboard on` | `1` to enable |

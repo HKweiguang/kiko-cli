@@ -84,7 +84,7 @@ Kimi Code CLI 有三个地方可以影响运行参数：配置文件、命令行
 **隔离测试环境**：用单独的数据目录，避免污染主配置和会话：
 
 ```sh
-KIMI_CODE_HOME="$PWD/.kimi-sandbox" kimi
+KIMI_CODE_HOME="$PWD/.kimi-sandbox" kiko
 ```
 
 **一次性使用测试密钥**：由于供应商凭证只从配置文件读，把测试密钥写进 `env` 子表：
@@ -97,13 +97,13 @@ KIMI_API_KEY = "sk-test"
 **跳过审批运行批处理任务**：
 
 ```sh
-kimi --yolo -p "批量重命名以下文件..."
+kiko --yolo -p "批量重命名以下文件..."
 ```
 
 **临时进入 Plan 模式**（若想永久生效，在配置文件设 `default_plan_mode = true`）：
 
 ```sh
-kimi --plan
+kiko --plan
 ```
 
 ## 下一步

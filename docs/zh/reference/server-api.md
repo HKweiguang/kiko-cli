@@ -7,7 +7,7 @@ onMounted(() => redirectLegacyServerApiAnchor('zh'))
 
 # 服务 API【测试版】
 
-`kimi web` 启动的本地服务提供两组接口：REST API（`/api/v1`）和 WebSocket 事件流（`/api/v1/ws`）。脚本和第三方客户端可以用它们创建会话、提交提示词、实时接收对话内容，以及管理配置、模型和工作区。启动服务的方法和命令行选项见 [kimi 命令](./kimi-command.md#kimi-web)。
+`kiko web` 启动的本地服务提供两组接口：REST API（`/api/v1`）和 WebSocket 事件流（`/api/v1/ws`）。脚本和第三方客户端可以用它们创建会话、提交提示词、实时接收对话内容，以及管理配置、模型和工作区。启动服务的方法和命令行选项见 [kiko 命令](./kimi-command.md#kiko-web)。
 
 ::: warning 注意
 这些接口是实验性特性，不保证稳定：端点、字段和事件类型可能在任何版本中变化。集成时以你所用版本服务的 `/openapi.json` 和 `/asyncapi.json` 为准。
@@ -169,4 +169,4 @@ HTTP 状态码几乎总是 200，业务结果以 `code` 为准。例外情况如
 
 - [会话与对话](./server-api-conversation.md)：WebSocket 协议和客户端流程
 - [在网页中使用](../guides/web.md)：启动服务并在浏览器中使用 Kimi Code
-- [kimi 命令](./kimi-command.md#kimi-web)：`kimi web` 的全部命令行选项
+- [kiko 命令](./kimi-command.md#kiko-web)：`kiko web` 的全部命令行选项
