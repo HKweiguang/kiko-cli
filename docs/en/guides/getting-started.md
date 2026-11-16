@@ -36,7 +36,7 @@ irm https://code.kimi.com/kimi-code/install.ps1 | iex
 
 > On Windows, install [Git for Windows](https://gitforwindows.org/) before first launch. Kimi Code CLI uses the bundled Git Bash as its shell environment; if Git Bash is installed in a custom location, set `KIMI_SHELL_PATH` to the absolute path of `bash.exe`.
 
-The script automatically downloads the latest release, verifies the checksum, and places the `kimi` executable on your `PATH`.
+The script automatically downloads the latest release, verifies the checksum, and places the `kiko` executable on your `PATH`. The executable is named `kiko`; there is no `kimi` alias, so update any existing shell commands and IDE configurations to use `kiko`.
 
 ### npm installation
 
@@ -60,23 +60,23 @@ pnpm add -g @moonshot-ai/kimi-code
 
 ## First launch
 
-Move into your project directory and run `kimi` to start the interactive UI:
+Move into your project directory and run `kiko` to start the interactive UI:
 
 ```sh
 cd your-project
-kimi
+kiko
 ```
 
 To run a single instruction without entering the interactive UI, use `-p`:
 
 ```sh
-kimi -p "Take a look at this project's directory structure"
+kiko -p "Take a look at this project's directory structure"
 ```
 
 To resume the previous session, add `-c`:
 
 ```sh
-kimi -c
+kiko -c
 ```
 
 On first launch you need to configure an API source. In the interactive UI, enter `/login` to begin the login flow:
@@ -153,16 +153,16 @@ Kimi Code CLI stores its local data under `~/.kimi-code/` by default — config 
 After installation, verify that the executable is ready:
 
 ```sh
-kimi --version
+kiko --version
 ```
 
-**Upgrade**: run `kimi upgrade` — the CLI checks for the latest version and presents update options. Choose `Install update now` to upgrade based on your current install source. You can also upgrade directly via the package manager:
+**Upgrade**: run `kiko upgrade` — the CLI checks for the latest version and presents update options. Choose `Install update now` to upgrade based on your current install source. You can also upgrade directly via the package manager:
 
 ```sh
 npm install -g @moonshot-ai/kimi-code@latest
 ```
 
-**Uninstall**: if you installed via the script, delete the `kimi` executable. If you installed via npm:
+**Uninstall**: if you installed via the script, delete the `kiko` executable. If you installed via npm:
 
 ```sh
 npm uninstall -g @moonshot-ai/kimi-code

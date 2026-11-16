@@ -44,7 +44,7 @@ Kimi Code CLI 有三个地方可以影响运行参数：配置文件、命令行
 
 `api_key` 和 `api_key_env` 是互斥的替代项，不是优先级回退链：只能设置其中一个——同时设置会被判为配置冲突，`api_key_env` 与 `oauth` 同设同样会被拒绝。
 
-`api_key_env` 是「不从 shell 环境变量取凭证」唯一有意开放的例外：密钥在每次请求时从进程自身的环境中重新读取，不会被缓存到进程生命周期之外，也不写进 `config.toml`。注意，运行中的进程只能看到它启动时的环境——轮换变量需要重启 kimi / TUI 或 kap-server 进程；在父 shell 里重新 `export` 只影响新启动的进程。声明了 `api_key_env` 但变量未设置或为空时，会快速失败并报错，指明供应商和变量名——会话就绪检查（print 模式、kap-server 会话创建）和请求发送时都会拦截——绝不静默忽略，也不回退到其他凭证来源。
+`api_key_env` 是「不从 shell 环境变量取凭证」唯一有意开放的例外：密钥在每次请求时从进程自身的环境中重新读取，不会被缓存到进程生命周期之外，也不写进 `config.toml`。注意，运行中的进程只能看到它启动时的环境——轮换变量需要重启 `kiko` / TUI 或 kap-server 进程；在父 shell 里重新 `export` 只影响新启动的进程。声明了 `api_key_env` 但变量未设置或为空时，会快速失败并报错，指明供应商和变量名——会话就绪检查（print 模式、kap-server 会话创建）和请求发送时都会拦截——绝不静默忽略，也不回退到其他凭证来源。
 
 `base_url` 的解析方式相同：先读 `[providers.<name>].base_url`，再读 `[providers.<name>.env]` 里的 `*_BASE_URL` 键。
 
@@ -84,7 +84,7 @@ Kimi Code CLI 有三个地方可以影响运行参数：配置文件、命令行
 **隔离测试环境**：用单独的数据目录，避免污染主配置和会话：
 
 ```sh
-KIMI_CODE_HOME="$PWD/.kimi-sandbox" kimi
+KIMI_CODE_HOME="$PWD/.kimi-sandbox" kiko
 ```
 
 **一次性使用测试密钥**：由于供应商凭证只从配置文件读，把测试密钥写进 `env` 子表：
@@ -97,13 +97,13 @@ KIMI_API_KEY = "sk-test"
 **跳过审批运行批处理任务**：
 
 ```sh
-kimi --yolo -p "批量重命名以下文件..."
+kiko --yolo -p "批量重命名以下文件..."
 ```
 
 **临时进入 Plan 模式**（若想永久生效，在配置文件设 `default_plan_mode = true`）：
 
 ```sh
-kimi --plan
+kiko --plan
 ```
 
 ## 下一步

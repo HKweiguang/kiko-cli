@@ -6,7 +6,7 @@
 
 ### 1. 准备远程机器
 
-- 将目标平台的 Kimi Code 执行器安装到 `~/.kimi-code/bin/kimi`。
+- 将目标平台的 Kimi Code 执行器安装到 `~/.kimi-code/bin/kiko`。
 - 确认本机可以通过 SSH 密钥登录远程机器。
 - 用户、端口、密钥和跳板机可先在 `~/.ssh/config` 中配置。
 
@@ -24,19 +24,19 @@ defaultCwd = "/home/me/projects"
 执行器不在默认路径时，增加一项：
 
 ```toml
-remoteBin = "/path/to/kimi"
+remoteBin = "/path/to/kiko"
 ```
 
 ### 3. 创建远程会话
 
 ```sh
-kimi --environment dev-box
+kiko --environment dev-box
 ```
 
 临时更换远程工作目录：
 
 ```sh
-kimi --environment dev-box --environment-cwd /home/me/another-project
+kiko --environment dev-box --environment-cwd /home/me/another-project
 ```
 
 恢复会话时会自动恢复原来的远程环境和工作目录，无需重复这些参数。
@@ -47,7 +47,7 @@ kimi --environment dev-box --environment-cwd /home/me/another-project
 - CLI、模型请求和凭据留在本机。
 - subagent 继承父 Agent 的远程环境。
 
-#### `kimi --environment` 与 `--environment-cwd`
+#### `kiko --environment` 与 `--environment-cwd`
 
 - 两个参数只用于创建会话，不能与 `--session` 或 `--continue` 组合。
 - `--environment-cwd` 必须与 `--environment` 一起使用。
@@ -66,7 +66,7 @@ kimi --environment dev-box --environment-cwd /home/me/another-project
 - 首次连接新主机时会记录主机密钥；之后密钥发生变化会连接失败，需要手动处理。
 - 交互式 CLI 可以在服务器支持时提示输入 SSH 密码。密码只保存在当前进程内存中。
 - 密码提示需要 OpenSSH 8.4 或更高版本，不支持独立 OTP/MFA 或私钥口令提示。
-- `kimi -p` 等非交互方式不会提示输入密码，请提前配置密钥或连接共享。
+- `kiko -p` 等非交互方式不会提示输入密码，请提前配置密钥或连接共享。
 
 ## 声明 Docker 与自定义命令环境
 
@@ -104,7 +104,7 @@ defaultCwd = "/home/me/kimi-code"
 远程目标为 Windows 机器时：
 
 - 安装 [Git for Windows](https://gitforwindows.org/) 和 Windows 版执行器。
-- 默认执行器路径为 `~/.kimi-code/bin/kimi.exe`。
+- 默认执行器路径为 `~/.kimi-code/bin/kiko.exe`。
 - `defaultCwd` 使用 `C:\work\project` 这类原生驱动器路径。
 - 支持 SSH 和自定义命令，不支持 Docker 容器。
 
@@ -112,7 +112,7 @@ defaultCwd = "/home/me/kimi-code"
 [environments.windows-dev]
 type = "ssh"
 host = "windows-dev"
-remoteBin = "kimi"
+remoteBin = "kiko"
 defaultCwd = 'C:\work\project'
 ```
 

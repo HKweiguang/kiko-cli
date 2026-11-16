@@ -7,12 +7,12 @@ const isZh = computed(() => lang.value.startsWith('zh'))
 
 const installMacCommand = 'curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash'
 const installWinCommand = 'irm https://code.kimi.com/kimi-code/install.ps1 | iex'
-const runCommand = 'kimi'
+const runCommand = 'kiko'
 
 const copy = computed(() => isZh.value
   ? {
       title: '一行命令开始',
-      lede: '装好之后跑 kimi，立刻在你当前的项目里开聊。',
+      lede: '装好之后跑 kiko，立刻在你当前的项目里开聊。',
       macLabel: 'macOS / Linux',
       winLabel: 'Windows (PowerShell)',
       runLabel: '在任意目录运行',
@@ -23,7 +23,7 @@ const copy = computed(() => isZh.value
     }
   : {
       title: 'Get started in one line',
-      lede: 'Once installed, run kimi inside any project to start a conversation.',
+      lede: 'Once installed, run kiko inside any project to start a conversation.',
       macLabel: 'macOS / Linux',
       winLabel: 'Windows (PowerShell)',
       runLabel: 'Run anywhere',

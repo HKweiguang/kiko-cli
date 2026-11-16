@@ -7,7 +7,7 @@ onMounted(() => redirectLegacyServerApiAnchor('en'))
 
 # Server API (Beta)
 
-The local server started by `kimi web` exposes two interfaces: a REST API (`/api/v1`) and a WebSocket event stream (`/api/v1/ws`). Scripts and third-party clients can use them to create sessions, submit prompts, receive the conversation in real time, and manage configuration, models, and workspaces. For how to start the server and its command-line options, see [kimi command](./kimi-command.md#kimi-web).
+The local server started by `kiko web` exposes two interfaces: a REST API (`/api/v1`) and a WebSocket event stream (`/api/v1/ws`). Scripts and third-party clients can use them to create sessions, submit prompts, receive the conversation in real time, and manage configuration, models, and workspaces. For how to start the server and its command-line options, see [kiko command](./kimi-command.md#kiko-web).
 
 ::: warning Note
 These APIs are experimental, and their stability is not guaranteed: endpoints, fields, and event types may change in any release. When integrating, rely on the `/openapi.json` and `/asyncapi.json` documents served by your version.
@@ -169,4 +169,4 @@ This walkthrough runs the minimal flow with curl: check the server, create a ses
 
 - [Sessions and conversations](./server-api-conversation.md): the WebSocket protocol and the client flow
 - [Using Kimi Code in the browser](../guides/web.md): start the server and use Kimi Code in a browser
-- [kimi command](./kimi-command.md#kimi-web): all `kimi web` command-line options
+- [kiko command](./kimi-command.md#kiko-web): all `kiko web` command-line options
