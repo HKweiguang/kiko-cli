@@ -388,7 +388,10 @@ describe('registerImportSessionsCommand', () => {
     const run = vi.fn(async () => 0);
     registerImportSessionsCommand(program, run);
 
-    expect(program.commands.find((command) => command.name() === 'import-sessions')?.description()).toContain('Claude Code and Codex');
+    const description = program.commands.find((command) => command.name() === 'import-sessions')?.description();
+    expect(description).toContain('Claude Code and Codex');
+    expect(description).toContain('Kiko');
+    expect(description).not.toContain('Kimi Code');
     await program.parseAsync(['import-sessions'], { from: 'user' });
     expect(run).toHaveBeenCalledOnce();
     expect(process.exitCode).toBe(0);
