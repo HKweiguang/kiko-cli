@@ -1,6 +1,6 @@
 import { ErrorCodes, Error2 } from '#/errors';
 import type { Environment } from '#/environment/environment';
-import { shareBinRgPath } from '#/environment/shareBinRg';
+import { shareBinRgPaths } from '#/environment/shareBinRg';
 
 export { getShareBinRgPath } from '#/environment/shareBinRg';
 
@@ -40,10 +40,11 @@ export async function ensureRgPath(
 
   if (options.allowCachedFallback === true) {
     throwIfAborted(options.signal);
-    const cached = shareBinRgPath(options.environment);
-    const cachedRun = await probe.exec([cached, '--version']).catch(() => ({ exitCode: -1 }));
-    if (cachedRun.exitCode === 0) {
-      return { path: cached, source: 'share-bin-cached' };
+    for (const cached of shareBinRgPaths(options.environment)) {
+      const cachedRun = await probe.exec([cached, '--version']).catch(() => ({ exitCode: -1 }));
+      if (cachedRun.exitCode === 0) {
+        return { path: cached, source: 'share-bin-cached' };
+      }
     }
   }
 

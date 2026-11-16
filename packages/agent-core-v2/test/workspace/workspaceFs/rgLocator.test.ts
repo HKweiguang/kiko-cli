@@ -56,6 +56,20 @@ describe('ensureRgPath cached fallback', () => {
     expect(resolution).toEqual({ path: '/home/remote/.kiko/bin/rg', source: 'share-bin-cached' });
   });
 
+  it('falls back to the legacy .kimi-code share bin when the canonical one is missing', async () => {
+    const legacy = '/home/remote/.kimi-code/bin/rg';
+    const probe = probeWith((args) => (args[0] === 'rg' ? -1 : args[0] === legacy ? 0 : -1));
+
+    const resolution = await ensureRgPath(probe, {
+      environment: remoteEnvironment('ssh-legacy'),
+      allowCachedFallback: true,
+    });
+
+    expect(resolution).toEqual({ path: legacy, source: 'share-bin-cached' });
+    expect(probe.exec).toHaveBeenCalledWith(['/home/remote/.kiko/bin/rg', '--version']);
+    expect(probe.exec).toHaveBeenCalledWith([legacy, '--version']);
+  });
+
   it('probes the local share bin on the local environment', async () => {
     const probe = probeWith((args) => (args[0] === 'rg' ? -1 : 0));
 

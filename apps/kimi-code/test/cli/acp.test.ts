@@ -20,6 +20,18 @@ import { runAcpServer } from '@moonshot-ai/acp-server';
 import { registerAcpCommand } from '#/cli/sub/acp';
 import { getDataDir } from '#/utils/paths';
 
+const originalHomeEnv = {
+  kiko: process.env['KIKO_HOME'],
+  legacy: process.env['KIMI_CODE_HOME'],
+};
+
+function setHomeEnv(kiko: string | undefined, legacy: string | undefined): void {
+  if (kiko === undefined) delete process.env['KIKO_HOME'];
+  else process.env['KIKO_HOME'] = kiko;
+  if (legacy === undefined) delete process.env['KIMI_CODE_HOME'];
+  else process.env['KIMI_CODE_HOME'] = legacy;
+}
+
 class ExitCalled extends Error {
   constructor(public code: number | string | null | undefined) {
     super(`process.exit(${String(code)})`);
@@ -32,6 +44,7 @@ describe('kiko acp', () => {
 
   beforeEach(() => {
     vi.mocked(runAcpServer).mockClear();
+    setHomeEnv(undefined, undefined);
     exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number | string | null) => {
       throw new ExitCalled(code);
     }) as never);
@@ -39,6 +52,7 @@ describe('kiko acp', () => {
   });
 
   afterEach(() => {
+    setHomeEnv(originalHomeEnv.kiko, originalHomeEnv.legacy);
     exitSpy.mockRestore();
     stderrSpy.mockRestore();
     vi.unstubAllEnvs();
@@ -70,49 +84,75 @@ describe('kiko acp', () => {
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  it('forwards KIMI_CODE_HOME to terminalAuthEnv and homeDir when set', async () => {
-    const previous = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = '/tmp/kimi-debug';
-    try {
-      const program = new Command('kimi').exitOverride();
-      registerAcpCommand(program);
+  it('forwards KIKO_HOME to terminalAuthEnv and homeDir when set', async () => {
+    setHomeEnv('/tmp/kiko-home', undefined);
+    const program = new Command('kimi').exitOverride();
+    registerAcpCommand(program);
 
-      await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
+    await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
 
-      const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0];
-      expect(optsArg).toEqual(
-        expect.objectContaining({
-          homeDir: '/tmp/kimi-debug',
-          terminalAuthEnv: { KIMI_CODE_HOME: '/tmp/kimi-debug' },
-        }),
-      );
-    } finally {
-      if (previous === undefined) {
-        delete process.env['KIMI_CODE_HOME'];
-      } else {
-        process.env['KIMI_CODE_HOME'] = previous;
-      }
-    }
+    const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0];
+    expect(optsArg).toEqual(
+      expect.objectContaining({
+        homeDir: '/tmp/kiko-home',
+        terminalAuthEnv: {
+          KIKO_HOME: '/tmp/kiko-home',
+          KIMI_CODE_HOME: '/tmp/kiko-home',
+        },
+      }),
+    );
   });
 
-  it('omits terminalAuthEnv when KIMI_CODE_HOME is unset', async () => {
-    const previous = process.env['KIMI_CODE_HOME'];
-    delete process.env['KIMI_CODE_HOME'];
-    try {
-      const program = new Command('kimi').exitOverride();
-      registerAcpCommand(program);
+  it('falls back to KIMI_CODE_HOME and forwards it under the canonical name', async () => {
+    setHomeEnv(undefined, '/tmp/kimi-debug');
+    const program = new Command('kimi').exitOverride();
+    registerAcpCommand(program);
 
-      await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
+    await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
 
-      const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0] as {
-        terminalAuthEnv?: unknown;
-      };
-      expect(optsArg.terminalAuthEnv).toBeUndefined();
-    } finally {
-      if (previous !== undefined) {
-        process.env['KIMI_CODE_HOME'] = previous;
-      }
-    }
+    const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0];
+    expect(optsArg).toEqual(
+      expect.objectContaining({
+        homeDir: '/tmp/kimi-debug',
+        terminalAuthEnv: {
+          KIKO_HOME: '/tmp/kimi-debug',
+          KIMI_CODE_HOME: '/tmp/kimi-debug',
+        },
+      }),
+    );
+  });
+
+  it('prefers KIKO_HOME over KIMI_CODE_HOME and advertises one effective home', async () => {
+    setHomeEnv('/tmp/kiko-home', '/tmp/kimi-legacy');
+    const program = new Command('kimi').exitOverride();
+    registerAcpCommand(program);
+
+    await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
+
+    const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0];
+    expect(optsArg).toEqual(
+      expect.objectContaining({
+        homeDir: '/tmp/kiko-home',
+        terminalAuthEnv: {
+          KIKO_HOME: '/tmp/kiko-home',
+          KIMI_CODE_HOME: '/tmp/kiko-home',
+        },
+      }),
+    );
+  });
+
+  it('omits terminalAuthEnv when neither home variable is set', async () => {
+    const program = new Command('kimi').exitOverride();
+    registerAcpCommand(program);
+
+    await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
+
+    const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0] as {
+      homeDir?: string;
+      terminalAuthEnv?: unknown;
+    };
+    expect(optsArg.terminalAuthEnv).toBeUndefined();
+    expect(optsArg.homeDir).toBe(getDataDir());
   });
 
   it('forwards process.argv[1] as terminalAuthLegacyCommand', async () => {
