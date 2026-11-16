@@ -235,7 +235,7 @@ export function renderManualUpdateMessage(
   const target = plan.target;
   if (plan.kind === 'switch-channel') {
     return (
-      `Kimi Code release channel switch requested (${currentVersion} -> ${target.version}).\n` +
+      `Kiko release channel switch requested (${currentVersion} -> ${target.version}).\n` +
       `Release channel: ${plan.sourceChannel} -> ${target.channel}\n` +
       `Detected install source: ${sourceDesc}\n` +
       `To switch manually, run: ${installCommand}\n` +
@@ -260,7 +260,7 @@ export function renderInstallSuccessMessage(plan: ActionableUpdatePlan): string 
 
 function renderBackgroundInstallSuccessNotice(version: string): string {
   const displayVersion = version.startsWith('v') ? version : `v${version}`;
-  return `Kimi Code updated to ${displayVersion}\nChangelog: ${CHANGELOG_URL}\n`;
+  return `Kiko updated to ${displayVersion}\nChangelog: ${CHANGELOG_URL}\n`;
 }
 
 /** Resolved once per preflight: which feed to read and whether rollout gating applies. */

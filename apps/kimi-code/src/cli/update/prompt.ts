@@ -84,7 +84,7 @@ function renderInstallPrompt(
     : null;
   const lines = [
     chalk.hex(UPDATE_PROMPT_PRIMARY).bold(
-      switching ? 'Switch Kimi Code Release Channel' : 'Kimi Code Update Available',
+      switching ? 'Switch Kiko Release Channel' : 'Kiko Update Available',
     ),
     chalk.hex(UPDATE_PROMPT_MUTED)(
       switching

@@ -34,7 +34,7 @@ function renderLines(options: ForcedUpgradePromptOptions, selectedIndex: number)
   const remaining = remainingSkipSeconds(now, options.skipAvailableAt);
   const label = chalk.hex(UPDATE_PROMPT_TEXT_DIM).bold;
   const lines = [
-    chalk.hex(UPDATE_PROMPT_PRIMARY).bold('Kimi Code Upgrade Required'),
+    chalk.hex(UPDATE_PROMPT_PRIMARY).bold('Kiko Upgrade Required'),
     chalk.hex(UPDATE_PROMPT_MUTED)('This version must be upgraded before continuing.'),
     `${label('Current')}  ${chalk.hex(UPDATE_PROMPT_WARNING).bold(options.currentVersion)}`,
     `${label('Minimum')}  ${chalk.hex(UPDATE_PROMPT_SUCCESS).bold(options.minimumVersion)}`,
