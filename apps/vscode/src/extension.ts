@@ -175,7 +175,7 @@ async function offerLegacyMigration(
   const warningNotice =
     discovery.warnings.length === 0
       ? null
-      : "Some legacy Kimi data could not be inspected. Use “Kimi Code: Migrate Legacy Data” to retry.";
+      : "Some legacy Kimi data could not be inspected. Use “Kiko: Migrate Legacy Data” to retry.";
   if (discovery.prompt === null) {
     if (reauthNotice !== null && !globalState.get<boolean>(LEGACY_REAUTH_NOTICE_KEY, false)) {
       await vscode.window.showWarningMessage(reauthNotice);

@@ -109,4 +109,24 @@ describe("VS Code extension display identity", () => {
 
     expect(labels.filter((label) => label.includes("Kimi Code"))).toEqual([]);
   });
+
+  it("points migration retry guidance at the registered migrate command title", async () => {
+    const manifest = await readManifest();
+    const migrateTitle = manifest.contributes.commands.find(
+      (command) => command.command === "kimi.migrateLegacyData",
+    )?.title;
+
+    expect(migrateTitle).toBe("Kiko: Migrate Legacy Data");
+
+    const extensionSource = await readFile(new URL("../src/extension.ts", import.meta.url), "utf8");
+    expect(extensionSource).toContain(`Use “${migrateTitle}” to retry.`);
+    expect(extensionSource).not.toContain("Kimi Code: Migrate Legacy Data");
+
+    const migrationSource = await readFile(
+      new URL("../src/migration/legacy-migration.manager.ts", import.meta.url),
+      "utf8",
+    );
+    expect(migrationSource).toContain(`run “${migrateTitle}” again.`);
+    expect(migrationSource).not.toContain("Kimi Code: Migrate Legacy Data");
+  });
 });
