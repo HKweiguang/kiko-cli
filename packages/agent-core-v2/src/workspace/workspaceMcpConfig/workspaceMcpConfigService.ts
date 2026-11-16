@@ -234,8 +234,9 @@ export class WorkspaceMcpConfigService extends Disposable implements IWorkspaceM
       homeDir: this.bootstrap.homeDir,
     });
     const projectRoot = dirname(paths.projectRoot);
-    const handle = watchCandidates(projectRoot, [paths.projectRoot, paths.project], {
-      ignored: subtreeWatchFilter(projectRoot, [paths.projectRoot, paths.project]),
+    const projectPaths = [paths.projectRoot, paths.project, paths.legacyProject];
+    const handle = watchCandidates(projectRoot, projectPaths, {
+      ignored: subtreeWatchFilter(projectRoot, projectPaths),
     });
     const subscription = handle.onDidChange(() => {
       this.scheduleFileReload();

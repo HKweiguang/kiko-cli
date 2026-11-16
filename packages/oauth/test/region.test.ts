@@ -320,6 +320,20 @@ describe('resolveKimiRegion', () => {
     expect(resolveKimiRegion({ env: { KIMI_CODE_HOME: dir } })).toBe('global');
   });
 
+  it('honors the canonical KIKO_HOME when homeDir is not passed explicitly', async () => {
+    const dir = await markerDir('global');
+    expect(resolveKimiRegion({ env: { KIKO_HOME: dir } })).toBe('global');
+  });
+
+  it('prefers KIKO_HOME over the legacy KIMI_CODE_HOME', async () => {
+    const dir = await markerDir('global');
+    expect(
+      resolveKimiRegion({
+        env: { KIKO_HOME: dir, KIMI_CODE_HOME: join(dir, 'missing-legacy') },
+      }),
+    ).toBe('global');
+  });
+
   it('env beats persisted login beats marker', async () => {
     const dir = await markerDir('global');
     expect(

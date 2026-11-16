@@ -1,13 +1,24 @@
+import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-/** Resolve KIMI_CODE_HOME (env > ~/.kimi-code). */
+/** Resolve the data home: KIKO_HOME > legacy KIMI_CODE_HOME > ~/.kiko (legacy ~/.kimi-code while present). */
 export function resolveKimiCodeHome(): string {
-  const envHome = process.env['KIMI_CODE_HOME'];
-  if (envHome !== undefined && envHome.length > 0) {
+  const envHome =
+    nonEmpty(process.env['KIKO_HOME']) ?? nonEmpty(process.env['KIMI_CODE_HOME']);
+  if (envHome !== undefined) {
     return envHome;
   }
-  return join(homedir(), '.kimi-code');
+  const osHome = homedir();
+  const canonical = join(osHome, '.kiko');
+  if (existsSync(canonical)) return canonical;
+  const legacy = join(osHome, '.kimi-code');
+  if (existsSync(legacy)) return legacy;
+  return canonical;
+}
+
+function nonEmpty(value: string | undefined): string | undefined {
+  return value !== undefined && value.length > 0 ? value : undefined;
 }
 
 /** HTTP port for the vis API server. */

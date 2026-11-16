@@ -29,7 +29,7 @@ function localEnvironment(): FakeEnvironment {
 }
 
 describe('ensureRgPath cached fallback', () => {
-  it('probes the target share bin on a remote environment, never the local one', async () => {
+  it('probes the canonical share bin on a remote environment, never the local one', async () => {
     const probe = probeWith((args) => (args[0] === 'rg' ? -1 : 0));
 
     const resolution = await ensureRgPath(probe, {
@@ -38,11 +38,22 @@ describe('ensureRgPath cached fallback', () => {
     });
 
     expect(resolution).toEqual({
-      path: '/home/remote/.kimi-code/bin/rg',
+      path: '/home/remote/.kiko/bin/rg',
       source: 'share-bin-cached',
     });
-    expect(probe.exec).toHaveBeenCalledWith(['/home/remote/.kimi-code/bin/rg', '--version']);
+    expect(probe.exec).toHaveBeenCalledWith(['/home/remote/.kiko/bin/rg', '--version']);
     expect(probe.exec).not.toHaveBeenCalledWith([getShareBinRgPath(), '--version']);
+  });
+
+  it('falls back to a canonical .kiko share bin on a remote environment', async () => {
+    const probe = probeWith((args) => (args[0] === 'rg' ? -1 : 0));
+
+    const resolution = await ensureRgPath(probe, {
+      environment: remoteEnvironment('ssh-legacy'),
+      allowCachedFallback: true,
+    });
+
+    expect(resolution).toEqual({ path: '/home/remote/.kiko/bin/rg', source: 'share-bin-cached' });
   });
 
   it('probes the local share bin on the local environment', async () => {

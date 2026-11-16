@@ -169,6 +169,20 @@ describe('WorkspaceDirsService (registry source)', () => {
     expect(secondDirs.additionalDirs).toEqual([dirC]);
   });
 
+  it('merges registry dirs with canonical .kiko/local.toml dirs for implicit scopes', async () => {
+    await workspaces.create({ root: dirA, additionalDirs: [dirB], name: 'proj' });
+    await mkdir(join(dirA, '.kiko'), { recursive: true });
+    await writeFile(
+      join(dirA, '.kiko', 'local.toml'),
+      `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
+      'utf8',
+    );
+
+    const dirs = createDirs(dirA, encodeWorkDirKey(dirA), 'implicit');
+    await dirs.ready;
+    expect(dirs.additionalDirs).toEqual([dirC, dirB]);
+  });
+
   it('merges registry dirs with local.toml dirs for implicit scopes', async () => {
     await workspaces.create({ root: dirA, additionalDirs: [dirB], name: 'proj' });
     await mkdir(join(dirA, '.kimi-code'), { recursive: true });
@@ -279,12 +293,12 @@ describe('WorkspaceDirsService (registry source)', () => {
     const result = await dirs.addDir({ path: dirB, persist: true });
     expect(result.persisted).toBe(true);
     expect(result.projectRoot).toBe(dirA);
-    expect(result.configPath).toBe(join(dirA, '.kimi-code', 'local.toml'));
+    expect(result.configPath).toBe(join(dirA, '.kiko', 'local.toml'));
     expect(result.additionalDirs).toEqual([dirB]);
 
     const entry = await workspaces.get(project.id);
     expect(entry?.additionalDirs).toEqual([dirB]);
-    await expect(stat(join(dirA, '.kimi-code', 'local.toml'))).rejects.toThrow();
+    await expect(stat(join(dirA, '.kiko', 'local.toml'))).rejects.toThrow();
 
     const again = await dirs.addDir({ path: dirB, persist: true });
     expect(again.additionalDirs).toEqual([dirB]);
@@ -339,7 +353,7 @@ describe('WorkspaceDirsService (registry source)', () => {
 
     expect(result.persisted).toBe(false);
     expect(result.projectRoot).toBe(dirA);
-    expect(result.configPath).toBe(join(dirA, '.kimi-code', 'local.toml'));
+    expect(result.configPath).toBe(join(dirA, '.kiko', 'local.toml'));
     expect(result.additionalDirs).toEqual([dirB]);
     expect((await workspaces.get(project.id))?.additionalDirs).toEqual([]);
     expect(fired).toBe(1);

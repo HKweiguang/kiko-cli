@@ -20,7 +20,7 @@
  *   5. default 'mainland-cn'
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -136,7 +136,7 @@ export interface ResolveKimiRegionOptions {
    * install-channel marker.
    */
   readonly configuredOAuthKey?: string;
-  /** Kimi home dir; defaults to `KIMI_CODE_HOME` or `~/.kimi-code`. */
+  /** Kimi home dir; defaults to `KIKO_HOME`, legacy `KIMI_CODE_HOME`, or `~/.kiko` (legacy `~/.kimi-code`). */
   readonly homeDir?: string;
   /**
    * Set false to skip the install-channel marker (e.g. the desktop app's
@@ -172,9 +172,18 @@ export function readKimiRegionMarker(homeDir: string): KimiRegion | undefined {
 // Mirrors `defaultKimiHome` in ./toolkit; keep the two in sync so the marker
 // always lands next to the credentials dir it describes.
 function defaultHomeDir(env: NodeJS.ProcessEnv): string {
-  const override = env['KIMI_CODE_HOME'];
-  if (override !== undefined && override.length > 0) return override;
-  return join(homedir(), '.kimi-code');
+  const override = nonEmpty(env['KIKO_HOME']) ?? nonEmpty(env['KIMI_CODE_HOME']);
+  if (override !== undefined) return override;
+  const osHome = homedir();
+  const canonical = join(osHome, '.kiko');
+  if (existsSync(canonical)) return canonical;
+  const legacy = join(osHome, '.kimi-code');
+  if (existsSync(legacy)) return legacy;
+  return canonical;
+}
+
+function nonEmpty(value: string | undefined): string | undefined {
+  return value !== undefined && value.length > 0 ? value : undefined;
 }
 
 export type KimiRegionSource =

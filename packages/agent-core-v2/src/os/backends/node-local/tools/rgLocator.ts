@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { createWriteStream, existsSync } from 'node:fs';
 import { chmod, copyFile, mkdir, mkdtemp, readFile, rename, rm, stat } from 'node:fs/promises';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
@@ -11,9 +11,15 @@ import { type Entry, fromBuffer as yauzlFromBuffer } from 'yauzl';
 import { basename, dirname, join } from 'pathe';
 
 import { abortable } from '#/_base/utils/abort';
+import { resolveKimiHome } from '#/app/bootstrap/homeMigration';
 import { ErrorCodes, Error2 } from '#/errors';
 import { LOCAL_ENVIRONMENT_ID, type Environment } from '#/environment/environment';
-import { getShareBinRgPath, isRemoteEnvironment, shareBinRgPath } from '#/environment/shareBinRg';
+import {
+  getShareBinRgPath,
+  isRemoteEnvironment,
+  shareBinRgPath,
+  shareBinRgPaths,
+} from '#/environment/shareBinRg';
 
 export { getShareBinRgPath } from '#/environment/shareBinRg';
 
@@ -62,9 +68,7 @@ function rgBinaryName(): string {
 }
 
 function getShareDir(): string {
-  const override = process.env['KIMI_CODE_HOME'];
-  if (override !== undefined && override !== '') return override;
-  return join(homedir(), '.kimi-code');
+  return resolveKimiHome();
 }
 
 function rgBaseUrl(resolveRegion: (() => KimiRegion | undefined) | undefined): string {
@@ -138,10 +142,13 @@ async function resolveRemoteRgPath(
     throw new Error2(ErrorCodes.OS_FS_UNAVAILABLE, 'ripgrep (rg) is not available on PATH');
   }
   throwIfAborted(options.signal);
-  const binPath = shareBinRgPath(environment);
+  const binPaths = shareBinRgPaths(environment);
+  const binPath = binPaths[0]!;
   const binDir = environment.path?.dirname(binPath) ?? dirname(binPath);
-  const cached = await probe.exec([binPath, '--version']).catch(() => ({ exitCode: -1 }));
-  if (cached.exitCode === 0) return { path: binPath, source: 'share-bin-cached' };
+  for (const candidate of binPaths) {
+    const cached = await probe.exec([candidate, '--version']).catch(() => ({ exitCode: -1 }));
+    if (cached.exitCode === 0) return { path: candidate, source: 'share-bin-cached' };
+  }
   throwIfAborted(options.signal);
   await installRemoteRg(probe, environment, binDir, binPath, options.resolveRegion);
   const installed = await probe.exec([binPath, '--version']).catch(() => ({ exitCode: -1 }));

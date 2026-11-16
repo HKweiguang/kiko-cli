@@ -1,5 +1,13 @@
 import { createHash } from 'node:crypto';
-import { homedir } from 'node:os';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -14,73 +22,111 @@ import {
 } from '#/utils/paths';
 
 const originalEnv = { ...process.env };
+const fixtures: string[] = [];
+
+function fixtureHome(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'kiko-app-home-'));
+  fixtures.push(dir);
+  return dir;
+}
+
+function withoutVitest<T>(run: () => T): T {
+  const previous = process.env['VITEST'];
+  delete process.env['VITEST'];
+  try {
+    return run();
+  } finally {
+    if (previous !== undefined) process.env['VITEST'] = previous;
+  }
+}
 
 beforeEach(() => {
-  delete process.env['KIMI_CODE_HOME'];
+  for (const key of ['KIKO_HOME', 'KIMI_CODE_HOME', 'KIKO_HOME_MIGRATION']) {
+    delete process.env[key];
+  }
 });
 
 afterEach(() => {
   process.env = { ...originalEnv };
+  for (const dir of fixtures.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
 describe('getDataDir', () => {
-  it('returns ~/.kimi-code when KIMI_CODE_HOME is not set', () => {
-    expect(getDataDir()).toBe(join(homedir(), '.kimi-code'));
+  it('returns ~/.kiko on a fresh home', () => {
+    const fixture = fixtureHome();
+    expect(getDataDir({}, fixture)).toBe(join(fixture, '.kiko'));
   });
 
-  it('returns KIMI_CODE_HOME when set', () => {
-    process.env['KIMI_CODE_HOME'] = '/tmp/kimi-test-data';
-    expect(getDataDir()).toBe('/tmp/kimi-test-data');
+  it('prefers KIKO_HOME over the legacy KIMI_CODE_HOME', () => {
+    expect(
+      getDataDir({ KIKO_HOME: '/tmp/kiko-home', KIMI_CODE_HOME: '/tmp/kimi-legacy' }, '/home/user'),
+    ).toBe('/tmp/kiko-home');
   });
 
-  it('returns KIMI_CODE_HOME even if it is a relative path', () => {
-    process.env['KIMI_CODE_HOME'] = 'relative/path';
-    expect(getDataDir()).toBe('relative/path');
+  it('keeps recognizing KIMI_CODE_HOME', () => {
+    expect(getDataDir({ KIMI_CODE_HOME: '/tmp/kimi-test-data' }, '/home/user')).toBe(
+      '/tmp/kimi-test-data',
+    );
+  });
+
+  it('returns KIKO_HOME even if it is a relative path', () => {
+    expect(getDataDir({ KIKO_HOME: 'relative/path' }, '/home/user')).toBe('relative/path');
+  });
+
+  it('migrates an existing ~/.kimi-code home instead of ignoring it', () => {
+    const fixture = fixtureHome();
+    const legacy = join(fixture, '.kimi-code');
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, 'config.toml'), 'default_model = "kimi/kimi-for-coding"\n');
+
+    const home = withoutVitest(() => getDataDir({}, fixture));
+
+    expect(home).toBe(join(fixture, '.kiko'));
+    expect(readFileSync(join(home, 'config.toml'), 'utf-8')).toContain('kimi-for-coding');
+    expect(readFileSync(join(legacy, 'config.toml'), 'utf-8')).toContain('kimi-for-coding');
+  });
+
+  it('does not touch a legacy home addressed by KIMI_CODE_HOME', () => {
+    const fixture = fixtureHome();
+    mkdirSync(join(fixture, '.kimi-code'), { recursive: true });
+    withoutVitest(() => {
+      expect(getDataDir({ KIMI_CODE_HOME: join(fixture, 'legacy-env') }, fixture)).toBe(
+        join(fixture, 'legacy-env'),
+      );
+    });
+    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
   });
 });
 
 describe('getLogDir', () => {
   it('returns <dataDir>/logs', () => {
-    expect(getLogDir()).toBe(join(homedir(), '.kimi-code', 'logs'));
+    process.env['KIKO_HOME'] = '/z';
+    expect(getLogDir()).toBe(join('/z', 'logs'));
   });
 
-  it('respects KIMI_CODE_HOME', () => {
-    process.env['KIMI_CODE_HOME'] = '/z';
-    expect(getLogDir()).toBe(join('/z', 'logs'));
+  it('respects the legacy KIMI_CODE_HOME', () => {
+    process.env['KIMI_CODE_HOME'] = '/legacy-z';
+    expect(getLogDir()).toBe(join('/legacy-z', 'logs'));
   });
 });
 
 describe('getBinDir', () => {
   it('returns <dataDir>/bin', () => {
-    expect(getBinDir()).toBe(join(homedir(), '.kimi-code', 'bin'));
-  });
-
-  it('respects KIMI_CODE_HOME', () => {
-    process.env['KIMI_CODE_HOME'] = '/custom-bin-home';
+    process.env['KIKO_HOME'] = '/custom-bin-home';
     expect(getBinDir()).toBe(join('/custom-bin-home', 'bin'));
   });
 });
 
 describe('getUpdateStateFile', () => {
   it('returns <dataDir>/updates/latest.json', () => {
-    expect(getUpdateStateFile()).toBe(join(homedir(), '.kimi-code', 'updates', 'latest.json'));
-  });
-
-  it('respects KIMI_CODE_HOME', () => {
-    process.env['KIMI_CODE_HOME'] = '/updates-home';
+    process.env['KIKO_HOME'] = '/updates-home';
     expect(getUpdateStateFile()).toBe(join('/updates-home', 'updates', 'latest.json'));
   });
 });
 
 describe('getUpdateInstallStateFile', () => {
   it('returns <dataDir>/updates/install.json', () => {
-    expect(getUpdateInstallStateFile()).toBe(
-      join(homedir(), '.kimi-code', 'updates', 'install.json'),
-    );
-  });
-
-  it('respects KIMI_CODE_HOME', () => {
-    process.env['KIMI_CODE_HOME'] = '/updates-home';
+    process.env['KIKO_HOME'] = '/updates-home';
     expect(getUpdateInstallStateFile()).toBe(join('/updates-home', 'updates', 'install.json'));
   });
 });
@@ -89,15 +135,8 @@ describe('getInputHistoryFile', () => {
   it('returns <dataDir>/user-history/<md5(workDir)>.jsonl', () => {
     const workDir = '/home/user/project';
     const hash = createHash('md5').update(workDir, 'utf-8').digest('hex');
+    process.env['KIKO_HOME'] = '/custom/data';
     expect(getInputHistoryFile(workDir)).toBe(
-      join(homedir(), '.kimi-code', 'user-history', `${hash}.jsonl`),
-    );
-  });
-
-  it('respects KIMI_CODE_HOME', () => {
-    process.env['KIMI_CODE_HOME'] = '/custom/data';
-    const hash = createHash('md5').update('/proj', 'utf-8').digest('hex');
-    expect(getInputHistoryFile('/proj')).toBe(
       join('/custom/data', 'user-history', `${hash}.jsonl`),
     );
   });

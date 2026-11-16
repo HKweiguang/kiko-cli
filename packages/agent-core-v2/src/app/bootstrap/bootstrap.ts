@@ -8,12 +8,26 @@ import type { KimiHostIdentity } from '@moonshot-ai/kimi-code-oauth';
 import { SyncDescriptor } from '#/_base/di/descriptors';
 import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiation';
 import { createAppScope, type Scope, type ScopeSeed } from '#/_base/di/scope';
-import {
-  IFileSystemStorageService,
-} from '#/persistence/interface/storage';
 import { FileStorageService } from '#/persistence/backends/node-fs/fileStorageService';
+import { IFileSystemStorageService } from '#/persistence/interface/storage';
 import { FileSkillDiscovery } from '#/features/skill/catalog/fileSkillDiscovery';
 import { ISkillDiscovery } from '#/features/skill/catalog/skillDiscovery';
+
+import { resolveKimiHome } from './homeMigration';
+
+export {
+  KIKO_DATA_DIR_NAME,
+  KIKO_HOME_ENV,
+  KIKO_HOME_MIGRATION_DISABLE_ENV,
+  KIKO_HOME_MIGRATION_MARKER_FILE,
+  LEGACY_KIMI_CODE_DATA_DIR_NAME,
+  LEGACY_KIMI_CODE_HOME_ENV,
+  migrateKimiCodeHome,
+  resolveKimiHome,
+  type KimiHomeMigrationOptions,
+  type KimiHomeMigrationOutcome,
+  type KimiHomeMigrationResult,
+} from './homeMigration';
 
 export type HostUiCapability = 'update_panel';
 
@@ -163,14 +177,6 @@ function skillSeed(): ScopeSeed {
       new SyncDescriptor(FileSkillDiscovery, []),
     ],
   ];
-}
-
-export function resolveKimiHome(
-  homeDir?: string,
-  env: NodeJS.ProcessEnv = process.env,
-  osHomeDir: string = homedir(),
-): string {
-  return homeDir ?? env['KIMI_CODE_HOME'] ?? join(osHomeDir, '.kimi-code');
 }
 
 export function resolveConfigPath(input: {

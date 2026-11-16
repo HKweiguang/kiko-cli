@@ -1,27 +1,39 @@
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 
+import { resolveKimiHome } from '#/app/bootstrap/homeMigration';
+
 import { LOCAL_ENVIRONMENT_ID, type Environment } from './environment';
+
+const KIKO_HOME_DIR_NAME = '.kiko';
+const LEGACY_KIMI_CODE_HOME_DIR_NAME = '.kimi-code';
 
 export function isRemoteEnvironment(environment: Environment | undefined): environment is Environment {
   return environment !== undefined && environment.identity.environmentId !== LOCAL_ENVIRONMENT_ID;
 }
 
 export function getShareBinRgPath(): string {
-  const override = process.env['KIMI_CODE_HOME'];
-  if (override !== undefined && override !== '') return join(override, 'bin', rgBinaryName());
-  return join(homedir(), '.kimi-code', 'bin', rgBinaryName());
+  return join(resolveKimiHome(), 'bin', rgBinaryName());
 }
 
-export function shareBinRgPath(environment: Environment | undefined): string {
+export function shareBinRgPaths(environment: Environment | undefined): readonly string[] {
   if (isRemoteEnvironment(environment)) {
     const homeDir = environment.host?.homeDir;
     if (homeDir !== undefined) {
       const binary = environment.host?.pathClass === 'win32' ? 'rg.exe' : 'rg';
-      return environment.path?.join(homeDir, '.kimi-code', 'bin', binary) ?? `${homeDir}/.kimi-code/bin/${binary}`;
+      const path = environment.path;
+      return [
+        path?.join(homeDir, KIKO_HOME_DIR_NAME, 'bin', binary) ??
+          `${homeDir}/${KIKO_HOME_DIR_NAME}/bin/${binary}`,
+        path?.join(homeDir, LEGACY_KIMI_CODE_HOME_DIR_NAME, 'bin', binary) ??
+          `${homeDir}/${LEGACY_KIMI_CODE_HOME_DIR_NAME}/bin/${binary}`,
+      ];
     }
   }
-  return getShareBinRgPath();
+  return [getShareBinRgPath()];
+}
+
+export function shareBinRgPath(environment: Environment | undefined): string {
+  return shareBinRgPaths(environment)[0]!;
 }
 
 function rgBinaryName(): string {

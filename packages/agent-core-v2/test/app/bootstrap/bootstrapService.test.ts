@@ -58,11 +58,18 @@ describe('BootstrapService (scoped)', () => {
 });
 
 describe('resolveBootstrapOptions', () => {
-  it('prefers explicit homeDir over KIMI_CODE_HOME over osHomeDir', () => {
+  it('prefers explicit homeDir over KIKO_HOME over KIMI_CODE_HOME over osHomeDir', () => {
     expect(
       resolveBootstrapOptions({ homeDir: '/a', osHomeDir: '/b', env: {}, clientIdentity: stubClientIdentity })
         .homeDir,
     ).toBe('/a');
+    expect(
+      resolveBootstrapOptions({
+        osHomeDir: '/b',
+        env: { KIKO_HOME: '/kiko', KIMI_CODE_HOME: '/c' },
+        clientIdentity: stubClientIdentity,
+      }).homeDir,
+    ).toBe('/kiko');
     expect(
       resolveBootstrapOptions({
         osHomeDir: '/b',
@@ -72,12 +79,16 @@ describe('resolveBootstrapOptions', () => {
     ).toBe('/c');
     expect(
       resolveBootstrapOptions({ osHomeDir: '/b', env: {}, clientIdentity: stubClientIdentity }).homeDir,
-    ).toBe('/b/.kimi-code');
+    ).toBe('/b/.kiko');
   });
 
   it('passes through an explicit clientIdentity', () => {
     expect(
-      resolveBootstrapOptions({ env: {}, clientIdentity: stubClientIdentity }).clientIdentity,
+      resolveBootstrapOptions({
+        osHomeDir: '/b',
+        env: {},
+        clientIdentity: stubClientIdentity,
+      }).clientIdentity,
     ).toEqual(stubClientIdentity);
   });
 });

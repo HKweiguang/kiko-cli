@@ -5,7 +5,7 @@ import { join } from 'pathe';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { ErrorCodes, Error2 } from '#/errors';
-import { loadMcpServers, resolveMcpJsonPaths } from '#/app/mcpConfig/configLoader';
+import { loadMcpServers, loadMcpServersDetailed, resolveMcpJsonPaths } from '#/app/mcpConfig/configLoader';
 import { HostFileSystem } from '#/os/backends/node-local/hostFsService';
 
 const fs = new HostFileSystem();
@@ -36,11 +36,12 @@ describe('resolveMcpJsonPaths', () => {
     await mkdir(join(repoRoot, '.git'), { recursive: true });
     await mkdir(cwd, { recursive: true });
 
-    const paths = await resolveMcpJsonPaths({ fs, cwd, homeDir: '/home/user/.kimi-code' });
+    const paths = await resolveMcpJsonPaths({ fs, cwd, homeDir: '/home/user/.kiko' });
 
-    expect(paths.user).toBe('/home/user/.kimi-code/mcp.json');
+    expect(paths.user).toBe('/home/user/.kiko/mcp.json');
     expect(paths.projectRoot).toBe(join(repoRoot, '.mcp.json'));
-    expect(paths.project).toBe(join(cwd, '.kimi-code', 'mcp.json'));
+    expect(paths.project).toBe(join(cwd, '.kiko', 'mcp.json'));
+    expect(paths.legacyProject).toBe(join(cwd, '.kimi-code', 'mcp.json'));
   });
 });
 
@@ -80,7 +81,7 @@ describe('loadMcpServers', () => {
         userOnly: { transport: 'stdio', command: 'user-only' },
       },
     });
-    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+    await writeJson(join(cwd, '.kiko', 'mcp.json'), {
       mcpServers: {
         shared: { transport: 'stdio', command: 'shared-project' },
         local: { transport: 'http', url: 'http://localhost:8080/mcp' },
@@ -102,6 +103,40 @@ describe('loadMcpServers', () => {
       transport: 'http',
       url: 'http://localhost:8080/mcp',
     });
+  });
+
+  it('prefers .kiko/mcp.json over the legacy .kimi-code/mcp.json', async () => {
+    const home = makeTempDir();
+    const cwd = makeTempDir();
+
+    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+      mcpServers: {
+        shared: { transport: 'stdio', command: 'legacy' },
+        legacyOnly: { transport: 'stdio', command: 'legacy-only' },
+      },
+    });
+    await writeJson(join(cwd, '.kiko', 'mcp.json'), {
+      mcpServers: {
+        shared: { transport: 'stdio', command: 'canonical' },
+      },
+    });
+
+    const servers = await loadMcpServers({ fs, cwd, homeDir: home });
+
+    expect(servers['shared']).toEqual({ transport: 'stdio', command: 'canonical' });
+    expect(servers['legacyOnly']).toEqual({ transport: 'stdio', command: 'legacy-only' });
+  });
+
+  it('reports the legacy file as the origin of servers only it declares', async () => {
+    const home = makeTempDir();
+    const cwd = makeTempDir();
+    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+      mcpServers: { legacyOnly: { transport: 'stdio', command: 'legacy-only' } },
+    });
+
+    const loaded = await loadMcpServersDetailed({ fs, cwd, homeDir: home });
+
+    expect(loaded.origins['legacyOnly']).toBe(join(cwd, '.kimi-code', 'mcp.json'));
   });
 
   it('loads only the user file when includeProject is false (untrusted workspace)', async () => {
