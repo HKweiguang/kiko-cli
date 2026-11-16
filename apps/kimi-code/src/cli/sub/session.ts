@@ -1,5 +1,5 @@
 /**
- * `kimi session` sub-command group.
+ * `kiko session` sub-command group.
  *
  * CLI glue only: listing semantics (workspace scoping, recency order,
  * archived filtering) are owned by the SDK/engine; this file parses options

@@ -1,9 +1,9 @@
 /**
- * Tests for the `kimi web` Commander wiring and its subcommands.
+ * Tests for the `kiko web` Commander wiring and its subcommands.
  *
  * These tests don't actually start the server — the foreground runner is
  * injected, so they verify option parsing, the ready banner / one-line ready
- * output, browser opening, and the rotate-token / deprecated `kimi server kill`
+ * output, browser opening, and the rotate-token / deprecated `kiko server kill`
  * subcommands against fake deps.
  */
 
@@ -85,7 +85,7 @@ function makeIo(): {
   };
 }
 
-describe('kimi web', () => {
+describe('kiko web', () => {
   it('registers the `web` command with only the rotate-token subcommand', () => {
     const program = makeProgram();
     const web = program.commands.find((c) => c.name() === 'web');
@@ -122,7 +122,7 @@ describe('kimi web', () => {
     expect(longs).not.toContain('--allow-remote-terminals');
   });
 
-  it('routes `kimi server` and any legacy subcommand to a deprecation notice', async () => {
+  it('routes `kiko server` and any legacy subcommand to a deprecation notice', async () => {
     for (const argv of [
       ['node', 'kimi', 'server'],
       ['node', 'kimi', 'server', 'run', '--port', '1'],
@@ -146,16 +146,16 @@ describe('kimi web', () => {
       exitSpy.mockRestore();
 
       expect(exitCalls).toEqual([1]);
-      expect(stderr).toContain('`kimi server` has been deprecated and no longer works.');
-      expect(stderr).toContain('kimi web');
-      expect(stderr).toContain('kimi server kill');
+      expect(stderr).toContain('`kiko server` has been deprecated and no longer works.');
+      expect(stderr).toContain('kiko web');
+      expect(stderr).toContain('kiko server kill');
       expect(stderr).toContain('0.28.0');
       expect(stderr).toContain('next major version');
     }
   });
 });
 
-describe('`kimi web` ready banner', () => {
+describe('`kiko web` ready banner', () => {
   it('prints the TUI-style ready panel once listening', async () => {
     const { handleWebCommand } = await import('#/cli/sub/web/run');
     // The runner reports the actual bound origin — the banner must take the
@@ -346,7 +346,7 @@ describe('ready banner reflects the bind class', () => {
   });
 });
 
-describe('`kimi web` opens the browser', () => {
+describe('`kiko web` opens the browser', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     resetCapabilitiesCache();
@@ -570,7 +570,7 @@ describe('`kimi web` opens the browser', () => {
   });
 });
 
-describe('kimi rc', () => {
+describe('kiko rc', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -614,7 +614,7 @@ describe('kimi rc', () => {
   });
 });
 
-describe('`kimi web` option threading', () => {
+describe('`kiko web` option threading', () => {
   it('threads the CLI flags into the foreground runner options', async () => {
     const { handleWebCommand } = await import('#/cli/sub/web/run');
     const { runner, calls } = makeRunner();
@@ -869,7 +869,7 @@ function makeLegacyKillDeps(overrides: Partial<LegacyKillDeps> = {}): {
   return { deps, writes, errors, signals, state, clock };
 }
 
-describe('`kimi server kill` (deprecated, legacy servers only)', () => {
+describe('`kiko server kill` (deprecated, legacy servers only)', () => {
   const legacyLock = { pid: 1234, host: '127.0.0.1', port: 58627 };
 
   it('is registered as the only working subcommand of the deprecated `server` command', () => {
@@ -1154,7 +1154,7 @@ describe('browserOpenOrigin', () => {
   });
 });
 
-describe('`kimi web rotate-token`', () => {
+describe('`kiko web rotate-token`', () => {
   let dir: string;
   let prevHome: string | undefined;
 

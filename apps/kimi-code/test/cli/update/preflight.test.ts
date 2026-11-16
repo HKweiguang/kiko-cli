@@ -1461,10 +1461,10 @@ describe('runUpdatePreflight', () => {
       mockSpawnExit(0);
       const plan = switchPlan('stable', 'canary', CANARY);
       expect(installCommandFor('native', CANARY, 'darwin', 'canary')).toBe(
-        'KIMI_CODE_UPDATE_CHANNEL=canary kimi update --yes',
+        'KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes',
       );
       expect(installCommandFor('native', CANARY, 'win32', 'canary')).toBe(
-        "$env:KIMI_CODE_UPDATE_CHANNEL='canary'; kimi update --yes",
+        "$env:KIMI_CODE_UPDATE_CHANNEL='canary'; kiko update --yes",
       );
 
       await installUpdate('native', plan, 'darwin');

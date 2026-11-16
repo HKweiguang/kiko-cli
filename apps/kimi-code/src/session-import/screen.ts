@@ -1,6 +1,6 @@
 /**
  * ImportSessionsScreenComponent — the page behind `/import-sessions` and
- * `kimi import-sessions`: scan → choose a window → import with progress →
+ * `kiko import-sessions`: scan → choose a window → import with progress →
  * summary. Rendering follows the migration screen conventions.
  */
 import { basename } from 'node:path';

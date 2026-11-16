@@ -1,5 +1,5 @@
 /**
- * Native v2 `kimi -p` (print mode) runner.
+ * Native v2 `kiko -p` (print mode) runner.
  *
  * Unlike the v1 path (and the former `V2PromptHarness` / `V2Session` shim), this
  * runner drives agent-core-v2's native DI services through an SDK-owned host — no
@@ -426,7 +426,7 @@ async function resolveNativeSession(
     if ((await agent.accessor.get(IAgentPlanService).status()) === null) return;
     stderr.write(
       `Session "${sessionId}" is in Plan mode, and its plan cannot be approved in print mode; ` +
-        `review it with \`kimi -r ${sessionId}\`.\n`,
+        `review it with \`kiko -r ${sessionId}\`.\n`,
     );
   };
 
@@ -445,7 +445,7 @@ async function resolveNativeSession(
     if (target.cwd !== undefined && resolve(target.cwd) !== resolve(workDir)) {
       stderr.write(
         `Session "${opts.session}" was created under a different directory.\n` +
-          `  cd "${target.cwd}" && kimi -r ${opts.session}\n\n`,
+          `  cd "${target.cwd}" && kiko -r ${opts.session}\n\n`,
       );
       throw new Error(`Session "${opts.session}" was created under a different directory.`);
     }
@@ -561,7 +561,7 @@ export function formatTrustGatedMcpWarning(servers: readonly TrustGatedMcpServer
   const list = servers.map((server) => `${server.name} (${server.target})`).join(', ');
   return (
     `Warning: this folder is not trusted; skipped ${servers.length} project-level MCP ${noun}: ${list}.\n` +
-    '  Run `kimi` here and choose "Trust this folder", or set KIMI_CODE_TRUST_WORKSPACE=1, to enable them.\n\n'
+    '  Run `kiko` here and choose "Trust this folder", or set KIMI_CODE_TRUST_WORKSPACE=1, to enable them.\n\n'
   );
 }
 
@@ -927,7 +927,7 @@ export interface PrintBackgroundPolicyInput {
 }
 
 /**
- * Apply the print-mode (`kimi -p`) background-resource policy after the main
+ * Apply the print-mode (`kiko -p`) background-resource policy after the main
  * turn completes. A single loop re-evaluates the Session's live resources in
  * order on every round and stays alive while any of them is pending:
  *  - turn    : while the loop has a turn in flight (e.g. steered by a cron

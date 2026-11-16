@@ -1,5 +1,5 @@
 /**
- * Hidden `kimi __update_download <version>` sub-command: the self-spawned
+ * Hidden `kiko __update_download <version>` sub-command: the self-spawned
  * worker behind native staged updates. Preflight spawns it detached in the
  * background (and the `upgrade` command in the foreground); it downloads,
  * verifies and stages the binary next to the running exe. The swap into
@@ -37,7 +37,7 @@ type StagedUpdateWait =
  * verified on disk; 'takeover' once the lock becomes acquirable, with the lock
  * already held for the caller. The lock goes stale the moment its holder dies
  * (see install-lock), so a killed downloader cannot strand a foreground
- * `kimi upgrade` in this loop.
+ * `kiko upgrade` in this loop.
  *
  * Adoption applies the same integrity bar as stageNativeUpdate's
  * already-staged path: the recorded size proves nothing, and the holder may

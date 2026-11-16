@@ -1,6 +1,6 @@
 /**
  * Tests for the CLI telemetry bootstrap helpers, focusing on the
- * `kimi web` / `kimi server run` host wiring added in `cli/telemetry.ts`.
+ * `kiko web` / `kiko server run` host wiring added in `cli/telemetry.ts`.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

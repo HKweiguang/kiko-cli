@@ -326,7 +326,7 @@ describe('handleUpgrade', () => {
       await expect(handleUpgrade(CANARY, { ...deps, ...writable })).resolves.toBe(0);
 
       expect(deps.installUpdate).not.toHaveBeenCalled();
-      expect(stdout.join('')).toContain('KIMI_CODE_UPDATE_CHANNEL=canary kimi update --yes');
+      expect(stdout.join('')).toContain('KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes');
       expect(stdout.join('')).not.toContain('/install.sh');
     });
 
@@ -344,7 +344,7 @@ describe('handleUpgrade', () => {
       expect(deps.promptForInstallChoice).toHaveBeenCalledWith(expect.objectContaining({
         currentVersion: '2.5.0',
         plan,
-        installCommand: 'KIMI_CODE_UPDATE_CHANNEL=canary kimi update --yes',
+        installCommand: 'KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes',
       }));
       expect(deps.installUpdate).toHaveBeenCalledWith('native', plan, 'darwin');
       expect(stdout.join('')).toContain(`Switched @moonshot-ai/kimi-code to canary ${CANARY}`);
@@ -388,7 +388,7 @@ describe('handleUpgrade', () => {
       expect(deps.promptForInstallChoice).not.toHaveBeenCalled();
       expect(stdout.join('')).toContain('Release channel: stable -> canary');
       expect(stdout.join('')).toContain(CANARY);
-      expect(stdout.join('')).toContain('KIMI_CODE_UPDATE_CHANNEL=canary kimi update --yes');
+      expect(stdout.join('')).toContain('KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes');
       expect(stdout.join('')).not.toContain('/install.sh');
 
       const yesRun = captureOutput();

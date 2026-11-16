@@ -479,7 +479,7 @@ export async function maybeRelaunchWithStagedNativeUpdate(
   const swapInProgress = await sweepStaleNativeUpdateArtifacts(deps.exePath);
   if (isTruthy(deps.env[KIMI_CODE_UPDATE_REEXEC_ENV])) {
     // Read-once guard: drop it so this session's children (and any nested
-    // kimi launches from them) do not inherit the swap skip.
+    // kiko launches from them) do not inherit the swap skip.
     delete deps.env[KIMI_CODE_UPDATE_REEXEC_ENV];
     return false;
   }

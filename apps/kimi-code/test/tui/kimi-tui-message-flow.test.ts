@@ -11380,7 +11380,7 @@ capabilities = ["image_in", "video_in"]
     expect(transcript).toContain('Error: [compaction.failed]');
     expect(transcript).toContain('If this persists, run `/export-debug-zip`');
     expect(transcript).toContain("Please don't share it publicly");
-    expect(transcript).not.toContain('kimi export');
+    expect(transcript).not.toContain('kiko export');
   });
 
   it('keeps consecutive approvals pending until each is answered', async () => {
@@ -14026,11 +14026,11 @@ capabilities = ["image_in", "video_in"]
         );
       });
       expect(copyTextToClipboard).toHaveBeenCalledWith(
-        "cd '/tmp/proj-a' && kimi --resume 'ses-fork'",
+        "cd '/tmp/proj-a' && kiko --resume 'ses-fork'",
       );
       const transcript = driver.state.transcriptContainer.render(120).join('\n');
       expect(transcript).toContain(
-        "To enter the fork in a new process, run: cd '/tmp/proj-a' && kimi --resume 'ses-fork'",
+        "To enter the fork in a new process, run: cd '/tmp/proj-a' && kiko --resume 'ses-fork'",
       );
       expect(transcript).toContain('Command copied to clipboard');
       expect(driver.getCurrentSessionId()).toBe('ses-source');
@@ -14057,7 +14057,7 @@ capabilities = ["image_in", "video_in"]
     await vi.waitFor(() => {
       const transcript = driver.state.transcriptContainer.render(120).join('\n');
       expect(transcript).toContain(
-        "To enter the fork in a new process, run: cd '/tmp/proj-a' && kimi --resume 'ses-fork'",
+        "To enter the fork in a new process, run: cd '/tmp/proj-a' && kiko --resume 'ses-fork'",
       );
       expect(transcript).toContain('Failed to copy command to clipboard');
     });
@@ -14099,7 +14099,7 @@ capabilities = ["image_in", "video_in"]
 
       await vi.waitFor(() => {
         expect(copyTextToClipboard).toHaveBeenCalledWith(
-          'pushd "D:\\proj" && kimi --resume "ses-fork"',
+          'pushd "D:\\proj" && kiko --resume "ses-fork"',
         );
       });
       expect(driver.getCurrentSessionId()).toBe('ses-source');

@@ -44,7 +44,7 @@ const StagedNativeUpdateSchema = z
     channel: z.enum(UPDATE_CHANNELS),
     /**
      * True when the stage was produced by an explicit user-initiated
-     * `kimi upgrade` (vs the passive background downloader): manual stages
+     * `kiko upgrade` (vs the passive background downloader): manual stages
      * still apply when automatic updates are opted out via env.
      */
     manual: z.boolean().optional(),
@@ -151,7 +151,7 @@ function isSameStagedRecord(a: StagedNativeUpdate, b: StagedNativeUpdate): boole
 
 /**
  * Mark the adopted staged update as manual, confirming the marker actually
- * persisted. Used when an explicit `kimi upgrade` adopts a payload the
+ * persisted. Used when an explicit `kiko upgrade` adopts a payload the
  * passive downloader staged (already on disk, or still downloading): the
  * marker lets the startup swap apply it even under the env opt-out.
  *
@@ -309,7 +309,7 @@ export interface StageNativeUpdateOptions {
   readonly onProgress?: (downloadedBytes: number, totalBytes: number | null) => void;
   /** Test hook: override the download idle timeout (default 30 s). */
   readonly idleTimeoutMs?: number;
-  /** True when the stage answers an explicit user-initiated `kimi upgrade`. */
+  /** True when the stage answers an explicit user-initiated `kiko upgrade`. */
   readonly manual?: boolean;
   readonly intent?: InstallIntent;
 }
@@ -436,7 +436,7 @@ async function decompressAndHash(
  * Download + verify `version` next to the running executable.
  *
  * Short-circuits with `already-staged` when the same version is ready on
- * disk (repeat `kimi upgrade`, or foreground/background overlap). **Throws**
+ * disk (repeat `kiko upgrade`, or foreground/background overlap). **Throws**
  * on any failure after cleaning up this version's leftovers — the caller
  * records an install failure.
  */

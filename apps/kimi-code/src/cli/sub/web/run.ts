@@ -1,5 +1,5 @@
 /**
- * `kimi web` — run the local server in the foreground and open the web UI.
+ * `kiko web` — run the local server in the foreground and open the web UI.
  *
  * The server always runs in the current process, attached to the terminal,
  * and shuts down cleanly on SIGINT/SIGTERM. `--no-open` skips the browser.
@@ -311,7 +311,7 @@ function formatDangerNoticeLines(): string[] {
 }
 
 /**
- * `kimi web` — runs the local server in-process, attached to the current
+ * `kiko web` — runs the local server in-process, attached to the current
  * terminal. Resolves only via `process.exit` (SIGINT/SIGTERM).
  */
 export async function startServerForeground(

@@ -1,5 +1,5 @@
 /**
- * `kimi acp` sub-command.
+ * `kiko acp` sub-command.
  *
  * Starts the Agent Client Protocol (ACP) server backed directly by the
  * DI × Scope agent engine (`agent-core-v2`) over stdio, so ACP-compatible
@@ -16,7 +16,7 @@
  *
  * `@moonshot-ai/acp-server` (and its `agent-core-v2` engine) is loaded via a
  * lazy dynamic import so parsing the CLI does not initialize the ACP engine —
- * mirroring the `kimi server run` v2 routing in `#/cli/sub/server/run.ts`.
+ * mirroring the `kiko server run` v2 routing in `#/cli/sub/server/run.ts`.
  */
 
 import type { Command } from 'commander';
@@ -39,7 +39,7 @@ export function registerAcpCommand(parent: Command): void {
     .option('--region <region>', 'Login region used together with --login: "mainland-cn" (kimi.com) or "global" (kimi.ai).')
     .action(async (opts: { login?: boolean; region?: string }) => {
       // The root program accepts `--environment <id>` (commands.ts), so
-      // `kimi --environment <id> acp` parses cleanly — but ACP sessions are
+      // `kiko --environment <id> acp` parses cleanly — but ACP sessions are
       // bound to the ACP client's own environment (the reverse-RPC fs/terminal
       // bridge), never to a configured [environments] entry. Reject loudly
       // instead of silently dropping the flag.

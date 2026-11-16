@@ -174,7 +174,7 @@ export function createProgram(
     });
 
   // Self-spawned worker for native staged updates (detached background
-  // download, or foreground from `kimi upgrade` — `--manual` marks the
+  // download, or foreground from `kiko upgrade` — `--manual` marks the
   // latter's stage as user-requested). Hidden: not user-facing.
   program
     .command('__update_download', { hidden: true })

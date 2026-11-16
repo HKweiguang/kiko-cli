@@ -1,5 +1,5 @@
 /**
- * `kimi exec-server` (equivalently `--listen stdio`) — the remote-executor
+ * `kiko exec-server` (equivalently `--listen stdio`) — the remote-executor
  * light entry.
  *
  * This module is the argv pre-dispatch target of `src/main.ts` and must stay

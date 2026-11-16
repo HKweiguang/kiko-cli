@@ -20,7 +20,7 @@ vi.mock('#/utils/region', async (importOriginal) => {
   return { ...actual, currentKimiProfile: mocks.currentKimiProfile };
 });
 
-describe('kimi install-desktop', () => {
+describe('kiko install-desktop', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
