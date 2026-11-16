@@ -8,7 +8,7 @@ Kimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
 
 | 类型 | 协议 | 典型用途 |
 | --- | --- | --- |
-| [`kiko`](#kimi) | OpenAI 兼容 | Kimi Code 托管服务、Kimi Platform API 密钥 |
+| [`kimi`](#kimi) | OpenAI 兼容 | Kimi Code 托管服务、Kimi Platform API 密钥 |
 | [`anthropic`](#anthropic) | Anthropic Messages | Claude 系列模型 |
 | [`openai`](#openai) | OpenAI Chat Completions | OpenAI 及兼容服务、DeepSeek、Qwen 等 |
 | [`openai_responses`](#openai_responses) | OpenAI Responses API | OpenAI 较新的 Responses 接口 |
@@ -70,7 +70,7 @@ Kimi Code CLI 支持同时接入多家模型供应商服务，模型在供应商
 
 非交互环境下也可以用 shell 命令完成同样操作：[`kiko provider`](../reference/kimi-command.md#kiko-provider)。
 
-## `kiko`
+## `kimi`
 
 用于对接 Moonshot AI 的 OpenAI 兼容接口，包括 Kimi Code 托管服务和 Kimi Platform API 密钥。
 

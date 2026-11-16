@@ -8,7 +8,7 @@ The `type` field in the `providers` table determines which protocol implementati
 
 | Type | Protocol | Typical use |
 | --- | --- | --- |
-| [`kiko`](#kimi) | OpenAI-compatible | Kimi Code managed service, Kimi Platform API key |
+| [`kimi`](#kimi) | OpenAI-compatible | Kimi Code managed service, Kimi Platform API key |
 | [`anthropic`](#anthropic) | Anthropic Messages | Claude model family |
 | [`openai`](#openai) | OpenAI Chat Completions | OpenAI and compatible services, DeepSeek, Qwen, etc. |
 | [`openai_responses`](#openai_responses) | OpenAI Responses API | OpenAI's newer Responses interface |
@@ -70,7 +70,7 @@ Kimi Code OAuth managed accounts logged in via `/login` do not appear in `/provi
 
 The same operations are also available in non-interactive environments via the shell command: [`kiko provider`](../reference/kimi-command.md#kiko-provider).
 
-## `kiko`
+## `kimi`
 
 For connecting to Moonshot AI's OpenAI-compatible interface, including the Kimi Code managed service and Kimi Platform API keys.
 

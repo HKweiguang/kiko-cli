@@ -24,7 +24,7 @@ defaultCwd = "/home/me/projects"
 执行器不在默认路径时，增加一项：
 
 ```toml
-remoteBin = "/path/to/kimi"
+remoteBin = "/path/to/kiko"
 ```
 
 ### 3. 创建远程会话
@@ -112,7 +112,7 @@ defaultCwd = "/home/me/kimi-code"
 [environments.windows-dev]
 type = "ssh"
 host = "windows-dev"
-remoteBin = "kimi"
+remoteBin = "kiko"
 defaultCwd = 'C:\work\project'
 ```
 

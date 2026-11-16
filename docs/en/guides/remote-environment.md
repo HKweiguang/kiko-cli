@@ -24,7 +24,7 @@ defaultCwd = "/home/me/projects"
 If the executor is outside the default path, add:
 
 ```toml
-remoteBin = "/path/to/kimi"
+remoteBin = "/path/to/kiko"
 ```
 
 ### 3. Create a remote session
@@ -112,7 +112,7 @@ When the remote target is a Windows machine:
 [environments.windows-dev]
 type = "ssh"
 host = "windows-dev"
-remoteBin = "kimi"
+remoteBin = "kiko"
 defaultCwd = 'C:\work\project'
 ```
 
