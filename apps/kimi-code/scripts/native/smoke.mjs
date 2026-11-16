@@ -203,10 +203,10 @@ const versionOutput = await runKimi(['--version']);
 assertIncludes(versionOutput, expectedVersion, '--version');
 
 const helpOutput = await runKimi(['--help']);
-assertIncludes(helpOutput, 'Usage: kimi', '--help');
+assertIncludes(helpOutput, 'Usage: kiko', '--help');
 
 const exportHelpOutput = await runKimi(['export', '--help']);
-assertIncludes(exportHelpOutput, 'Usage: kimi export', 'export --help');
+assertIncludes(exportHelpOutput, 'Usage: kiko export', 'export --help');
 
 const smokeCache = resolve(smokeHome, 'cache');
 await rm(smokeHome, { recursive: true, force: true });

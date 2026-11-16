@@ -14,6 +14,18 @@ const manifestScript = await readFile(
   resolve(repoRoot, 'apps/kimi-code/scripts/native/produce-manifest.mjs'),
   'utf-8',
 );
+const nativeSmoke = await readFile(
+  resolve(repoRoot, 'apps/kimi-code/scripts/native/smoke.mjs'),
+  'utf-8',
+);
+const bundleSmoke = await readFile(
+  resolve(repoRoot, 'apps/kimi-code/scripts/smoke.mjs'),
+  'utf-8',
+);
+const nativeWorkflow = await readFile(
+  resolve(repoRoot, '.github/workflows/_native-build.yml'),
+  'utf-8',
+);
 
 function assert(condition, message) {
   if (!condition) {
@@ -46,5 +58,31 @@ assert(flake.includes('wrapProgram $out/bin/kiko '), 'Nix must wrap the kiko com
 assert(flake.includes('mainProgram = "kiko";'), 'Nix mainProgram must be kiko');
 assert(flake.includes('}/bin/kiko";'), 'Nix app target must execute kiko');
 assert(!flake.includes('"$out/bin/kimi"'), 'Nix must not install a kimi command');
+assert(
+  nativeSmoke.includes("'Usage: kiko'"),
+  'Native smoke must expect Usage: kiko',
+);
+assert(
+  nativeSmoke.includes("'Usage: kiko export'"),
+  'Native export smoke must expect Usage: kiko export',
+);
+assert(!nativeSmoke.includes('Usage: kimi'), 'Native smoke must not expect the kimi command');
+assert(bundleSmoke.includes("'Usage: kiko'"), 'Bundle smoke must expect Usage: kiko');
+assert(
+  bundleSmoke.includes("'Usage: kiko export'"),
+  'Bundle export smoke must expect Usage: kiko export',
+);
+assert(
+  nativeWorkflow.includes(
+    'binary-path: ${{ github.workspace }}/apps/kimi-code/dist-native/bin/${{ matrix.target }}/kiko',
+  ),
+  'macOS notarization must use the kiko binary path',
+);
+assert(
+  !nativeWorkflow.includes(
+    'binary-path: ${{ github.workspace }}/apps/kimi-code/dist-native/bin/${{ matrix.target }}/kimi',
+  ),
+  'macOS notarization must not use the kimi binary path',
+);
 
 console.log('Native and Nix delivery smoke passed');
