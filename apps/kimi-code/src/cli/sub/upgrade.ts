@@ -94,7 +94,7 @@ export async function handleUpgrade(
       currentVersion,
       plan: plan.kind,
     });
-    deps.stdout.write(`Kimi Code is already up to date (${formatDisplayVersion(currentVersion)}).\n`);
+    deps.stdout.write(`Kiko is already up to date (${formatDisplayVersion(currentVersion)}).\n`);
     return 0;
   }
 
