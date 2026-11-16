@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -21,6 +21,7 @@ import {
   kimiRegionProfile,
   kimiRegionSchema,
   resolveKimiRegion,
+  resolveKimiRegionDetailed,
   resolveKimiRemoteControlAuth,
 } from '#/region';
 
@@ -428,5 +429,54 @@ describe('kimiRegionSchema', () => {
     expect(kimiRegionSchema.parse('mainland-cn')).toBe('mainland-cn');
     expect(kimiRegionSchema.parse('global')).toBe('global');
     expect(kimiRegionSchema.safeParse('apac').success).toBe(false);
+  });
+});
+
+describe('default home resolution (os home)', () => {
+  async function withOsHome<T>(
+    prepare: (home: string) => Promise<void>,
+    run: () => T,
+  ): Promise<T> {
+    const handle = await createTempWorkDir();
+    try {
+      await prepare(handle.path);
+      const saved = process.env['HOME'];
+      process.env['HOME'] = handle.path;
+      try {
+        return run();
+      } finally {
+        if (saved === undefined) delete process.env['HOME'];
+        else process.env['HOME'] = saved;
+      }
+    } finally {
+      await handle.cleanup();
+    }
+  }
+
+  it('treats an empty ~/.kiko as not migrated and keeps reading the legacy marker', async () => {
+    if (process.platform === 'win32') return;
+    const resolution = await withOsHome(
+      async (home) => {
+        await mkdir(join(home, '.kiko'));
+        await mkdir(join(home, '.kimi-code'));
+        await writeFile(join(home, '.kimi-code', KIMI_REGION_MARKER_FILENAME), 'global');
+      },
+      () => resolveKimiRegionDetailed({ env: {} }),
+    );
+    expect(resolution).toEqual({ region: 'global', source: 'marker' });
+  });
+
+  it('uses a populated ~/.kiko over the legacy marker', async () => {
+    if (process.platform === 'win32') return;
+    const resolution = await withOsHome(
+      async (home) => {
+        await mkdir(join(home, '.kiko'));
+        await writeFile(join(home, '.kiko', KIMI_REGION_MARKER_FILENAME), 'global');
+        await mkdir(join(home, '.kimi-code'));
+        await writeFile(join(home, '.kimi-code', KIMI_REGION_MARKER_FILENAME), 'mainland-cn');
+      },
+      () => resolveKimiRegionDetailed({ env: {} }),
+    );
+    expect(resolution).toEqual({ region: 'global', source: 'marker' });
   });
 });

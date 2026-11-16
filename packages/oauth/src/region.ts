@@ -20,7 +20,7 @@
  *   5. default 'mainland-cn'
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -176,10 +176,28 @@ function defaultHomeDir(env: NodeJS.ProcessEnv): string {
   if (override !== undefined) return override;
   const osHome = homedir();
   const canonical = join(osHome, '.kiko');
-  if (existsSync(canonical)) return canonical;
+  if (isCompletedKimiHome(canonical)) return canonical;
   const legacy = join(osHome, '.kimi-code');
-  if (existsSync(legacy)) return legacy;
+  if (isDirectory(legacy)) return legacy;
   return canonical;
+}
+
+function isCompletedKimiHome(homeDir: string): boolean {
+  try {
+    if (!statSync(homeDir).isDirectory()) return false;
+    if (existsSync(join(homeDir, '.kiko-migration.json'))) return true;
+    return readdirSync(homeDir).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function nonEmpty(value: string | undefined): string | undefined {

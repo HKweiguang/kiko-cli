@@ -1,16 +1,18 @@
 import { createHash } from 'node:crypto';
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   getBinDir,
@@ -95,6 +97,33 @@ describe('getDataDir', () => {
       );
     });
     expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+  });
+
+  it('re-resolves after a failed migration instead of caching the legacy home', () => {
+    if (process.getuid?.() === 0) return;
+    const fixture = fixtureHome();
+    const legacy = join(fixture, '.kimi-code');
+    mkdirSync(legacy, { recursive: true });
+    writeFileSync(join(legacy, 'config.toml'), 'default_model = "kimi/kimi-for-coding"\n');
+
+    chmodSync(fixture, 0o500);
+    const writes: string[] = [];
+    const spy = vi.spyOn(process.stderr, 'write').mockImplementation((chunk: unknown) => {
+      writes.push(String(chunk));
+      return true;
+    });
+    let first: string;
+    try {
+      first = withoutVitest(() => getDataDir({}, fixture));
+    } finally {
+      spy.mockRestore();
+      chmodSync(fixture, 0o700);
+    }
+    expect(first).toBe(legacy);
+    expect(writes.join('')).toContain('continuing with');
+
+    renameSync(legacy, join(fixture, '.kiko'));
+    expect(withoutVitest(() => getDataDir({}, fixture))).toBe(join(fixture, '.kiko'));
   });
 });
 

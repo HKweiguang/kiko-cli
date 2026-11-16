@@ -20,6 +20,7 @@ export {
   KIKO_HOME_ENV,
   KIKO_HOME_MIGRATION_DISABLE_ENV,
   KIKO_HOME_MIGRATION_MARKER_FILE,
+  KimiHomeMigrationLockedError,
   LEGACY_KIMI_CODE_DATA_DIR_NAME,
   LEGACY_KIMI_CODE_HOME_ENV,
   migrateKimiCodeHome,
@@ -27,6 +28,7 @@ export {
   type KimiHomeMigrationOptions,
   type KimiHomeMigrationOutcome,
   type KimiHomeMigrationResult,
+  type ResolveKimiHomeOptions,
 } from './homeMigration';
 
 export type HostUiCapability = 'update_panel';

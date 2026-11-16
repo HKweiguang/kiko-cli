@@ -1,8 +1,8 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-/** Resolve the data home: KIKO_HOME > legacy KIMI_CODE_HOME > ~/.kiko (legacy ~/.kimi-code while present). */
+/** Resolve the data home: KIKO_HOME > legacy KIMI_CODE_HOME > a completed ~/.kiko (legacy ~/.kimi-code while present). */
 export function resolveKimiCodeHome(): string {
   const envHome =
     nonEmpty(process.env['KIKO_HOME']) ?? nonEmpty(process.env['KIMI_CODE_HOME']);
@@ -11,10 +11,28 @@ export function resolveKimiCodeHome(): string {
   }
   const osHome = homedir();
   const canonical = join(osHome, '.kiko');
-  if (existsSync(canonical)) return canonical;
+  if (isCompletedKimiHome(canonical)) return canonical;
   const legacy = join(osHome, '.kimi-code');
-  if (existsSync(legacy)) return legacy;
+  if (isDirectory(legacy)) return legacy;
   return canonical;
+}
+
+function isCompletedKimiHome(homeDir: string): boolean {
+  try {
+    if (!statSync(homeDir).isDirectory()) return false;
+    if (existsSync(join(homeDir, '.kiko-migration.json'))) return true;
+    return readdirSync(homeDir).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function nonEmpty(value: string | undefined): string | undefined {

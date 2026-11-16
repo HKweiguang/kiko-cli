@@ -1,17 +1,22 @@
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import {
   chmodSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ensureKimiHome, resolveConfigPath, resolveKimiHome } from '#/app/bootstrap/bootstrap';
 import {
@@ -227,20 +232,228 @@ describe('migrateKimiCodeHome', () => {
     expect(existsSync(join(fixture, '.kiko', 'config.toml'))).toBe(false);
   });
 
-  it('falls back to the legacy home when the migration lock is held', () => {
+  it('throws an actionable error instead of falling back to the legacy home when the lock is held', () => {
     const fixture = fixtureHome();
     const legacy = seedLegacyHome(fixture);
     writeFileSync(
       join(fixture, '.kiko-migration.lock'),
-      JSON.stringify({ pid: process.pid, startedAt: Date.now() }),
+      JSON.stringify({ pid: process.pid, token: 'held', startedAt: Date.now() }),
     );
 
-    const result = migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 20 });
-
-    expect(result.outcome).toBe('locked');
-    expect(result.homeDir).toBe(legacy);
+    expect(() =>
+      migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 20 }),
+    ).toThrow(/another kiko process is migrating/);
     expect(existsSync(join(fixture, '.kiko'))).toBe(false);
     expect(existsSync(join(legacy, 'config.toml'))).toBe(true);
+  });
+
+  it('does not steal a live lock just because it is older than the stale age', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const lockPath = join(fixture, '.kiko-migration.lock');
+    writeFileSync(
+      lockPath,
+      JSON.stringify({
+        pid: process.pid,
+        token: 'slow-live-holder',
+        startedAt: Date.now() - 11 * 60_000,
+      }),
+    );
+
+    expect(() =>
+      migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 20 }),
+    ).toThrow(/another kiko process is migrating/);
+    expect(existsSync(lockPath)).toBe(true);
+    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+  });
+
+  it('reclaims a stale lock whose holder pid is gone', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const lockPath = join(fixture, '.kiko-migration.lock');
+    writeFileSync(
+      lockPath,
+      JSON.stringify({
+        pid: 2_147_483_647,
+        token: 'dead-holder',
+        startedAt: Date.now() - 11 * 60_000,
+      }),
+    );
+
+    const result = migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 200 });
+
+    expect(result.outcome).toBe('migrated');
+    expect(existsSync(lockPath)).toBe(false);
+  });
+
+  it('does not cache lock contention; after the holder completes, resolution uses canonical', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const lockPath = join(fixture, '.kiko-migration.lock');
+    writeFileSync(
+      lockPath,
+      JSON.stringify({ pid: process.pid, token: 'holder', startedAt: Date.now() }),
+    );
+
+    expect(() =>
+      withoutVitest(() =>
+        resolveKimiHome(undefined, {}, fixture, { migrationLockTimeoutMs: 20 }),
+      ),
+    ).toThrow(/another kiko process is migrating/);
+    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+
+    rmSync(lockPath);
+    expect(migrateKimiCodeHome({ osHomeDir: fixture, env: {} }).outcome).toBe('migrated');
+
+    expect(withoutVitest(() => resolveKimiHome(undefined, {}, fixture))).toBe(
+      join(fixture, '.kiko'),
+    );
+  });
+
+  it('waits for a migration held by another process and resolves canonical afterwards', async () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const modulePath = fileURLToPath(
+      new URL('../../../src/app/bootstrap/homeMigration.ts', import.meta.url),
+    );
+    const scriptPath = join(fixture, 'holder.mts');
+    writeFileSync(
+      scriptPath,
+      [
+        `import { rmSync, writeFileSync } from 'node:fs';`,
+        `import { join } from 'node:path';`,
+        `import { migrateKimiCodeHome } from ${JSON.stringify(modulePath)};`,
+        `const fixture = process.argv[2];`,
+        `const lockPath = join(fixture, '.kiko-migration.lock');`,
+        `writeFileSync(lockPath, JSON.stringify({ pid: process.pid, token: 'child-holder', startedAt: Date.now() }));`,
+        `process.stdout.write('locked\\n');`,
+        `await new Promise((resolve) => setTimeout(resolve, Number(process.argv[3])));`,
+        `rmSync(lockPath, { force: true });`,
+        `const result = migrateKimiCodeHome({ osHomeDir: fixture, env: {} });`,
+        `process.stdout.write('done:' + result.outcome + '\\n');`,
+      ].join('\n'),
+    );
+    const child = spawn(process.execPath, ['--import', 'tsx', scriptPath, fixture, '500'], {
+      cwd: fileURLToPath(new URL('../../..', import.meta.url)),
+      stdio: ['ignore', 'pipe', 'inherit'],
+    });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        let buffered = '';
+        child.stdout.setEncoding('utf-8');
+        child.stdout.on('data', (chunk: string) => {
+          buffered += chunk;
+          if (buffered.includes('locked')) resolve();
+        });
+        child.on('error', reject);
+        child.on('exit', (code) => {
+          if (!buffered.includes('locked')) {
+            reject(new Error(`holder exited early (${String(code)}): ${buffered}`));
+          }
+        });
+      });
+
+      const home = withoutVitest(() =>
+        resolveKimiHome(undefined, {}, fixture, { migrationLockTimeoutMs: 10_000 }),
+      );
+
+      expect(home).toBe(join(fixture, '.kiko'));
+      expect(readFileSync(join(fixture, '.kiko', 'config.toml'), 'utf-8')).toContain(
+        'kimi/kimi-for-coding',
+      );
+      await once(child, 'exit');
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) child.kill();
+    }
+  });
+
+  it('does not cache a failed migration; a later resolve uses the completed migration', () => {
+    if (process.getuid?.() === 0) return;
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    chmodSync(fixture, 0o500);
+    let first: string;
+    try {
+      first = withoutVitest(() => resolveKimiHome(undefined, {}, fixture));
+    } finally {
+      chmodSync(fixture, 0o700);
+    }
+    expect(first).toBe(join(fixture, '.kimi-code'));
+
+    expect(migrateKimiCodeHome({ osHomeDir: fixture, env: {} }).outcome).toBe('migrated');
+    expect(withoutVitest(() => resolveKimiHome(undefined, {}, fixture))).toBe(
+      join(fixture, '.kiko'),
+    );
+  });
+
+  it('fills a symlinked empty ~/.kiko instead of failing on the symlink', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    const target = join(fixture, 'kiko-target');
+    mkdirSync(target);
+    symlinkSync(target, join(fixture, '.kiko'), 'dir');
+
+    const result = migrateKimiCodeHome({ osHomeDir: fixture, env: {} });
+
+    expect(result.outcome).toBe('migrated');
+    expect(lstatSync(join(fixture, '.kiko')).isSymbolicLink()).toBe(true);
+    expect(existsSync(join(target, 'config.toml'))).toBe(true);
+  });
+
+  it('migrates into a pre-created empty ~/.kiko on resolution', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    mkdirSync(join(fixture, '.kiko'));
+
+    expect(withoutVitest(() => resolveKimiHome(undefined, {}, fixture))).toBe(
+      join(fixture, '.kiko'),
+    );
+    expect(readFileSync(join(fixture, '.kiko', 'config.toml'), 'utf-8')).toContain(
+      'kimi/kimi-for-coding',
+    );
+  });
+
+  it('reports actionable recovery guidance for a non-empty canonical without a marker', () => {
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    mkdirSync(join(fixture, '.kiko'), { recursive: true });
+    writeFileSync(join(fixture, '.kiko', 'user.toml'), 'mine\n');
+    const writes: string[] = [];
+    const spy = vi.spyOn(process.stderr, 'write').mockImplementation((chunk: unknown) => {
+      writes.push(String(chunk));
+      return true;
+    });
+    try {
+      withoutVitest(() => migrateKimiCodeHome({ osHomeDir: fixture, env: {} }));
+    } finally {
+      spy.mockRestore();
+    }
+    const output = writes.join('');
+    expect(output).toContain('no .kiko-migration.json');
+    expect(output).toContain('KIKO_HOME=');
+  });
+
+  it('reports a failed migration once with the reason', () => {
+    if (process.getuid?.() === 0) return;
+    const fixture = fixtureHome();
+    seedLegacyHome(fixture);
+    chmodSync(fixture, 0o500);
+    const writes: string[] = [];
+    const spy = vi.spyOn(process.stderr, 'write').mockImplementation((chunk: unknown) => {
+      writes.push(String(chunk));
+      return true;
+    });
+    try {
+      withoutVitest(() =>
+        migrateKimiCodeHome({ osHomeDir: fixture, env: {}, lockTimeoutMs: 20 }),
+      );
+    } finally {
+      spy.mockRestore();
+      chmodSync(fixture, 0o700);
+    }
+    const output = writes.join('');
+    expect(output).toContain('could not migrate');
+    expect(output).toContain('continuing with');
   });
 
   it('rolls back to the legacy home when copying fails', () => {

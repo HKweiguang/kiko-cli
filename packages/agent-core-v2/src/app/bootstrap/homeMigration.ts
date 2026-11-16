@@ -1,24 +1,24 @@
 import { randomUUID } from 'node:crypto';
 import {
   chmodSync,
-  closeSync,
   constants as fsConstants,
   cpSync,
   existsSync,
-  openSync,
+  linkSync,
+  lstatSync,
   readFileSync,
   readdirSync,
   readlinkSync,
+  realpathSync,
   renameSync,
   rmSync,
   rmdirSync,
   statSync,
   writeFileSync,
-  writeSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
 
-import { join } from 'pathe';
+import { dirname, join } from 'pathe';
 
 export const KIKO_HOME_ENV = 'KIKO_HOME';
 export const LEGACY_KIMI_CODE_HOME_ENV = 'KIMI_CODE_HOME';
@@ -39,13 +39,16 @@ export type KimiHomeMigrationOutcome =
   | 'canonical-exists'
   | 'no-legacy'
   | 'disabled'
-  | 'locked'
   | 'failed';
 
 export interface KimiHomeMigrationOptions {
   readonly env?: NodeJS.ProcessEnv;
   readonly osHomeDir?: string;
   readonly lockTimeoutMs?: number;
+}
+
+export interface ResolveKimiHomeOptions {
+  readonly migrationLockTimeoutMs?: number;
 }
 
 export interface KimiHomeMigrationResult {
@@ -56,31 +59,50 @@ export interface KimiHomeMigrationResult {
   readonly error?: unknown;
 }
 
-const resolvedDefaults = new Map<string, KimiHomeMigrationResult>();
+export class KimiHomeMigrationLockedError extends Error {
+  readonly lockPath: string;
+
+  constructor(lockPath: string, legacyHome: string, canonicalHome: string) {
+    super(
+      `kiko: another kiko process is migrating ${legacyHome} to ${canonicalHome} ` +
+        `(lock: ${lockPath}). Wait for it to finish and retry, or set KIKO_HOME to an explicit data directory.`,
+    );
+    this.name = 'KimiHomeMigrationLockedError';
+    this.lockPath = lockPath;
+  }
+}
+
+const stableHomes = new Map<string, string>();
 
 export function resolveKimiHome(
   homeDir?: string,
   env: NodeJS.ProcessEnv = process.env,
   osHomeDir: string = homedir(),
+  options: ResolveKimiHomeOptions = {},
 ): string {
   if (homeDir !== undefined) return homeDir;
   const envHome = nonEmpty(env[KIKO_HOME_ENV]) ?? nonEmpty(env[LEGACY_KIMI_CODE_HOME_ENV]);
   if (envHome !== undefined) return envHome;
-  return resolveDefaultKimiHome(env, osHomeDir);
+  return resolveDefaultKimiHome(env, osHomeDir, options);
 }
 
 function resolveDefaultKimiHome(
-  env: NodeJS.ProcessEnv = process.env,
-  osHomeDir: string = homedir(),
+  env: NodeJS.ProcessEnv,
+  osHomeDir: string,
+  options: ResolveKimiHomeOptions,
 ): string {
   const canonical = join(osHomeDir, KIKO_DATA_DIR_NAME);
   const legacy = join(osHomeDir, LEGACY_KIMI_CODE_DATA_DIR_NAME);
-  const cached = resolvedDefaults.get(osHomeDir);
-  if (cached !== undefined) return cached.homeDir;
+  const stable = stableHomes.get(osHomeDir);
+  if (stable !== undefined) return stable;
   if (isCompletedHome(canonical)) return canonical;
   if (!isDirectory(legacy)) return canonical;
   if (!autoMigrationEnabled(env)) return legacy;
-  return migrateKimiCodeHome({ env, osHomeDir }).homeDir;
+  return migrateKimiCodeHome({
+    env,
+    osHomeDir,
+    lockTimeoutMs: options.migrationLockTimeoutMs,
+  }).homeDir;
 }
 
 export function migrateKimiCodeHome(
@@ -98,22 +120,23 @@ export function migrateKimiCodeHome(
   }
 
   if (isCompletedHome(canonical)) {
-    return remember(osHomeDir, {
+    const hasMarker = hasMigrationMarker(canonical);
+    if (!hasMarker) {
+      reportSignal(`canonical-exists:${osHomeDir}`, canonicalExistsMessage(legacy, canonical));
+    }
+    return rememberStable(osHomeDir, {
       ...base,
-      outcome: hasMigrationMarker(canonical) ? 'already-migrated' : 'canonical-exists',
+      outcome: hasMarker ? 'already-migrated' : 'canonical-exists',
       homeDir: canonical,
     });
   }
   if (!isDirectory(legacy)) {
-    return remember(osHomeDir, { ...base, outcome: 'no-legacy', homeDir: canonical });
+    return { ...base, outcome: 'no-legacy', homeDir: canonical };
   }
   if (existsSync(canonical) && !isDirectory(canonical)) {
-    return remember(osHomeDir, {
-      ...base,
-      outcome: 'failed',
-      homeDir: legacy,
-      error: new Error(`${canonical} exists and is not a directory`),
-    });
+    const error = new Error(`${canonical} exists and is not a directory`);
+    reportSignal(`failed:${osHomeDir}`, failedMessage(legacy, canonical, error));
+    return { ...base, outcome: 'failed', homeDir: legacy, error };
   }
 
   return runMigration({
@@ -136,37 +159,33 @@ function runMigration(input: RunMigrationInput): KimiHomeMigrationResult {
   const base = { canonicalHome: canonical, legacyHome: legacy };
   const lockPath = join(osHomeDir, KIKO_HOME_MIGRATION_LOCK_FILE);
 
-  let locked: boolean;
+  let lock: LockHandle | undefined;
   try {
-    locked = acquireLock(lockPath, lockTimeoutMs);
+    lock = acquireLock(lockPath, lockTimeoutMs);
   } catch (error: unknown) {
-    return remember(osHomeDir, {
-      ...base,
-      outcome: 'failed',
-      homeDir: legacy,
-      error,
-    });
+    reportSignal(`failed:${osHomeDir}`, failedMessage(legacy, canonical, error));
+    return { ...base, outcome: 'failed', homeDir: legacy, error };
   }
-  if (!locked) {
+  if (lock === undefined) {
     if (isCompletedHome(canonical)) {
-      return remember(osHomeDir, { ...base, outcome: 'already-migrated', homeDir: canonical });
+      return rememberStable(osHomeDir, { ...base, outcome: 'already-migrated', homeDir: canonical });
     }
-    return remember(osHomeDir, {
-      ...base,
-      outcome: 'locked',
-      homeDir: isDirectory(legacy) ? legacy : canonical,
-    });
+    throw new KimiHomeMigrationLockedError(lockPath, legacy, canonical);
   }
 
-  const staging = join(osHomeDir, `${KIKO_DATA_DIR_NAME}-migrating-${process.pid}-${randomUUID()}`);
+  const staging = join(
+    dirname(resolveCanonicalDirectory(canonical)),
+    `${KIKO_DATA_DIR_NAME}-migrating-${process.pid}-${randomUUID()}`,
+  );
   try {
     if (isCompletedHome(canonical)) {
-      return remember(osHomeDir, { ...base, outcome: 'already-migrated', homeDir: canonical });
+      return rememberStable(osHomeDir, { ...base, outcome: 'already-migrated', homeDir: canonical });
     }
     if (!isDirectory(legacy)) {
-      return remember(osHomeDir, { ...base, outcome: 'no-legacy', homeDir: canonical });
+      return { ...base, outcome: 'no-legacy', homeDir: canonical };
     }
 
+    const canonicalDirectory = resolveCanonicalDirectory(canonical);
     try {
       cpSync(legacy, staging, {
         recursive: true,
@@ -178,33 +197,35 @@ function runMigration(input: RunMigrationInput): KimiHomeMigrationResult {
       chmodSync(staging, 0o700);
       assertMirrored(legacy, staging);
 
-      if (existsSync(canonical)) {
-        if (!isDirectory(canonical) || readdirSync(canonical).length > 0) {
-          return remember(osHomeDir, {
-            ...base,
-            outcome: 'canonical-exists',
-            homeDir: canonical,
-          });
+      if (existsSync(canonicalDirectory)) {
+        if (!isDirectory(canonicalDirectory) || readdirSync(canonicalDirectory).length > 0) {
+          reportSignal(`canonical-exists:${osHomeDir}`, canonicalExistsMessage(legacy, canonical));
+          return rememberStable(osHomeDir, { ...base, outcome: 'canonical-exists', homeDir: canonical });
         }
-        rmdirSync(canonical);
+        rmdirSync(canonicalDirectory);
       }
-      renameSync(staging, canonical);
+      renameSync(staging, canonicalDirectory);
       writeMigrationMarker(canonical, legacy);
-      return remember(osHomeDir, { ...base, outcome: 'migrated', homeDir: canonical });
+      reportSignal(
+        `migrated:${osHomeDir}`,
+        `kiko: migrated data home ${legacy} -> ${canonical}; the legacy directory was kept as a backup.`,
+      );
+      return rememberStable(osHomeDir, { ...base, outcome: 'migrated', homeDir: canonical });
     } catch (error: unknown) {
       if (isCompletedHome(canonical)) {
-        return remember(osHomeDir, { ...base, outcome: 'already-migrated', homeDir: canonical });
+        return rememberStable(osHomeDir, { ...base, outcome: 'already-migrated', homeDir: canonical });
       }
-      return remember(osHomeDir, {
+      reportSignal(`failed:${osHomeDir}`, failedMessage(legacy, canonical, error));
+      return {
         ...base,
         outcome: 'failed',
         homeDir: isDirectory(legacy) ? legacy : canonical,
         error,
-      });
+      };
     }
   } finally {
     rmSync(staging, { recursive: true, force: true });
-    releaseLock(lockPath);
+    releaseLock(lockPath, lock.token);
   }
 }
 
@@ -240,35 +261,109 @@ function hasMigrationMarker(homeDir: string): boolean {
   return existsSync(join(homeDir, KIKO_HOME_MIGRATION_MARKER_FILE));
 }
 
-function remember(osHomeDir: string, result: KimiHomeMigrationResult): KimiHomeMigrationResult {
-  resolvedDefaults.set(osHomeDir, result);
+function resolveCanonicalDirectory(canonical: string): string {
+  try {
+    if (lstatSync(canonical).isSymbolicLink()) return realpathSync(canonical);
+  } catch {
+    // Missing canonical: rename creates it.
+  }
+  return canonical;
+}
+
+function rememberStable(osHomeDir: string, result: KimiHomeMigrationResult): KimiHomeMigrationResult {
+  if (
+    result.outcome === 'migrated' ||
+    result.outcome === 'already-migrated' ||
+    result.outcome === 'canonical-exists'
+  ) {
+    stableHomes.set(osHomeDir, result.homeDir);
+  }
   return result;
 }
 
-function acquireLock(lockPath: string, timeoutMs: number): boolean {
+const reportedSignals = new Set<string>();
+
+function reportSignal(key: string, message: string): void {
+  if (process.env['VITEST'] !== undefined) return;
+  if (reportedSignals.has(key)) return;
+  reportedSignals.add(key);
+  process.stderr.write(`${message}\n`);
+}
+
+function failedMessage(legacy: string, canonical: string, error: unknown): string {
+  const detail = error instanceof Error ? error.message : String(error);
+  return (
+    `kiko: could not migrate ${legacy} to ${canonical} (${detail}); ` +
+    `continuing with ${legacy}. Fix the cause and restart to retry.`
+  );
+}
+
+function canonicalExistsMessage(legacy: string, canonical: string): string {
+  return (
+    `kiko: ${canonical} already contains data but has no ${KIKO_HOME_MIGRATION_MARKER_FILE}; ` +
+    `left ${legacy} untouched. If ${legacy} is your real home, move ${canonical} aside and ` +
+    `restart, or set KIKO_HOME=${legacy} to keep using it.`
+  );
+}
+
+interface LockHandle {
+  readonly token: string;
+}
+
+function acquireLock(lockPath: string, timeoutMs: number): LockHandle | undefined {
+  const token = `${process.pid}-${randomUUID()}`;
+  const tempPath = `${lockPath}.${token}.tmp`;
+  writeFileSync(
+    tempPath,
+    JSON.stringify({ pid: process.pid, token, startedAt: Date.now() }),
+    { mode: 0o600 },
+  );
   const deadline = Date.now() + timeoutMs;
-  for (;;) {
-    try {
-      const fd = openSync(lockPath, 'wx', 0o600);
+  try {
+    for (;;) {
       try {
-        writeSync(fd, JSON.stringify({ pid: process.pid, startedAt: Date.now() }));
-      } finally {
-        closeSync(fd);
+        linkSync(tempPath, lockPath);
+        return { token };
+      } catch (error: unknown) {
+        if (!isAlreadyExists(error)) throw error;
       }
-      return true;
-    } catch (error: unknown) {
-      if (!isAlreadyExists(error)) throw error;
+      const raw = readLockRaw(lockPath);
+      if (raw === undefined) continue;
+      if (isStaleLockContent(raw)) {
+        removeLockIfUnchanged(lockPath, raw);
+        continue;
+      }
+      if (Date.now() >= deadline) return undefined;
+      sleepSync(LOCK_POLL_MS);
     }
-    if (isStaleLock(lockPath)) {
-      rmSync(lockPath, { force: true });
-      continue;
-    }
-    if (Date.now() >= deadline) return false;
-    sleepSync(LOCK_POLL_MS);
+  } finally {
+    rmSync(tempPath, { force: true });
   }
 }
 
-function releaseLock(lockPath: string): void {
+function releaseLock(lockPath: string, token: string): void {
+  const raw = readLockRaw(lockPath);
+  if (raw === undefined) return;
+  let parsed: { token?: unknown };
+  try {
+    parsed = JSON.parse(raw) as { token?: unknown };
+  } catch {
+    return;
+  }
+  if (parsed.token !== token) return;
+  rmSync(lockPath, { force: true });
+}
+
+function readLockRaw(lockPath: string): string | undefined {
+  try {
+    return readFileSync(lockPath, 'utf-8');
+  } catch {
+    return undefined;
+  }
+}
+
+function removeLockIfUnchanged(lockPath: string, raw: string): void {
+  if (readLockRaw(lockPath) !== raw) return;
   rmSync(lockPath, { force: true });
 }
 
@@ -276,24 +371,18 @@ function isAlreadyExists(error: unknown): boolean {
   return (error as NodeJS.ErrnoException | undefined)?.code === 'EEXIST';
 }
 
-function isStaleLock(lockPath: string): boolean {
-  let raw: string;
-  try {
-    raw = readFileSync(lockPath, 'utf-8');
-  } catch {
-    return true;
-  }
+function isStaleLockContent(raw: string): boolean {
   let lock: { pid?: unknown; startedAt?: unknown };
   try {
     lock = JSON.parse(raw) as { pid?: unknown; startedAt?: unknown };
   } catch {
     return true;
   }
+  if (typeof lock.pid === 'number' && Number.isInteger(lock.pid)) {
+    return !isProcessAlive(lock.pid);
+  }
   const startedAt = typeof lock.startedAt === 'number' ? lock.startedAt : undefined;
-  if (startedAt === undefined || Date.now() - startedAt > STALE_LOCK_AGE_MS) return true;
-  const pid = typeof lock.pid === 'number' ? lock.pid : undefined;
-  if (pid === undefined) return true;
-  return !isProcessAlive(pid);
+  return startedAt === undefined || Date.now() - startedAt > STALE_LOCK_AGE_MS;
 }
 
 function isProcessAlive(pid: number): boolean {
@@ -336,12 +425,17 @@ function snapshotTree(root: string, relative = '', out = new Map<string, string>
       out.set(childRelative, 'dir');
       snapshotTree(root, childRelative, out);
     } else if (entry.isFile()) {
-      out.set(childRelative, `file:${statSync(childPath).size}`);
+      const stat = statSync(childPath);
+      out.set(childRelative, `file:${stat.size}${modeSuffix(stat.mode)}`);
     } else {
       out.set(childRelative, 'other');
     }
   }
   return out;
+}
+
+function modeSuffix(mode: number): string {
+  return process.platform === 'win32' ? '' : `:${(mode & 0o777).toString(8)}`;
 }
 
 function writeMigrationMarker(canonicalHome: string, legacyHome: string): void {
