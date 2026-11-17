@@ -40,18 +40,25 @@ tools exist and the user didn't name one, ask which.
 Config lives in three scopes; on key collision, later entries in this
 precedence order override earlier ones.
 
-The kimi-code runtime resolves the user-global directory from `KIKO_HOME`,
-defaulting to `~/.kiko` when it is not set. Before touching the user-global
-file, resolve the actual directory with Bash so you don't read or write the
-wrong one:
+The canonical user-global directory is `$KIKO_HOME` when set, otherwise the
+default is `~/.kiko`. Before touching the user-global file, take the actual
+directory from the running CLI instead of assuming either: run **`kiko
+doctor`** and use the directory containing the `config.toml` / `tui.toml`
+paths it reports (the command prints them even when a file is missing or
+invalid):
 
 ```bash
-echo "$KIKO_HOME"
-echo "$HOME/.kiko"
+kiko doctor
 ```
 
-Use the first line when it is non-empty; otherwise use the second line. In the
-rest of this skill, `<KIKO_HOME>` means that resolved data root —
+If `kiko doctor` is unavailable, fall back to the canonical default and
+confirm the directory with the user:
+
+```bash
+echo "${KIKO_HOME:-$HOME/.kiko}"
+```
+
+In the rest of this skill, `<KIKO_HOME>` means that resolved data root —
 **never assume `~/.kiko`**.
 
 - User-global: `<KIKO_HOME>/mcp.json`. Use for servers you want

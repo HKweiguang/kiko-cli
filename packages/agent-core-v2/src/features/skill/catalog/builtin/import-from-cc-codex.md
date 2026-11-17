@@ -27,7 +27,7 @@ and MCP server declarations, with a user preview before any write.
 - Do **not** write anything until the user has chosen what to migrate, reviewed
   the final preview, and explicitly confirmed applying it.
 - Only write under Kimi Code targets:
-  - User-global: `$KIKO_HOME` if set, otherwise `~/.kiko`.
+  - User-global: the resolved Kimi home (see Source locations).
   - Project instructions: `<dir>/.kiko/AGENTS.md`, where `<dir>` is the
     project root or one of the directories between the project root and the
     current working directory. The project root is the nearest parent
@@ -50,15 +50,22 @@ Resolve paths explicitly; `~` is the real OS home.
   `~/.claude.json`.
 - Codex home: `$CODEX_HOME` if set, otherwise `~/.codex`. Call it
   `<codex home>` below.
-- Kimi home: `$KIKO_HOME` if set, otherwise `~/.kiko`. Resolve it with Bash
-  before scanning:
+- Kimi home: the canonical data directory is `$KIKO_HOME` when set, otherwise
+  the default is `~/.kiko`. Resolve the actual directory from the running CLI
+  before scanning — run **`kiko doctor`** and use the directory containing the
+  `config.toml` / `tui.toml` paths it reports (the command prints them even
+  when a file is missing or invalid):
 
   ```bash
-  echo "$KIKO_HOME"
-  echo "$HOME/.kiko"
+  kiko doctor
   ```
 
-  Use the first line when it is non-empty; otherwise use the second line.
+  If `kiko doctor` is unavailable, fall back to the canonical default and
+  confirm the directory with the user:
+
+  ```bash
+  echo "${KIKO_HOME:-$HOME/.kiko}"
+  ```
 
 Check the other environment variables with Bash before scanning; do not assume
 the defaults.
@@ -150,7 +157,7 @@ source and target paths.
 
 Map user-level instruction sources to:
 
-- `$KIKO_HOME/AGENTS.md`, or `~/.kiko/AGENTS.md` when the env var is not set.
+- `<Kimi home>/AGENTS.md`, using the resolved Kimi home from Source locations.
 
 Map project-level instruction sources found in `<dir>` to:
 
@@ -215,7 +222,7 @@ and cannot be read as UTF-8 text, stop before writing and report the blocker.
 
 Map user-level skill sources to:
 
-- `$KIKO_HOME/skills/`, or `~/.kiko/skills/` when the env var is not set.
+- `<Kimi home>/skills/`, using the resolved Kimi home from Source locations.
 
 Map project-level skill sources (from any `<dir>/.claude/skills/` or
 `<dir>/.codex/skills/`) to:
@@ -398,8 +405,8 @@ Codex MCP (`config.toml`):
 
 For each MCP candidate, choose the target scope in the preview:
 
-- User-level source -> user-global MCP target (`$KIKO_HOME/mcp.json`, or
-  `~/.kiko/mcp.json` when the env var is not set).
+- User-level source -> user-global MCP target (`<Kimi home>/mcp.json`, using
+  the resolved Kimi home from Source locations).
 - Project-level source (Claude local scope, `<dir>/.codex/config.toml`) ->
   project-local Kimi MCP target (`<cwd>/.kiko/mcp.json`). If `<cwd>` is
   not the project root, call this out in the preview so the user understands

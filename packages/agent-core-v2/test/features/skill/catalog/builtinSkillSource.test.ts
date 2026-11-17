@@ -139,10 +139,11 @@ describe('builtin skill data-home guidance', () => {
     'import-from-cc-codex',
   ];
 
-  it('uses canonical KIKO_HOME paths only', () => {
+  it('defers to kiko doctor and keeps canonical KIKO_HOME paths only', () => {
     for (const name of DATA_HOME_SKILLS) {
       const skill = BUILTIN_SKILLS.find((candidate) => candidate.name === name);
       expect(skill, name).toBeDefined();
+      expect(skill?.content, name).toContain('kiko doctor');
       expect(skill?.content, name).toContain('KIKO_HOME');
       expect(skill?.content, name).toContain('~/.kiko');
       expect(skill?.content, name).not.toContain('KIMI_CODE_HOME');
@@ -155,5 +156,10 @@ describe('builtin skill data-home guidance', () => {
     expect(content).toContain('<dir>/.kiko/AGENTS.md');
     expect(content).toContain('<project root>/.kiko/skills/');
     expect(content).toContain('<cwd>/.kiko/mcp.json');
+  });
+
+  it('targets the canonical project-local mcp.json from mcp-config', () => {
+    const skill = BUILTIN_SKILLS.find((candidate) => candidate.name === 'mcp-config');
+    expect(skill?.content).toContain('<cwd>/.kiko/mcp.json');
   });
 });

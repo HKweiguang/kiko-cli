@@ -10,22 +10,27 @@ Help the user design, write, and apply a custom color theme for the kimi-code TU
 ## Rules of engagement
 
 - **Never write a theme until the user has explicitly clarified what they want.** This skill may only run after the user has confirmed light vs dark, the style or mood, any specific colors they care about, and the intended filename. If any of these are missing, ask before creating files.
-- **Never assume the data directory is `~/.kiko`.** Always resolve `$KIKO_HOME` first with the Bash command below.
+- **Never assume the data directory is `~/.kiko`.** Always take the actual data root from `kiko doctor` output with the Bash command below.
 - **Never edit a live theme file in place.** Always create a `.json.new` candidate, validate it, back up the old file, and then `mv` it into place.
 - **Never overwrite an existing theme without reading it first.** Read, back up, then overwrite only after the user confirms.
 
 ## Where a theme lives
 
-The kimi-code runtime resolves the data directory from `KIKO_HOME`, defaulting to `~/.kiko` when it is not set. Theme files live inside the `themes/` subdirectory of that data directory.
+The canonical data directory is `$KIKO_HOME` when set, otherwise the default is `~/.kiko`; this skill runs in the TUI, and the active data directory is whatever the running CLI reports. Theme files live inside the `themes/` subdirectory of that data directory.
 
-Before doing anything, resolve the actual data root with Bash so you don't write to the wrong place:
+Before doing anything, take the actual data root from the running CLI — run **`kiko doctor`** and use the directory containing the `config.toml` / `tui.toml` paths it reports (the command prints them even when a file is missing or invalid):
 
 ```bash
-echo "$KIKO_HOME"
-echo "$HOME/.kiko"
+kiko doctor
 ```
 
-Use the first line when it is non-empty; otherwise use the second line. In the rest of this skill, `<KIKO_HOME>` means that resolved data root — **never assume `~/.kiko`**. Theme files live at `<KIKO_HOME>/themes/<name>.json`. Create the `themes/` directory if it doesn't exist.
+If `kiko doctor` is unavailable, fall back to the canonical default and confirm the directory with the user:
+
+```bash
+echo "${KIKO_HOME:-$HOME/.kiko}"
+```
+
+In the rest of this skill, `<KIKO_HOME>` means that resolved data root — **never assume `~/.kiko`**. Theme files live at `<KIKO_HOME>/themes/<name>.json`. Create the `themes/` directory if it doesn't exist.
 
 ## What a theme is
 
@@ -91,7 +96,7 @@ Only set tokens from this set — unknown keys are silently ignored at load. If 
    For the discrete choices (light vs dark, a few style options), prefer **AskUserQuestion** if it is available. If you are running in **auto mode** and `AskUserQuestion` is unavailable, ask the same question as a plain-text message with clear numbered or bulleted options, and wait for the user's reply. Don't start picking colors until you at least know light-vs-dark and the rough style.
 
 2. **Resolve the actual theme directory and current theme(s).**
-   - Resolve the data root with the Bash snippet above. Use `<root>/themes` for every subsequent step.
+   - Resolve the data root from `kiko doctor` output, as described above. Use `<root>/themes` for every subsequent step.
    - If tweaking an existing custom theme, **Read** `<KIKO_HOME>/themes/<name>.json` first — never overwrite a theme you haven't read.
    - Starting fresh: build a `colors` object from the token table. You can `ls <KIKO_HOME>/themes/` and Read one of the user's existing themes as a reference for the format.
 

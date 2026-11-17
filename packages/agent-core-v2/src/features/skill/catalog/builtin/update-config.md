@@ -9,16 +9,21 @@ Help the user inspect, change, and validate kimi-code's configuration files. The
 
 ## The two config files
 
-kimi-code has two TOML config files, both under `<KIKO_HOME>/`, both snake_case, but with different ownership — decide which one the user means before doing anything.
+kimi-code has two TOML config files, both under the canonical data directory, both snake_case, but with different ownership — decide which one the user means before doing anything.
 
-The runtime resolves the data directory from `KIKO_HOME`, defaulting to `~/.kiko` when it is not set. Before doing anything, resolve the actual directory with Bash so you don't write to the wrong place:
+The canonical data directory is `$KIKO_HOME` when set, otherwise the default is `~/.kiko`. Do not assume either: the authoritative source is the running CLI. Before doing anything, run **`kiko doctor`** and use the `config.toml` / `tui.toml` paths it reports — the directory containing those files is the data root (the command prints them even when a file is missing or invalid):
 
 ```bash
-echo "$KIKO_HOME"
-echo "$HOME/.kiko"
+kiko doctor
 ```
 
-Use the first line when it is non-empty; otherwise use the second line. In the rest of this skill, `<KIKO_HOME>` means that resolved root — **never assume `~/.kiko`**.
+If `kiko doctor` is unavailable, fall back to the canonical default and confirm the directory with the user:
+
+```bash
+echo "${KIKO_HOME:-$HOME/.kiko}"
+```
+
+In the rest of this skill, `<KIKO_HOME>` means that resolved data root — **never assume `~/.kiko`**.
 
 - **`config.toml`** — agent / runtime settings: `default_model`, `[secondary_model]` (subagent model pool: `default_model` / `[secondary_model.models]`; subagents only run on pool entries, and a lone `default_model` pins every subagent to it; `force` is obsolete and ignored; a lone legacy v1 `model` key is honored as a fallback default), `[subagent]` (`timeout_ms`), `providers`, `models`, `thinking`, `permission`, `hooks`, `loop_control`, etc.
 - **`tui.toml`** — terminal-UI / client preferences: `theme`, `[editor].command`, `[notifications]`, `[upgrade].auto_install` (auto-update). These can usually also be changed with the interactive commands `/config`, `/theme`, `/editor`, which is easier — prefer pointing the user at those.
