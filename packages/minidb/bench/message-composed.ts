@@ -38,6 +38,7 @@ interface Msg {
 
 function loadAllMessages(): Msg[] {
   const DATA = path.join(os.homedir(), '.kiko');
+  if (!existsSync(path.join(DATA, 'session_index.jsonl'))) return [];
   const sessions = readSessionIndexEntries(DATA);
   const out: Msg[] = [];
   for (const meta of sessions) {
@@ -79,6 +80,7 @@ function loadAllMessages(): Msg[] {
 }
 
 function scaleTo(real: Msg[], n: number): Msg[] {
+  if (real.length === 0) return [];
   const now = Date.now();
   const span = WINDOW_DAYS * 864e5;
   const out: Msg[] = Array.from({ length: n }, (_, i) => {
@@ -178,6 +180,10 @@ async function main() {
   const real = loadAllMessages();
   const byRole = real.reduce((a: any, m) => ((a[m.role] = (a[m.role] || 0) + 1), a), {});
   console.log(`loaded ${fmt(real.length)} real messages: ${JSON.stringify(byRole)}`);
+  if (real.length === 0) {
+    console.log('no real messages available (the session index has no live sessions); nothing to benchmark.');
+    return;
+  }
   for (const n of [real.length, 100_000, 1_000_000]) {
     const msgs = n === real.length ? real : scaleTo(real, n);
     await runCase(n === real.length ? 'real data' : 'scaled', msgs);

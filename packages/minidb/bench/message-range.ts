@@ -38,6 +38,7 @@ interface Msg {
 
 function loadRealMessages(): Msg[] {
   const DATA = path.join(os.homedir(), '.kiko');
+  if (!existsSync(path.join(DATA, 'session_index.jsonl'))) return [];
   const sessions = readSessionIndexEntries(DATA);
   const out: Msg[] = [];
   for (const meta of sessions) {
@@ -72,6 +73,7 @@ function loadRealMessages(): Msg[] {
 // Replicate the real messages to N, spreading timestamps uniformly over the
 // last WINDOW_DAYS so the "last SINCE_DAYS" match fraction stays ~constant.
 function scaleTo(real: Msg[], n: number): Msg[] {
+  if (real.length === 0) return [];
   const now = Date.now();
   const span = WINDOW_DAYS * 864e5;
   const out: Msg[] = Array.from({ length: n }, (_, i) => {
@@ -160,6 +162,10 @@ async function runCase(label: string, msgs: Msg[]) {
 async function main() {
   const real = loadRealMessages();
   console.log(`loaded ${fmt(real.length)} real user messages`);
+  if (real.length === 0) {
+    console.log('no real messages available (the session index has no live sessions); nothing to benchmark.');
+    return;
+  }
   const sizes = [real.length, 100_000, 1_000_000];
   for (const n of sizes) {
     const msgs = n === real.length ? real : scaleTo(real, n);
