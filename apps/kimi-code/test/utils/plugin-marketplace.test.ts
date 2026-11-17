@@ -229,7 +229,7 @@ describe('loadPluginMarketplace', () => {
   });
 
   it('loads the default marketplace with injectable fetch and managed OAuth', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.example.test/coding/v1/');
+    vi.stubEnv('KIKO_BASE_URL', 'https://api.example.test/coding/v1/');
     const fetchImpl = catalogFetch([catalogEntry()]);
 
     await loadPluginMarketplace({
@@ -408,7 +408,7 @@ describe('loadPluginMarketplace', () => {
   it('allows anonymous default marketplace browsing without credentials', async () => {
     const emptyHome = await mkdtemp(join(tmpdir(), 'kimi-empty-home-'));
     vi.stubEnv('KIKO_HOME', emptyHome);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.example.test/coding/v1');
+    vi.stubEnv('KIKO_BASE_URL', 'https://api.example.test/coding/v1');
     const fetchImpl = catalogFetch([catalogEntry()]);
 
     const marketplace = await loadPluginMarketplace({ workDir: '/tmp/work', fetchImpl });

@@ -40,7 +40,7 @@ const CLEAN_ENV = [
   'SSH_CONNECTION',
   'SSH_CLIENT',
   'MOSH_CONNECTION',
-  'KIMI_CODE_CLIPBOARD_OSC52',
+  'KIKO_CLIPBOARD_OSC52',
   'WSL_DISTRO_NAME',
   'WSLENV',
 ];
@@ -205,15 +205,15 @@ describe('planClipboardWrite', () => {
       { nativeModule: true, commands: [pbcopy], osc52: 'always', unavailableMessage: unavailable },
     ],
     [
-      'KIMI_CODE_CLIPBOARD_OSC52=1 on a Linux desktop',
+      'KIKO_CLIPBOARD_OSC52=1 on a Linux desktop',
       'linux',
-      { KIMI_CODE_CLIPBOARD_OSC52: '1', DISPLAY: ':0' },
+      { KIKO_CLIPBOARD_OSC52: '1', DISPLAY: ':0' },
       { nativeModule: false, commands: [xclip, xsel], osc52: 'always', unavailableMessage: missingX11 },
     ],
     [
-      'KIMI_CODE_CLIPBOARD_OSC52=0',
+      'KIKO_CLIPBOARD_OSC52=0',
       'linux',
-      { KIMI_CODE_CLIPBOARD_OSC52: '0', DISPLAY: ':0' },
+      { KIKO_CLIPBOARD_OSC52: '0', DISPLAY: ':0' },
       { nativeModule: false, commands: [xclip, xsel], osc52: 'never', unavailableMessage: missingX11 },
     ],
   ])('%s', (_name, platform, env, expected) => {

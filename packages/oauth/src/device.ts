@@ -13,7 +13,7 @@
  * URI → poll → store the token); there is no manager here on purpose.
  */
 
-export { KIMI_CODE_FLOW_CONFIG } from './constants';
+export { KIKO_FLOW_CONFIG } from './constants';
 export {
   OAuthConnectionError,
   OAuthError,

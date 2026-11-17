@@ -41,8 +41,8 @@ function makeHost(
 
 describe('tui mode preference commands', () => {
   beforeEach(() => {
-    vi.stubEnv('KIMI_CODE_TUI_FULL_SCREEN', '');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '');
+    vi.stubEnv('KIKO_TUI_FULL_SCREEN', '');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '');
     vi.stubEnv('TERM', 'xterm-256color');
     vi.stubEnv('TERMUX_VERSION', '');
     vi.stubEnv('TMUX', '');
@@ -127,7 +127,7 @@ describe('tui mode preference commands', () => {
   });
 
   it('explains an active env override when reselecting an explicitly saved mode', async () => {
-    vi.stubEnv('KIMI_CODE_TUI_FULL_SCREEN', '1');
+    vi.stubEnv('KIKO_TUI_FULL_SCREEN', '1');
     mocks.saveTuiConfig.mockClear();
     const host = makeHost('regular', 'fullscreen');
 
@@ -136,7 +136,7 @@ describe('tui mode preference commands', () => {
     expect(mocks.saveTuiConfig).not.toHaveBeenCalled();
     expect(host.showStatus).toHaveBeenCalledWith('TUI mode already regular.');
     expect(host.showNotice).toHaveBeenCalledWith(
-      'Saved to tui.toml; unset KIMI_CODE_TUI_FULL_SCREEN for it to take effect.',
+      'Saved to tui.toml; unset KIKO_TUI_FULL_SCREEN for it to take effect.',
     );
   });
 
@@ -163,8 +163,8 @@ describe('tui mode preference commands', () => {
     expect(host.showStatus).toHaveBeenCalledWith('Failed to save TUI mode: disk full', 'error');
   });
 
-  it('explains when KIMI_CODE_TUI_FULL_SCREEN overrides the saved preference instead of promising a restart', async () => {
-    vi.stubEnv('KIMI_CODE_TUI_FULL_SCREEN', '0');
+  it('explains when KIKO_TUI_FULL_SCREEN overrides the saved preference instead of promising a restart', async () => {
+    vi.stubEnv('KIKO_TUI_FULL_SCREEN', '0');
     mocks.saveTuiConfig.mockClear();
     const host = makeHost(undefined, 'regular');
 
@@ -174,7 +174,7 @@ describe('tui mode preference commands', () => {
       expect.objectContaining({ tuiMode: 'fullscreen' }),
     );
     expect(host.showNotice).toHaveBeenCalledWith(
-      'Saved to tui.toml; unset KIMI_CODE_TUI_FULL_SCREEN for it to take effect.',
+      'Saved to tui.toml; unset KIKO_TUI_FULL_SCREEN for it to take effect.',
     );
   });
 
@@ -189,7 +189,7 @@ describe('tui mode preference commands', () => {
       expect.objectContaining({ tuiMode: 'fullscreen' }),
     );
     expect(host.showNotice).toHaveBeenCalledWith(
-      'Saved to tui.toml; this terminal automatically falls back to regular mode unless KIMI_CODE_TUI_FULL_SCREEN=1 is set.',
+      'Saved to tui.toml; this terminal automatically falls back to regular mode unless KIKO_TUI_FULL_SCREEN=1 is set.',
     );
   });
 });

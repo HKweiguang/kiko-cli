@@ -43,7 +43,7 @@ import {
   isOfficialPluginSource,
 } from '../utils/plugin-source-label';
 import {
-  KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
+  KIKO_PLUGIN_MARKETPLACE_URL_ENV,
   QUOTA_CONSUMING_PLUGIN_IDS,
 } from '#/constant/app';
 import {
@@ -290,7 +290,7 @@ async function showPluginsPicker(
         selection,
         catalogIsDefault,
         options?.marketplaceSource !== undefined ||
-        process.env[KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV] !== undefined
+        process.env[KIKO_PLUGIN_MARKETPLACE_URL_ENV] !== undefined
           ? panel.marketplaceSource()
           : undefined,
       ).catch((error: unknown) => {
@@ -316,8 +316,8 @@ function isDefaultMarketplaceCatalog(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   if (source !== undefined) return false;
-  if (env[KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV] !== undefined) {
-    return env['KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER'] === '1';
+  if (env[KIKO_PLUGIN_MARKETPLACE_URL_ENV] !== undefined) {
+    return env['KIKO_PLUGIN_MARKETPLACE_FROM_DEV_SERVER'] === '1';
   }
   return true;
 }

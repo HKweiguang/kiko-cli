@@ -1,9 +1,9 @@
 for (const key of Object.keys(process.env)) {
-  if (key.startsWith('KIMI_CODE_')) {
+  if (key.startsWith('KIKO_')) {
     delete process.env[key];
   }
 }
 
-process.env['KIMI_CODE_SEARCH_WORKER'] = 'false';
+process.env['KIKO_SEARCH_WORKER'] = 'false';
 
-process.env['KIMI_CODE_PERSISTENCE_MINIDB_READMODEL'] = 'false';
+process.env['KIKO_PERSISTENCE_MINIDB_READMODEL'] = 'false';

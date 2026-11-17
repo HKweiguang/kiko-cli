@@ -183,7 +183,7 @@ describe('WorkspaceTrustService', () => {
     expect(await service.get()).toBe(false);
   });
 
-  it('honors KIMI_CODE_TRUST_WORKSPACE only when it parses as true', async () => {
+  it('honors KIKO_TRUST_WORKSPACE only when it parses as true', async () => {
     const { service: trusted } = createService(cwd, undefined, {
       [TRUST_WORKSPACE_ENV]: '1',
     });
@@ -247,7 +247,7 @@ describe('WorkspaceTrustService', () => {
     expect(await restored.service.get()).toBe(true);
   });
 
-  it('keeps persistence semantics under KIMI_CODE_TRUST_WORKSPACE', async () => {
+  it('keeps persistence semantics under KIKO_TRUST_WORKSPACE', async () => {
     const events: WorkspaceTrustChange[] = [];
     const { service, states } = createService(cwd, events, {
       [TRUST_WORKSPACE_ENV]: '1',

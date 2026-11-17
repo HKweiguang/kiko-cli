@@ -87,7 +87,7 @@ export interface ResolveBannerAudienceOptions {
 }
 
 function bannerApiBaseUrl(): string {
-  return (process.env['KIMI_CODE_BASE_URL'] ?? currentKimiProfile().baseUrl).replace(/\/+$/, '');
+  return (process.env['KIKO_BASE_URL'] ?? currentKimiProfile().baseUrl).replace(/\/+$/, '');
 }
 
 function mapAccountRegion(region: string): 'cn' | 'oversea' | undefined {

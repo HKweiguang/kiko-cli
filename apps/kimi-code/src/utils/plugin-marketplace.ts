@@ -14,7 +14,7 @@ import {
 } from '@moonshot-ai/kimi-code-oauth';
 
 import {
-  KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
+  KIKO_PLUGIN_MARKETPLACE_URL_ENV,
   kimiCodePluginMarketplaceUrl,
   MARKETPLACE_VERSION_LOOKUP_TIMEOUT_MS,
 } from '#/constant/app';
@@ -55,7 +55,7 @@ export async function withMarketplaceLatestVersions(
 export async function loadPluginMarketplace(
   options: LoadPluginMarketplaceOptions,
 ): Promise<PluginMarketplace> {
-  const configuredSource = options.source ?? process.env[KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV];
+  const configuredSource = options.source ?? process.env[KIKO_PLUGIN_MARKETPLACE_URL_ENV];
   const source = configuredSource ?? kimiCodePluginMarketplaceUrl();
   const fetchImpl = options.fetchImpl ?? fetch;
   const read = await readPluginMarketplace({

@@ -13,7 +13,7 @@ export function isMissingMarketplaceTokenError(error: unknown): boolean {
   );
 }
 
-export const KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV = 'KIMI_CODE_PLUGIN_MARKETPLACE_URL';
+export const KIKO_PLUGIN_MARKETPLACE_URL_ENV = 'KIKO_PLUGIN_MARKETPLACE_URL';
 
 export const PLUGIN_MARKETPLACE_CLASSIFICATIONS = ['official', 'third_party'] as const;
 export const PLUGIN_MARKETPLACE_TIERS = ['official', 'curated'] as const;
@@ -158,7 +158,7 @@ export function computeUpdateStatus(
 export function resolveMarketplaceLocation(source: string, workDir: string): MarketplaceLocation {
   const trimmed = source.trim();
   if (trimmed.length === 0) {
-    throw new Error(`${KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV} cannot be empty.`);
+    throw new Error(`${KIKO_PLUGIN_MARKETPLACE_URL_ENV} cannot be empty.`);
   }
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return { raw: trimmed, kind: 'remote', resolved: trimmed };

@@ -100,8 +100,8 @@ async function removeTempDir(dir: string): Promise<void> {
 
 describe('Session.prompt events', () => {
   it('continues notifying sessions after disabling and restarting with identical prompt and tools', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_NOTIFY_USER', '');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '0');
+    vi.stubEnv('KIKO_EXPERIMENTAL_NOTIFY_USER', '');
     const homeDir = await makeTempDir();
     const workDir = await makeTempDir();
     const requests: Array<{ tools: unknown; messages: Array<{ role: string; content: unknown }> }> =

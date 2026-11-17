@@ -43,7 +43,7 @@ describe('SessionIdleReaper', () => {
   it('throws for negative, non-integer, or non-numeric values', () => {
     for (const raw of ['-1', '0.5', 'nope']) {
       expect(() => resolveSessionIdleReclaimMs({ [SESSION_IDLE_RECLAIM_ENV]: raw })).toThrow(
-        /KIMI_CODE_SESSION_IDLE_RECLAIM_MS.*non-negative integer/,
+        /KIKO_SESSION_IDLE_RECLAIM_MS.*non-negative integer/,
       );
     }
   });

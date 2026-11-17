@@ -90,13 +90,13 @@ export function resolveTuiMode(
   probeTmuxControlMode: TmuxControlModeProbe = queryTmuxControlMode,
 ): TuiModeResolution {
   const config: TuiMode | 'unset' = configuredMode ?? 'unset';
-  const envOverride = parseBooleanEnvValue(env['KIMI_CODE_TUI_FULL_SCREEN']);
+  const envOverride = parseBooleanEnvValue(env['KIKO_TUI_FULL_SCREEN']);
   if (envOverride !== undefined) {
     return { mode: envOverride ? 'fullscreen' : 'regular', config, overriddenByEnv: true };
   }
   const preferred: TuiMode =
     configuredMode ??
-    (parseBooleanEnvValue(env['KIMI_CODE_EXPERIMENTAL_FLAG']) === true ? 'fullscreen' : 'regular');
+    (parseBooleanEnvValue(env['KIKO_EXPERIMENTAL_FLAG']) === true ? 'fullscreen' : 'regular');
   if (preferred === 'fullscreen') {
     const fallback = detectTuiModeFallback(env, probeTmuxControlMode);
     if (fallback !== undefined) {
@@ -114,12 +114,12 @@ export interface AnimationFrameRateResolution {
 export function resolveAnimationFrameRate(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): AnimationFrameRateResolution {
-  const value = env['KIMI_CODE_TUI_ANIMATION_FPS']?.trim();
+  const value = env['KIKO_TUI_ANIMATION_FPS']?.trim();
   if (value === undefined || value.length === 0) return {};
   const fps = Number(value);
   if (/^\d+$/.test(value) && fps >= 1 && fps <= MAX_ANIMATION_FRAME_RATE) return { fps };
   return {
-    warning: `Ignored KIMI_CODE_TUI_ANIMATION_FPS=${JSON.stringify(value)}: expected a whole number from 1 to ${String(MAX_ANIMATION_FRAME_RATE)}.`,
+    warning: `Ignored KIKO_TUI_ANIMATION_FPS=${JSON.stringify(value)}: expected a whole number from 1 to ${String(MAX_ANIMATION_FRAME_RATE)}.`,
   };
 }
 

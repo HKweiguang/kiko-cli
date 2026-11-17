@@ -2,7 +2,7 @@ import { createDecorator, type ServiceIdentifier } from '#/_base/di/instantiatio
 import { type FlagDefinitionInput, registerFlagDefinition } from '#/app/flag/flagRegistry';
 
 export const PROMPT_PREDICTION_FLAG_ID = 'prompt_prediction';
-export const PROMPT_PREDICTION_FLAG_ENV = 'KIMI_CODE_EXPERIMENTAL_PROMPT_PREDICTION';
+export const PROMPT_PREDICTION_FLAG_ENV = 'KIKO_EXPERIMENTAL_PROMPT_PREDICTION';
 export const PROMPT_PREDICTION_TIMEOUT_MS = 20_000;
 export const PROMPT_PREDICTION_MAX_OUTPUT_TOKENS = 512;
 export const PROMPT_PREDICTION_MAX_CHARS = 2_000;

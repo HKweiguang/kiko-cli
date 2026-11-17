@@ -170,7 +170,7 @@ export class PluginUpdateNotifier {
       if (session === undefined) return;
       const marketplace = await this.loadCatalog();
       // Only the default official catalog can back an "Official Marketplace"
-      // notice — a custom catalog (KIMI_CODE_PLUGIN_MARKETPLACE_URL) may
+      // notice — a custom catalog (KIKO_PLUGIN_MARKETPLACE_URL) may
       // advertise anything under any id.
       if (marketplace.source !== kimiCodePluginMarketplaceUrl()) return;
       const entryId = marketplaceEntryIdForInstalledPlugin(pluginId, true);

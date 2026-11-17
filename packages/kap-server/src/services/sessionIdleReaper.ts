@@ -2,7 +2,7 @@ import { Error2, ErrorCodes, type ISessionManager } from '@moonshot-ai/agent-cor
 
 import type { ServerLogger } from './pinoLoggerService';
 
-export const SESSION_IDLE_RECLAIM_ENV = 'KIMI_CODE_SESSION_IDLE_RECLAIM_MS';
+export const SESSION_IDLE_RECLAIM_ENV = 'KIKO_SESSION_IDLE_RECLAIM_MS';
 export const DEFAULT_SESSION_IDLE_RECLAIM_MS = 30 * 60 * 1000;
 const SWEEP_INTERVAL_MS = 60_000;
 

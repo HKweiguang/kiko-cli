@@ -794,7 +794,7 @@ describe('server web asset directory resolution', () => {
     try {
       writeFileSync(join(dir, 'index.html'), '<html></html>');
       expect(serverWebAssetsDir({}, dir)).toBe(dir);
-      expect(serverWebAssetsDir({ KIMI_CODE_DEV_SERVER: '1' }, dir)).toBe(dir);
+      expect(serverWebAssetsDir({ KIKO_DEV_SERVER: '1' }, dir)).toBe(dir);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -814,7 +814,7 @@ describe('server web asset directory resolution', () => {
     const { serverWebAssetsDir } = await import('#/cli/sub/web/run');
     const dir = mkdtempSync(join(tmpdir(), 'kimi-web-assets-'));
     try {
-      expect(serverWebAssetsDir({ KIMI_CODE_DEV_SERVER: '1' }, dir)).toBeUndefined();
+      expect(serverWebAssetsDir({ KIKO_DEV_SERVER: '1' }, dir)).toBeUndefined();
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

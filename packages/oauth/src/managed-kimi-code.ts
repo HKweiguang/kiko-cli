@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 
 import { readApiErrorMessage } from './api-error';
-import { DEFAULT_KIMI_CODE_OAUTH_HOST } from './constants';
+import { DEFAULT_KIKO_OAUTH_HOST } from './constants';
 import { OAuthUnauthorizedError } from './errors';
 import { parseKimiCodeCustomHeaders } from './identity';
-import { DEFAULT_KIMI_CODE_BASE_URL, kimiCodeBaseUrl } from './managed-usage';
+import { DEFAULT_KIKO_BASE_URL, kimiCodeBaseUrl } from './managed-usage';
 import { MANAGED_KIMI_MODEL_FIELDS, mergeRefreshedModelAlias } from './model-alias-merge';
 import { isRecord } from './utils';
 
@@ -104,8 +104,8 @@ export interface ManagedKimiLoginAuth {
 }
 
 export interface ManagedKimiEnv {
-  readonly KIMI_CODE_BASE_URL?: string | undefined;
-  readonly KIMI_CODE_OAUTH_HOST?: string | undefined;
+  readonly KIKO_BASE_URL?: string | undefined;
+  readonly KIKO_OAUTH_HOST?: string | undefined;
   readonly KIMI_OAUTH_HOST?: string | undefined;
 }
 
@@ -272,10 +272,10 @@ function persistedOAuthHost(options: {
   readonly oauthHost?: string | undefined;
 }): string | undefined {
   const oauthHost = options.oauthHost;
-  const normalized = normalizeEndpoint(oauthHost ?? DEFAULT_KIMI_CODE_OAUTH_HOST);
+  const normalized = normalizeEndpoint(oauthHost ?? DEFAULT_KIKO_OAUTH_HOST);
   if (
     options.key === KIMI_CODE_OAUTH_KEY &&
-    normalized === normalizeEndpoint(DEFAULT_KIMI_CODE_OAUTH_HOST)
+    normalized === normalizeEndpoint(DEFAULT_KIKO_OAUTH_HOST)
   ) {
     return undefined;
   }
@@ -309,25 +309,25 @@ function configuredOAuthRef(
 }
 
 export function kimiCodeEnvBaseUrl(env: ManagedKimiEnv = process.env): string | undefined {
-  return env.KIMI_CODE_BASE_URL;
+  return env.KIKO_BASE_URL;
 }
 
 export function kimiCodeEnvOAuthHost(env: ManagedKimiEnv = process.env): string | undefined {
-  return env.KIMI_CODE_OAUTH_HOST ?? env.KIMI_OAUTH_HOST;
+  return env.KIKO_OAUTH_HOST ?? env.KIMI_OAUTH_HOST;
 }
 
 // Base URLs that share the default `oauth/kimi-code` credential slot.
 const SHARED_DEFAULT_BASE_URLS: ReadonlySet<string> = new Set([
-  normalizeEndpoint(DEFAULT_KIMI_CODE_BASE_URL),
+  normalizeEndpoint(DEFAULT_KIKO_BASE_URL),
 ]);
 
 export function resolveKimiCodeOAuthKey(options: {
   readonly oauthHost?: string | undefined;
   readonly baseUrl?: string | undefined;
 }): string {
-  const oauthHost = normalizeEndpoint(options.oauthHost ?? DEFAULT_KIMI_CODE_OAUTH_HOST);
+  const oauthHost = normalizeEndpoint(options.oauthHost ?? DEFAULT_KIKO_OAUTH_HOST);
   const baseUrl = defaultBaseUrl(options.baseUrl);
-  const defaultOauthHost = normalizeEndpoint(DEFAULT_KIMI_CODE_OAUTH_HOST);
+  const defaultOauthHost = normalizeEndpoint(DEFAULT_KIKO_OAUTH_HOST);
 
   if (oauthHost === defaultOauthHost && SHARED_DEFAULT_BASE_URLS.has(baseUrl)) {
     return KIMI_CODE_OAUTH_KEY;

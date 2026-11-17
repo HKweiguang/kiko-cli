@@ -676,7 +676,7 @@ describe('SessionTitleService', () => {
   });
 
   it('includes environment custom headers', async () => {
-    vi.stubEnv('KIMI_CODE_CUSTOM_HEADERS', 'X-Proxy-Header: from-env\n');
+    vi.stubEnv('KIKO_CUSTOM_HEADERS', 'X-Proxy-Header: from-env\n');
     titlePrompts = ['hello'];
 
     await ix.get(ISessionTitleService).generateTitle();
@@ -688,8 +688,8 @@ describe('SessionTitleService', () => {
   });
 
   it('pairs the environment endpoint with its credential slot when it overrides persisted config', async () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.env.example.test/coding/v1');
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.env.example.test');
+    vi.stubEnv('KIKO_BASE_URL', 'https://api.env.example.test/coding/v1');
+    vi.stubEnv('KIKO_OAUTH_HOST', 'https://auth.env.example.test');
     titlePrompts = ['hello'];
 
     await ix.get(ISessionTitleService).generateTitle();

@@ -50,26 +50,26 @@ export const NPM_PACKAGE_NAME = '@moonshot-ai/kimi-code';
 // App-owned data paths. SDK/core runtime config is intentionally not routed here.
 export const KIKO_HOME_ENV = 'KIKO_HOME';
 export const KIKO_DATA_DIR_NAME = '.kiko';
-export const KIMI_CODE_LOG_DIR_NAME = 'logs';
-export const KIMI_CODE_CACHE_DIR_NAME = 'cache';
-export const KIMI_CODE_UPDATE_DIR_NAME = 'updates';
-export const KIMI_CODE_BIN_DIR_NAME = 'bin';
-export const KIMI_CODE_UPDATE_STATE_FILE_NAME = 'latest.json';
-export const KIMI_CODE_UPDATE_INSTALL_STATE_FILE_NAME = 'install.json';
-export const KIMI_CODE_UPDATE_INSTALL_LOCK_FILE_NAME = 'install.lock';
-export const KIMI_CODE_UPDATE_ROLLOUT_LOG_FILE_NAME = 'rollout.log';
-export const KIMI_CODE_PLUGIN_UPDATE_NOTICE_STATE_FILE_NAME = 'plugin-notices.json';
+export const KIKO_LOG_DIR_NAME = 'logs';
+export const KIKO_CACHE_DIR_NAME = 'cache';
+export const KIKO_UPDATE_DIR_NAME = 'updates';
+export const KIKO_BIN_DIR_NAME = 'bin';
+export const KIKO_UPDATE_STATE_FILE_NAME = 'latest.json';
+export const KIKO_UPDATE_INSTALL_STATE_FILE_NAME = 'install.json';
+export const KIKO_UPDATE_INSTALL_LOCK_FILE_NAME = 'install.lock';
+export const KIKO_UPDATE_ROLLOUT_LOG_FILE_NAME = 'rollout.log';
+export const KIKO_PLUGIN_UPDATE_NOTICE_STATE_FILE_NAME = 'plugin-notices.json';
 // Native staged update: the staged binary + metadata live next to the running
 // executable (`<exe dir>/.staging/`); the re-exec guard env breaks the
 // swap → re-exec → swap loop.
-export const KIMI_CODE_NATIVE_STAGING_DIR_NAME = '.staging';
-export const KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME = 'staged.json';
-export const KIMI_CODE_UPDATE_REEXEC_ENV = 'KIMI_CODE_UPDATE_REEXEC';
-export const KIMI_CODE_INPUT_HISTORY_DIR_NAME = 'user-history';
-export const KIMI_CODE_BANNER_DIR_NAME = 'banner';
-export const KIMI_CODE_BANNER_STATE_FILE_NAME = 'state.json';
-export const KIMI_CODE_RECOMMENDED_EFFORT_STATE_FILE_NAME = 'recommended-effort-state.json';
-export const KIMI_CODE_MODEL_MIGRATION_STATE_FILE_NAME = 'model-migrations.json';
+export const KIKO_NATIVE_STAGING_DIR_NAME = '.staging';
+export const KIKO_NATIVE_STAGED_STATE_FILE_NAME = 'staged.json';
+export const KIKO_UPDATE_REEXEC_ENV = 'KIKO_UPDATE_REEXEC';
+export const KIKO_INPUT_HISTORY_DIR_NAME = 'user-history';
+export const KIKO_BANNER_DIR_NAME = 'banner';
+export const KIKO_BANNER_STATE_FILE_NAME = 'state.json';
+export const KIKO_RECOMMENDED_EFFORT_STATE_FILE_NAME = 'recommended-effort-state.json';
+export const KIKO_MODEL_MIGRATION_STATE_FILE_NAME = 'model-migrations.json';
 
 // Managed Kimi auth provider key shared with OAuth/SDK config.
 export const DEFAULT_OAUTH_PROVIDER_NAME = 'managed:kimi-code';
@@ -122,7 +122,7 @@ export function kimiCodeCdnBinariesBase(): string {
 }
 export {
   isTrustedPluginMarketplaceUrl as isTrustedKimiCodePluginMarketplace,
-  KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
+  KIKO_PLUGIN_MARKETPLACE_URL_ENV,
 } from '@moonshot-ai/kimi-code-sdk';
 export function kimiCodePluginMarketplaceUrl(): string {
   const auth = currentKimiManagedRuntimeAuth();

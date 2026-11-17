@@ -273,7 +273,7 @@ describe('AgentPermissionModeService (wire-backed)', () => {
     expect(written.slice(1)).toEqual([{ type: 'permission.set_mode', mode: 'auto' }]);
   });
 
-  it('skips the auto-mode reminder injection when KIMI_CODE_PERMISSION_MODE_REMINDER is disabled', () => {
+  it('skips the auto-mode reminder injection when KIKO_PERMISSION_MODE_REMINDER is disabled', () => {
     registeredInjection = undefined;
     const ix2 = disposables.add(new TestInstantiationService());
     ix2.stub(IFileSystemStorageService, new InMemoryStorageService());

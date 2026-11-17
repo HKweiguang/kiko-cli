@@ -101,7 +101,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter kimi-code test
         env:
-          KIMI_CODE_LEGACY_FLAG: "1"
+          KIKO_LEGACY_FLAG: "1"
 
   test-windows:
     runs-on: windows-latest

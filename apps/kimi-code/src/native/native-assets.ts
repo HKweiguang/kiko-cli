@@ -285,7 +285,7 @@ export function getNativeCacheBase(options: NativeAssetOptions = {}): string {
   const platform = options.platform ?? process.platform;
   const home = options.homeDir ?? homedir();
 
-  const cacheDirEnv = optionalEnvValue(env, 'KIMI_CODE_CACHE_DIR');
+  const cacheDirEnv = optionalEnvValue(env, 'KIKO_CACHE_DIR');
   if (cacheDirEnv !== null) return cacheDirEnv;
 
   if (platform === 'darwin') return joinPosix(home, 'Library', 'Caches', 'kimi-code');

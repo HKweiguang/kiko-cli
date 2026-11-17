@@ -392,16 +392,16 @@ describe('experimental flag bypass', () => {
 });
 
 describe('isRolloutBypassedByExperimentalEnv', () => {
-  it('is on for the usual truthy values of KIMI_CODE_EXPERIMENTAL_FLAG', () => {
+  it('is on for the usual truthy values of KIKO_EXPERIMENTAL_FLAG', () => {
     for (const value of ['1', 'true', 'YES', ' on ']) {
-      expect(isRolloutBypassedByExperimentalEnv({ KIMI_CODE_EXPERIMENTAL_FLAG: value })).toBe(true);
+      expect(isRolloutBypassedByExperimentalEnv({ KIKO_EXPERIMENTAL_FLAG: value })).toBe(true);
     }
   });
 
   it('is off when unset, blank, or falsy', () => {
     expect(isRolloutBypassedByExperimentalEnv({})).toBe(false);
-    expect(isRolloutBypassedByExperimentalEnv({ KIMI_CODE_EXPERIMENTAL_FLAG: '' })).toBe(false);
-    expect(isRolloutBypassedByExperimentalEnv({ KIMI_CODE_EXPERIMENTAL_FLAG: '0' })).toBe(false);
-    expect(isRolloutBypassedByExperimentalEnv({ KIMI_CODE_EXPERIMENTAL_FLAG: 'off' })).toBe(false);
+    expect(isRolloutBypassedByExperimentalEnv({ KIKO_EXPERIMENTAL_FLAG: '' })).toBe(false);
+    expect(isRolloutBypassedByExperimentalEnv({ KIKO_EXPERIMENTAL_FLAG: '0' })).toBe(false);
+    expect(isRolloutBypassedByExperimentalEnv({ KIKO_EXPERIMENTAL_FLAG: 'off' })).toBe(false);
   });
 });

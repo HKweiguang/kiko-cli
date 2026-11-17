@@ -10,8 +10,8 @@ const APP_ROOT = resolve(SCRIPT_DIR, '..');
 // Monorepo root. Used as the dev CLI's working directory so `make dev` opens
 // the whole repo instead of just apps/kimi-code.
 const REPO_ROOT = resolve(APP_ROOT, '../..');
-const MARKETPLACE_ENV = 'KIMI_CODE_PLUGIN_MARKETPLACE_URL';
-const EXTERNAL_MARKETPLACE_ENV = 'KIMI_CODE_DEV_MARKETPLACE_URL';
+const MARKETPLACE_ENV = 'KIKO_PLUGIN_MARKETPLACE_URL';
+const EXTERNAL_MARKETPLACE_ENV = 'KIKO_DEV_MARKETPLACE_URL';
 
 const env = { ...process.env };
 const externalUrl = process.env[EXTERNAL_MARKETPLACE_ENV]?.trim();

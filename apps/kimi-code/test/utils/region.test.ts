@@ -19,9 +19,9 @@ beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), 'kimi-region-test-'));
   process.env['KIKO_HOME'] = home;
   delete process.env['KIMI_CODE_HOME'];
-  delete process.env['KIMI_CODE_OAUTH_HOST'];
+  delete process.env['KIKO_OAUTH_HOST'];
   delete process.env['KIMI_OAUTH_HOST'];
-  delete process.env['KIMI_CODE_REGION_MARKER'];
+  delete process.env['KIKO_REGION_MARKER'];
   resetKimiRegionCache();
 });
 
@@ -38,9 +38,9 @@ describe('currentKimiRegion', () => {
     expect(currentKimiRegion()).toBe('global');
   });
 
-  it('ignores the marker when KIMI_CODE_REGION_MARKER=off (embedded server)', () => {
+  it('ignores the marker when KIKO_REGION_MARKER=off (embedded server)', () => {
     writeFileSync(join(home, 'region'), 'global\n');
-    process.env['KIMI_CODE_REGION_MARKER'] = 'off';
+    process.env['KIKO_REGION_MARKER'] = 'off';
     expect(refreshKimiRegion()).toBe('mainland-cn');
   });
 
@@ -59,7 +59,7 @@ describe('currentKimiRegion', () => {
         '',
       ].join('\n'),
     );
-    process.env['KIMI_CODE_REGION_MARKER'] = 'off';
+    process.env['KIKO_REGION_MARKER'] = 'off';
     expect(refreshKimiRegion()).toBe('global');
   });
 });

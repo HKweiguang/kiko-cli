@@ -287,7 +287,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
   }
 
   async function makeEnvironmentHarness(options: { readonly defaultCwd?: string } = {}): Promise<{ harness: KimiHarness; client: SDKRpcClientV2; homeDir: string }> {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', 'false');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', 'false');
     const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
     tempDirs.push(homeDir);
     await writeFile(join(homeDir, 'config.toml'), runtimeConfigToml(options.defaultCwd ?? '/remote/work'), 'utf-8');
@@ -346,7 +346,7 @@ describe('SDKRpcClientV2 (agent-core-v2 wiring)', () => {
       allowsExplicitLocal: false,
     },
   ])('validates implicit and explicit local creation with $name', async ({ config, allowsExplicitLocal }) => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', 'false');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', 'false');
     const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-invalid-env-work-'));
     const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-invalid-env-home-'));
     tempDirs.push(workDir, homeDir);
@@ -2273,8 +2273,8 @@ key = "${titleOAuthRef.key}"
   ])(
     'gates NotifyUser for all profiles and preserves fork prompts: %j',
     async ({ enabled, panel }) => {
-      vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
-      vi.stubEnv('KIMI_CODE_EXPERIMENTAL_NOTIFY_USER', '');
+      vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '0');
+      vi.stubEnv('KIKO_EXPERIMENTAL_NOTIFY_USER', '');
       const homeDir = await mkdtemp(join(tmpdir(), 'kimi-notify-home-'));
       const workDir = await mkdtemp(join(tmpdir(), 'kimi-notify-work-'));
       tempDirs.push(homeDir, workDir);
@@ -2568,7 +2568,7 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serves setTowerMode and getStatus towerMode through the agent scope tower service', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '1');
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOWER', '1');
     const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
@@ -2607,8 +2607,8 @@ key = "${titleOAuthRef.key}"
   });
 
   it('rejects setTowerMode when the tower feature is unavailable', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '0');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOWER', '0');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '0');
     const homeDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-'));
     tempDirs.push(homeDir);
     const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
@@ -2633,7 +2633,7 @@ key = "${titleOAuthRef.key}"
   });
 
   it('exposes Session tower mode and status APIs on the v2 harness', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '1');
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOWER', '1');
     const { harness } = await makeHarness();
     const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
     tempDirs.push(workDir);
@@ -2660,7 +2660,7 @@ key = "${titleOAuthRef.key}"
   });
 
   it('serves the initialized tower status as an engine-rendered text summary', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOWER', '1');
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOWER', '1');
     const { harness } = await makeHarness();
     const workDir = await mkdtemp(join(tmpdir(), 'kimi-sdk-v2-work-'));
     tempDirs.push(workDir);
@@ -2951,7 +2951,7 @@ describe('SDKRpcClientV2 workspace trust', () => {
       `[environments.fake-box]\ntype = "ssh"\nhost = "example.com"\ndefaultCwd = ${JSON.stringify(remoteCwd)}\n`,
       'utf8',
     );
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', 'false');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', 'false');
     const client = new SDKRpcClientV2({ homeDir, identity: TEST_IDENTITY });
     const harness = new KimiHarness(client, {
       identity: client.identity,

@@ -764,8 +764,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('treats the explicitly marked dev catalog as the default capability catalog', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -812,8 +812,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('maps the canonical WebBridge entry and projects legacy installed state', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', CATALOG_URL);
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', '1');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -865,7 +865,7 @@ describe('server-v2 /api/v1 plugins', () => {
     expect(rejected.body.msg).toContain('install "kimi-browser-extension" instead');
 
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', undefined);
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_FROM_DEV_SERVER', undefined);
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -1217,8 +1217,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('keeps capability rows for managed base URL overrides', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1244,8 +1244,8 @@ describe('server-v2 /api/v1 plugins', () => {
   it('keeps strict metadata requirements for the managed catalog', async () => {
     await server?.close();
     catalog.plugins[0]!['version'] = undefined;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1270,8 +1270,8 @@ describe('server-v2 /api/v1 plugins', () => {
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
     artifact!.requireAuth = true;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1/');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1315,8 +1315,8 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1/');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1379,8 +1379,8 @@ describe('server-v2 /api/v1 plugins', () => {
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
     artifact!.requireAuth = true;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1/');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1/');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1437,8 +1437,8 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     await useDemoArtifact();
     artifact!.requireAuth = true;
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1467,8 +1467,8 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     catalog.plugins[0]!['source'] = 'http://marketplace.test/artifacts/demo.zip';
     await useDemoArtifact();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1512,11 +1512,11 @@ describe('server-v2 /api/v1 plugins', () => {
     const emptyHome = await mkdtemp(join(tmpdir(), 'kimi-global-plugin-home-'));
     createdDirs.push(emptyHome);
     await writeFile(join(emptyHome, 'region'), 'global');
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', undefined);
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', undefined);
+    vi.stubEnv('KIKO_OAUTH_HOST', undefined);
     vi.stubEnv('KIMI_OAUTH_HOST', undefined);
-    vi.stubEnv('KIMI_CODE_REGION_MARKER', 'on');
+    vi.stubEnv('KIKO_REGION_MARKER', 'on');
     const tokenProvider = vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1570,11 +1570,11 @@ describe('server-v2 /api/v1 plugins', () => {
         '',
       ].join('\n'),
     );
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', undefined);
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', undefined);
+    vi.stubEnv('KIKO_OAUTH_HOST', undefined);
     vi.stubEnv('KIMI_OAUTH_HOST', undefined);
-    vi.stubEnv('KIMI_CODE_REGION_MARKER', 'on');
+    vi.stubEnv('KIKO_REGION_MARKER', 'on');
     const tokenProvider = vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1608,7 +1608,7 @@ describe('server-v2 /api/v1 plugins', () => {
     expect(tokenProvider).toHaveBeenCalledWith(KIMI_CODE_PROVIDER_NAME, providerOAuthRef);
 
     await server.close();
-    vi.stubEnv('KIMI_CODE_BASE_URL', envBaseUrl);
+    vi.stubEnv('KIKO_BASE_URL', envBaseUrl);
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -1634,8 +1634,8 @@ describe('server-v2 /api/v1 plugins', () => {
     await server?.close();
     const emptyHome = await mkdtemp(join(tmpdir(), 'kimi-empty-plugin-home-'));
     createdDirs.push(emptyHome);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -1660,8 +1660,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('does not hide rejected managed credentials as anonymous catalog access', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     const failure = new OAuthUnauthorizedError(
       'Stored token for "kimi-code" was rejected; re-login required.',
     );
@@ -1695,8 +1695,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('does not retry a real catalog HTTP 401 anonymously', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });
@@ -1733,8 +1733,8 @@ describe('server-v2 /api/v1 plugins', () => {
 
   it('does not fall back to the source checkout when the default catalog fails', async () => {
     await server?.close();
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', undefined);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'http://marketplace.test/coding/v1');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', undefined);
+    vi.stubEnv('KIKO_BASE_URL', 'http://marketplace.test/coding/v1');
     vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
     });

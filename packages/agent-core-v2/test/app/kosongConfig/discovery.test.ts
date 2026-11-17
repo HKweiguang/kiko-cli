@@ -495,7 +495,7 @@ describe('refreshProviderModels write behavior', () => {
 
   it('refreshes a hand-configured API-key provider at the managed endpoint', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('KIKO_BASE_URL', baseUrl);
     const fetchMock = vi.fn(
       async () =>
         new Response(
@@ -561,7 +561,7 @@ describe('refreshProviderModels write behavior', () => {
 
   it('clears a stale defaultModel whose alias upstream dropped', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('KIKO_BASE_URL', baseUrl);
     const fetchMock = vi.fn(
       async () =>
         new Response(
@@ -607,7 +607,7 @@ describe('refreshProviderModels write behavior', () => {
 
   it('leaves the subagent model pool untouched when a refresh drops its default alias', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('KIKO_BASE_URL', baseUrl);
     const fetchMock = vi.fn(
       async () =>
         new Response(
@@ -648,7 +648,7 @@ describe('refreshProviderModels write behavior', () => {
 
   it('leaves the whole pool untouched even when a refresh drops a non-default entry', async () => {
     const baseUrl = 'https://api.managed.example.test/coding/v1';
-    vi.stubEnv('KIMI_CODE_BASE_URL', baseUrl);
+    vi.stubEnv('KIKO_BASE_URL', baseUrl);
     const fetchMock = vi.fn(
       async () =>
         new Response(

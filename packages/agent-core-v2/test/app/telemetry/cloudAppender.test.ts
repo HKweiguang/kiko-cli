@@ -60,7 +60,7 @@ function baseOptions(
       resolveKimiRegionDetailed({
         env,
         homeDir: dir === '' ? undefined : dir,
-        readMarker: env['KIMI_CODE_REGION_MARKER'] !== 'off',
+        readMarker: env['KIKO_REGION_MARKER'] !== 'off',
       }),
     deviceId: 'dev',
     appName: 'test-app',
@@ -77,18 +77,18 @@ describe('CloudAppender', () => {
 
   beforeEach(() => {
     homeDir = mkdtempSync(join(tmpdir(), 'cloud-appender-'));
-    savedOauthHost = process.env['KIMI_CODE_OAUTH_HOST'];
+    savedOauthHost = process.env['KIKO_OAUTH_HOST'];
     savedLegacyOauthHost = process.env['KIMI_OAUTH_HOST'];
     savedKimiHome = process.env['KIKO_HOME'];
-    delete process.env['KIMI_CODE_OAUTH_HOST'];
+    delete process.env['KIKO_OAUTH_HOST'];
     delete process.env['KIMI_OAUTH_HOST'];
     process.env['KIKO_HOME'] = homeDir;
   });
 
   afterEach(() => {
     rmSync(homeDir, { recursive: true, force: true });
-    if (savedOauthHost === undefined) delete process.env['KIMI_CODE_OAUTH_HOST'];
-    else process.env['KIMI_CODE_OAUTH_HOST'] = savedOauthHost;
+    if (savedOauthHost === undefined) delete process.env['KIKO_OAUTH_HOST'];
+    else process.env['KIKO_OAUTH_HOST'] = savedOauthHost;
     if (savedLegacyOauthHost === undefined) delete process.env['KIMI_OAUTH_HOST'];
     else process.env['KIMI_OAUTH_HOST'] = savedLegacyOauthHost;
     if (savedKimiHome === undefined) delete process.env['KIKO_HOME'];
@@ -132,7 +132,7 @@ describe('CloudAppender', () => {
   });
 
   it('sends to the global collector when the env pins the global region', async () => {
-    process.env['KIMI_CODE_OAUTH_HOST'] = 'https://auth.kimi.ai';
+    process.env['KIKO_OAUTH_HOST'] = 'https://auth.kimi.ai';
     const requests: CapturedRequest[] = [];
     const appender = new CloudAppender(
       baseOptions({
@@ -177,7 +177,7 @@ describe('CloudAppender', () => {
     const appender = new CloudAppender(
       baseOptions({
         homeDir,
-        bootstrapEnv: { KIMI_CODE_REGION_MARKER: 'off' },
+        bootstrapEnv: { KIKO_REGION_MARKER: 'off' },
         fetchImpl: makeFetch((req) => {
           requests.push(req);
           return okResponse();
@@ -192,10 +192,10 @@ describe('CloudAppender', () => {
     expect(requests[0]?.url).toBe('https://telemetry-logs.kimi.com/v1/event');
   });
 
-  it('honors KIMI_CODE_REGION_MARKER=off so embedded servers ignore the install marker', async () => {
+  it('honors KIKO_REGION_MARKER=off so embedded servers ignore the install marker', async () => {
     writeFileSync(join(homeDir, 'region'), 'global\n');
-    const savedMarkerFlag = process.env['KIMI_CODE_REGION_MARKER'];
-    process.env['KIMI_CODE_REGION_MARKER'] = 'off';
+    const savedMarkerFlag = process.env['KIKO_REGION_MARKER'];
+    process.env['KIKO_REGION_MARKER'] = 'off';
     try {
       const requests: CapturedRequest[] = [];
       const appender = new CloudAppender(
@@ -214,8 +214,8 @@ describe('CloudAppender', () => {
       expect(requests).toHaveLength(1);
       expect(requests[0]?.url).toBe('https://telemetry-logs.kimi.com/v1/event');
     } finally {
-      if (savedMarkerFlag === undefined) delete process.env['KIMI_CODE_REGION_MARKER'];
-      else process.env['KIMI_CODE_REGION_MARKER'] = savedMarkerFlag;
+      if (savedMarkerFlag === undefined) delete process.env['KIKO_REGION_MARKER'];
+      else process.env['KIKO_REGION_MARKER'] = savedMarkerFlag;
     }
   });
 

@@ -100,7 +100,7 @@ vi.mock('@moonshot-ai/kimi-telemetry', () => ({
 beforeEach(() => {
   // Pin region to cn: the telemetry endpoint assertion must not follow the
   // dev machine's own login/marker state.
-  vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
+  vi.stubEnv('KIKO_OAUTH_HOST', 'https://auth.kimi.com');
   resetKimiRegionCache();
   tmp = mkdtempSync(join(tmpdir(), 'kimi-export-'));
 });

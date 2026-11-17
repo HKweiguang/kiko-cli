@@ -15,15 +15,15 @@ import { IRegionService } from './region';
 
 export function kimiRegionEnv(bootstrap: IBootstrapService): NodeJS.ProcessEnv {
   const env = { ...process.env };
-  const oauthHost = bootstrap.getEnv('KIMI_CODE_OAUTH_HOST');
-  const legacyOAuthHost = bootstrap.getEnv('KIMI_OAUTH_HOST');
-  const baseUrl = bootstrap.getEnv('KIMI_CODE_BASE_URL');
-  if (oauthHost !== undefined) env['KIMI_CODE_OAUTH_HOST'] = oauthHost;
-  if (legacyOAuthHost !== undefined) env['KIMI_OAUTH_HOST'] = legacyOAuthHost;
-  if (oauthHost === undefined && legacyOAuthHost !== undefined) {
-    delete env['KIMI_CODE_OAUTH_HOST'];
+  const oauthHost = bootstrap.getEnv('KIKO_OAUTH_HOST');
+  const vendorOAuthHost = bootstrap.getEnv('KIMI_OAUTH_HOST');
+  const baseUrl = bootstrap.getEnv('KIKO_BASE_URL');
+  if (oauthHost !== undefined) env['KIKO_OAUTH_HOST'] = oauthHost;
+  if (vendorOAuthHost !== undefined) env['KIMI_OAUTH_HOST'] = vendorOAuthHost;
+  if (oauthHost === undefined && vendorOAuthHost !== undefined) {
+    delete env['KIKO_OAUTH_HOST'];
   }
-  if (baseUrl !== undefined) env['KIMI_CODE_BASE_URL'] = baseUrl;
+  if (baseUrl !== undefined) env['KIKO_BASE_URL'] = baseUrl;
   return env;
 }
 
@@ -42,8 +42,8 @@ export class RegionService extends Disposable implements IRegionService {
       homeDir: bootstrap.homeDir,
       env: kimiRegionEnv(bootstrap),
       readMarker:
-        (bootstrap.getEnv('KIMI_CODE_REGION_MARKER') ??
-          process.env['KIMI_CODE_REGION_MARKER']) !== 'off',
+        (bootstrap.getEnv('KIKO_REGION_MARKER') ??
+          process.env['KIKO_REGION_MARKER']) !== 'off',
       readAuth: () => {
         if (!this.providerHydrated) return { status: 'unreadable' };
         const ref = this.providers.get(KIMI_CODE_PROVIDER_NAME)?.oauth;

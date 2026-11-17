@@ -70,19 +70,19 @@ async function expectNoStateFile(file: string): Promise<void> {
 describe('applyRecommendedEffort', () => {
   let dir: string;
   let stateFile: string;
-  const savedBaseUrl = process.env['KIMI_CODE_BASE_URL'];
+  const savedBaseUrl = process.env['KIKO_BASE_URL'];
 
   beforeEach(async () => {
     dir = await mkdtemp(join(tmpdir(), 'kimi-recommended-effort-'));
     stateFile = join(dir, 'recommended-effort-state.json');
-    delete process.env['KIMI_CODE_BASE_URL'];
+    delete process.env['KIKO_BASE_URL'];
   });
 
   afterEach(async () => {
     if (savedBaseUrl === undefined) {
-      delete process.env['KIMI_CODE_BASE_URL'];
+      delete process.env['KIKO_BASE_URL'];
     } else {
-      process.env['KIMI_CODE_BASE_URL'] = savedBaseUrl;
+      process.env['KIKO_BASE_URL'] = savedBaseUrl;
     }
     await rm(dir, { recursive: true, force: true });
   });
@@ -264,8 +264,8 @@ describe('applyRecommendedEffort', () => {
     await expectNoStateFile(stateFile);
   });
 
-  it('treats KIMI_CODE_BASE_URL as the sole official benchmark when set', async () => {
-    process.env['KIMI_CODE_BASE_URL'] = GATEWAY;
+  it('treats KIKO_BASE_URL as the sole official benchmark when set', async () => {
+    process.env['KIKO_BASE_URL'] = GATEWAY;
     const h = makeHarness(makeConfig(), { k3: CAMPAIGN }, stateFile);
 
     await h.run();

@@ -211,7 +211,7 @@ export class AgentLoopRequestObserver {
     if (event.type !== 'llm.retrying') return;
     if (event.reason === 'backoff') {
       if (infiniteRetry) {
-        this.log.warn('llm request failed; retrying indefinitely (KIMI_CODE_INFINITE_RETRY)', {
+        this.log.warn('llm request failed; retrying indefinitely (KIKO_INFINITE_RETRY)', {
           model: request.model.spec.name,
           ...request.logFields,
           attempt: event.failedAttempt,

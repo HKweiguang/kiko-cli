@@ -245,7 +245,7 @@ describe('server-v2 POST /api/v1/client_configs', () => {
       port: 0,
       homeDir: home,
       logLevel: 'silent',
-      env: { ...process.env, KIMI_CODE_BASE_URL: `http://127.0.0.1:${cloudPort}` },
+      env: { ...process.env, KIKO_BASE_URL: `http://127.0.0.1:${cloudPort}` },
     });
     base = `http://127.0.0.1:${server.port}`;
   }

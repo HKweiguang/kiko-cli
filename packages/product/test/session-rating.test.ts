@@ -1062,17 +1062,17 @@ describe('session rating long-context arm', () => {
 });
 
 describe('session rating kfc model gate', () => {
-  const savedBaseUrl = process.env['KIMI_CODE_BASE_URL'];
+  const savedBaseUrl = process.env['KIKO_BASE_URL'];
 
   beforeEach(() => {
-    delete process.env['KIMI_CODE_BASE_URL'];
+    delete process.env['KIKO_BASE_URL'];
   });
 
   afterEach(() => {
     if (savedBaseUrl === undefined) {
-      delete process.env['KIMI_CODE_BASE_URL'];
+      delete process.env['KIKO_BASE_URL'];
     } else {
-      process.env['KIMI_CODE_BASE_URL'] = savedBaseUrl;
+      process.env['KIKO_BASE_URL'] = savedBaseUrl;
     }
   });
 
@@ -1200,17 +1200,17 @@ describe('session rating kfc model gate', () => {
 });
 
 describe('session rating model overrides', () => {
-  const savedBaseUrl = process.env['KIMI_CODE_BASE_URL'];
+  const savedBaseUrl = process.env['KIKO_BASE_URL'];
 
   beforeEach(() => {
-    delete process.env['KIMI_CODE_BASE_URL'];
+    delete process.env['KIKO_BASE_URL'];
   });
 
   afterEach(() => {
     if (savedBaseUrl === undefined) {
-      delete process.env['KIMI_CODE_BASE_URL'];
+      delete process.env['KIKO_BASE_URL'];
     } else {
-      process.env['KIMI_CODE_BASE_URL'] = savedBaseUrl;
+      process.env['KIKO_BASE_URL'] = savedBaseUrl;
     }
   });
 
@@ -1711,17 +1711,17 @@ describe('session rating event payload', () => {
 });
 
 describe('session rating appearance snapshot', () => {
-  const savedBaseUrl = process.env['KIMI_CODE_BASE_URL'];
+  const savedBaseUrl = process.env['KIKO_BASE_URL'];
 
   beforeEach(() => {
-    delete process.env['KIMI_CODE_BASE_URL'];
+    delete process.env['KIKO_BASE_URL'];
   });
 
   afterEach(() => {
     if (savedBaseUrl === undefined) {
-      delete process.env['KIMI_CODE_BASE_URL'];
+      delete process.env['KIKO_BASE_URL'];
     } else {
-      process.env['KIMI_CODE_BASE_URL'] = savedBaseUrl;
+      process.env['KIKO_BASE_URL'] = savedBaseUrl;
     }
   });
 

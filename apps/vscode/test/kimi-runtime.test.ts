@@ -370,8 +370,8 @@ describe("Model catalog refresh", () => {
       onChanged: () => undefined,
       log: () => undefined,
       env: {
-        KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START: "yes",
-        KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS: "0",
+        KIKO_MODEL_CATALOG_REFRESH_ON_START: "yes",
+        KIKO_MODEL_CATALOG_REFRESH_INTERVAL_MS: "0",
       },
     });
 
@@ -379,6 +379,29 @@ describe("Model catalog refresh", () => {
       expect(sdk.refreshProviderModels).toHaveBeenCalledTimes(1);
     });
     await vi.advanceTimersByTimeAsync(5000);
+    expect(sdk.refreshProviderModels).toHaveBeenCalledTimes(1);
+    dispose();
+  });
+
+  it("ignores legacy KIMI_CODE_MODEL_CATALOG_REFRESH_* env names", async () => {
+    const sdk = createFakeHarness();
+    sdk.getConfig.mockResolvedValue({
+      providers: {},
+      modelCatalog: { refreshOnStart: false, refreshIntervalMs: 1000 },
+    });
+    const dispose = startModelCatalogRefresh({
+      harness: sdk.harness,
+      onChanged: () => undefined,
+      log: () => undefined,
+      env: {
+        KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START: "yes",
+        KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS: "0",
+      },
+    });
+
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sdk.refreshProviderModels).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1000);
     expect(sdk.refreshProviderModels).toHaveBeenCalledTimes(1);
     dispose();
   });
@@ -398,7 +421,7 @@ describe("Model catalog refresh", () => {
       harness: sdk.harness,
       onChanged,
       log,
-      env: { KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS: "1000" },
+      env: { KIKO_MODEL_CATALOG_REFRESH_INTERVAL_MS: "1000" },
     });
 
     await vi.waitFor(() => {
@@ -450,7 +473,7 @@ describe("Model catalog refresh", () => {
       harness: sdk.harness,
       onChanged: () => undefined,
       log: () => undefined,
-      env: { KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS: "2147483648" },
+      env: { KIKO_MODEL_CATALOG_REFRESH_INTERVAL_MS: "2147483648" },
     });
 
     await vi.advanceTimersByTimeAsync(999);

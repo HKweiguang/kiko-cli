@@ -1281,7 +1281,7 @@ describe('server-v2 /api/v1/sessions', () => {
     });
     expect(on.body.code).toBe(40935);
     expect(on.body.msg).toContain('the tower experiment is disabled');
-    expect(on.body.msg).toContain('KIMI_CODE_EXPERIMENTAL_TOWER=1');
+    expect(on.body.msg).toContain('KIKO_EXPERIMENTAL_TOWER=1');
     expect(readAgentState(await mainAgentOf(id), false).tower_mode).toBe(false);
 
     const off = await postJson(`/api/v1/sessions/${id}/profile`, {
@@ -1438,7 +1438,7 @@ describe('server-v2 /api/v1/sessions', () => {
       return child;
     });
     try {
-      vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
+      vi.stubEnv('KIKO_TRUST_WORKSPACE', '1');
       await mkdir(join(cwd, '.kiko'), { recursive: true });
       await writeFile(
         join(cwd, '.kiko', 'mcp.json'),
@@ -3339,7 +3339,7 @@ describe('server-v2 /api/v1/sessions (minidb read model)', () => {
   let home: string | undefined;
   let base: string;
 
-  const READ_MODEL_ENV = 'KIMI_CODE_PERSISTENCE_MINIDB_READMODEL';
+  const READ_MODEL_ENV = 'KIKO_PERSISTENCE_MINIDB_READMODEL';
 
   const READ_MODEL_CONFIG = [
     'default_model = "stub"',

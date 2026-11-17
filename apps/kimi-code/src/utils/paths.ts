@@ -12,29 +12,28 @@ import { dirname, join } from 'node:path';
 import { resolveKimiHome } from '@moonshot-ai/kimi-code-sdk';
 
 import {
-  KIMI_CODE_BANNER_DIR_NAME,
-  KIMI_CODE_BANNER_STATE_FILE_NAME,
-  KIMI_CODE_BIN_DIR_NAME,
-  KIMI_CODE_CACHE_DIR_NAME,
-  KIMI_CODE_INPUT_HISTORY_DIR_NAME,
-  KIMI_CODE_LOG_DIR_NAME,
-  KIMI_CODE_MODEL_MIGRATION_STATE_FILE_NAME,
-  KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME,
-  KIMI_CODE_NATIVE_STAGING_DIR_NAME,
-  KIMI_CODE_PLUGIN_UPDATE_NOTICE_STATE_FILE_NAME,
-  KIMI_CODE_RECOMMENDED_EFFORT_STATE_FILE_NAME,
-  KIMI_CODE_UPDATE_INSTALL_LOCK_FILE_NAME,
-  KIMI_CODE_UPDATE_INSTALL_STATE_FILE_NAME,
-  KIMI_CODE_UPDATE_DIR_NAME,
-  KIMI_CODE_UPDATE_ROLLOUT_LOG_FILE_NAME,
-  KIMI_CODE_UPDATE_STATE_FILE_NAME,
+  KIKO_BANNER_DIR_NAME,
+  KIKO_BANNER_STATE_FILE_NAME,
+  KIKO_BIN_DIR_NAME,
+  KIKO_CACHE_DIR_NAME,
+  KIKO_INPUT_HISTORY_DIR_NAME,
+  KIKO_LOG_DIR_NAME,
+  KIKO_MODEL_MIGRATION_STATE_FILE_NAME,
+  KIKO_NATIVE_STAGED_STATE_FILE_NAME,
+  KIKO_NATIVE_STAGING_DIR_NAME,
+  KIKO_PLUGIN_UPDATE_NOTICE_STATE_FILE_NAME,
+  KIKO_RECOMMENDED_EFFORT_STATE_FILE_NAME,
+  KIKO_UPDATE_INSTALL_LOCK_FILE_NAME,
+  KIKO_UPDATE_INSTALL_STATE_FILE_NAME,
+  KIKO_UPDATE_DIR_NAME,
+  KIKO_UPDATE_ROLLOUT_LOG_FILE_NAME,
+  KIKO_UPDATE_STATE_FILE_NAME,
 } from '#/constant/app';
 
 /**
  * Return the root data directory for the CLI.
  *
- * Priority: `KIKO_HOME` > `~/.kiko`. Legacy `KIMI_CODE_HOME` and
- * `~/.kimi-code` are not consulted.
+ * Priority: `KIKO_HOME` > `~/.kiko`.
  */
 export function getDataDir(
   env: NodeJS.ProcessEnv = process.env,
@@ -47,49 +46,49 @@ export function getDataDir(
  * Return the diagnostic log directory: `<dataDir>/logs/`.
  */
 export function getLogDir(): string {
-  return join(getDataDir(), KIMI_CODE_LOG_DIR_NAME);
+  return join(getDataDir(), KIKO_LOG_DIR_NAME);
 }
 
 /**
  * Return the CLI cache directory: `<dataDir>/cache/`.
  */
 export function getCacheDir(): string {
-  return join(getDataDir(), KIMI_CODE_CACHE_DIR_NAME);
+  return join(getDataDir(), KIKO_CACHE_DIR_NAME);
 }
 
 /**
  * Return the managed tools directory: `<dataDir>/bin/`.
  */
 export function getBinDir(): string {
-  return join(getDataDir(), KIMI_CODE_BIN_DIR_NAME);
+  return join(getDataDir(), KIKO_BIN_DIR_NAME);
 }
 
 /**
  * Return the update cache file: `<dataDir>/updates/latest.json`.
  */
 export function getUpdateStateFile(): string {
-  return join(getDataDir(), KIMI_CODE_UPDATE_DIR_NAME, KIMI_CODE_UPDATE_STATE_FILE_NAME);
+  return join(getDataDir(), KIKO_UPDATE_DIR_NAME, KIKO_UPDATE_STATE_FILE_NAME);
 }
 
 /**
  * Return the update install state file: `<dataDir>/updates/install.json`.
  */
 export function getUpdateInstallStateFile(): string {
-  return join(getDataDir(), KIMI_CODE_UPDATE_DIR_NAME, KIMI_CODE_UPDATE_INSTALL_STATE_FILE_NAME);
+  return join(getDataDir(), KIKO_UPDATE_DIR_NAME, KIKO_UPDATE_INSTALL_STATE_FILE_NAME);
 }
 
 /**
  * Return the update install lock file: `<dataDir>/updates/install.lock`.
  */
 export function getUpdateInstallLockFile(): string {
-  return join(getDataDir(), KIMI_CODE_UPDATE_DIR_NAME, KIMI_CODE_UPDATE_INSTALL_LOCK_FILE_NAME);
+  return join(getDataDir(), KIKO_UPDATE_DIR_NAME, KIKO_UPDATE_INSTALL_LOCK_FILE_NAME);
 }
 
 /**
  * Return the rollout decision log: `<dataDir>/updates/rollout.log`.
  */
 export function getUpdateRolloutLogFile(): string {
-  return join(getDataDir(), KIMI_CODE_UPDATE_DIR_NAME, KIMI_CODE_UPDATE_ROLLOUT_LOG_FILE_NAME);
+  return join(getDataDir(), KIKO_UPDATE_DIR_NAME, KIKO_UPDATE_ROLLOUT_LOG_FILE_NAME);
 }
 
 /**
@@ -98,8 +97,8 @@ export function getUpdateRolloutLogFile(): string {
 export function getPluginUpdateNoticeStateFile(): string {
   return join(
     getDataDir(),
-    KIMI_CODE_UPDATE_DIR_NAME,
-    KIMI_CODE_PLUGIN_UPDATE_NOTICE_STATE_FILE_NAME,
+    KIKO_UPDATE_DIR_NAME,
+    KIKO_PLUGIN_UPDATE_NOTICE_STATE_FILE_NAME,
   );
 }
 
@@ -111,30 +110,30 @@ export function getPluginUpdateNoticeStateFile(): string {
  * require the staged binary to sit on the same volume as the exe.
  */
 export function getNativeStagingDir(exePath: string): string {
-  return join(dirname(exePath), KIMI_CODE_NATIVE_STAGING_DIR_NAME);
+  return join(dirname(exePath), KIKO_NATIVE_STAGING_DIR_NAME);
 }
 
 /**
  * Return the staged-update metadata file: `<exe dir>/.staging/staged.json`.
  */
 export function getNativeStagedStateFile(exePath: string): string {
-  return join(getNativeStagingDir(exePath), KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME);
+  return join(getNativeStagingDir(exePath), KIKO_NATIVE_STAGED_STATE_FILE_NAME);
 }
 
 /**
  * Return the banner display state file: `<dataDir>/cache/banner/state.json`.
  */
 export function getBannerStateFile(): string {
-  return join(getCacheDir(), KIMI_CODE_BANNER_DIR_NAME, KIMI_CODE_BANNER_STATE_FILE_NAME);
+  return join(getCacheDir(), KIKO_BANNER_DIR_NAME, KIKO_BANNER_STATE_FILE_NAME);
 }
 
 
 export function getRecommendedEffortStateFile(): string {
-  return join(getDataDir(), KIMI_CODE_RECOMMENDED_EFFORT_STATE_FILE_NAME);
+  return join(getDataDir(), KIKO_RECOMMENDED_EFFORT_STATE_FILE_NAME);
 }
 
 export function getModelMigrationStateFile(): string {
-  return join(getDataDir(), KIMI_CODE_MODEL_MIGRATION_STATE_FILE_NAME);
+  return join(getDataDir(), KIKO_MODEL_MIGRATION_STATE_FILE_NAME);
 }
 
 /**
@@ -143,5 +142,5 @@ export function getModelMigrationStateFile(): string {
  */
 export function getInputHistoryFile(workDir: string): string {
   const hash = createHash('md5').update(workDir, 'utf-8').digest('hex');
-  return join(getDataDir(), KIMI_CODE_INPUT_HISTORY_DIR_NAME, `${hash}.jsonl`);
+  return join(getDataDir(), KIKO_INPUT_HISTORY_DIR_NAME, `${hash}.jsonl`);
 }

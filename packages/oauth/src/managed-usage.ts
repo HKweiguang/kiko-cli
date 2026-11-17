@@ -5,8 +5,8 @@ import { isRecord } from './utils';
 
 const MANAGED_PREFIX = 'managed:';
 const KIMI_CODE_PLATFORM_ID = 'kimi-code';
-export const DEFAULT_KIMI_CODE_BASE_URL = 'https://api.kimi.com/coding/v1';
-export const GLOBAL_KIMI_CODE_BASE_URL = 'https://api.kimi.ai/coding/v1';
+export const DEFAULT_KIKO_BASE_URL = 'https://api.kimi.com/coding/v1';
+export const GLOBAL_KIKO_BASE_URL = 'https://api.kimi.ai/coding/v1';
 
 export function isManagedKimiCode(providerKey?: string | null): boolean {
   if (!providerKey) return false;
@@ -15,7 +15,7 @@ export function isManagedKimiCode(providerKey?: string | null): boolean {
 }
 
 export function kimiCodeBaseUrl(): string {
-  return (process.env['KIMI_CODE_BASE_URL'] ?? DEFAULT_KIMI_CODE_BASE_URL).replace(/\/+$/, '');
+  return (process.env['KIKO_BASE_URL'] ?? DEFAULT_KIKO_BASE_URL).replace(/\/+$/, '');
 }
 
 export function kimiCodeUsageUrl(): string {
@@ -26,11 +26,11 @@ export function isManagedKimiCodeBaseUrl(baseUrl: string | undefined): boolean {
   if (baseUrl === undefined) return false;
   const candidate = parseNormalizedUrl(baseUrl);
   if (candidate === undefined) return false;
-  const envOverride = process.env['KIMI_CODE_BASE_URL'];
+  const envOverride = process.env['KIKO_BASE_URL'];
   const managed =
     envOverride !== undefined
       ? [envOverride]
-      : [DEFAULT_KIMI_CODE_BASE_URL, GLOBAL_KIMI_CODE_BASE_URL];
+      : [DEFAULT_KIKO_BASE_URL, GLOBAL_KIKO_BASE_URL];
   return managed.some((url) => parseNormalizedUrl(url) === candidate);
 }
 

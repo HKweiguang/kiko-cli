@@ -17,7 +17,7 @@ import { createZstdDecompress } from 'node:zlib';
 import { valid } from 'semver';
 import { z } from 'zod';
 
-import { KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME } from '#/constant/app';
+import { KIKO_NATIVE_STAGED_STATE_FILE_NAME } from '#/constant/app';
 import { getNativeStagedStateFile, getNativeStagingDir } from '#/utils/paths';
 import { writeJsonFile } from '#/utils/persistence';
 
@@ -258,12 +258,12 @@ async function cleanupStagingOrphans(stagingDir: string): Promise<void> {
   } catch {
     return;
   }
-  const keep = new Set<string>([KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME]);
+  const keep = new Set<string>([KIKO_NATIVE_STAGED_STATE_FILE_NAME]);
   for (const entry of entries) {
     // The current record and every swap claim pin the exe they reference.
     if (
-      entry !== KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME &&
-      !entry.startsWith(`${KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME}.swap-`)
+      entry !== KIKO_NATIVE_STAGED_STATE_FILE_NAME &&
+      !entry.startsWith(`${KIKO_NATIVE_STAGED_STATE_FILE_NAME}.swap-`)
     ) {
       continue;
     }

@@ -33,7 +33,7 @@ export {
   createKimiDeviceHeaders,
   createKimiDeviceId,
   createKimiUserAgent,
-  KIMI_CODE_CUSTOM_HEADERS_ENV,
+  KIKO_CUSTOM_HEADERS_ENV,
   KIMI_CODE_PLATFORM,
   parseKimiCodeCustomHeaders,
   readKimiDeviceId,
@@ -41,7 +41,7 @@ export {
 } from './identity';
 export type { KimiHostIdentity, KimiIdentityOptions } from './identity';
 
-export { KIMI_CODE_FLOW_CONFIG } from './constants';
+export { KIKO_FLOW_CONFIG } from './constants';
 
 export {
   KIMI_REGION_MARKER_FILENAME,

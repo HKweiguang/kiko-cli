@@ -69,7 +69,7 @@ export {
   computeUpdateStatus,
   isMissingMarketplaceTokenError,
   isTrustedPluginMarketplaceUrl,
-  KIMI_CODE_PLUGIN_MARKETPLACE_URL_ENV,
+  KIKO_PLUGIN_MARKETPLACE_URL_ENV,
   parsePluginMarketplace,
   marketplaceEntryInstallableOnHost,
   marketplaceEntrySupportsClient,

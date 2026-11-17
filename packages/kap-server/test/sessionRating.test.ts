@@ -154,7 +154,7 @@ describe('session rating preview', () => {
       port: 0,
       homeDir: home,
       debugEndpoints: true,
-      env: serverEnv({ KIMI_CODE_SESSION_RATING_PREVIEW: '1' }),
+      env: serverEnv({ KIKO_SESSION_RATING_PREVIEW: '1' }),
       logger: pino(
         { level: 'info' },
         new Writable({
@@ -240,8 +240,8 @@ describe('session rating preview outside development', () => {
       port: 0,
       homeDir: home,
       env: serverEnv({
-        KIMI_CODE_SESSION_RATING_PREVIEW: '1',
-        KIMI_CODE_BASE_URL: 'http://127.0.0.1:9',
+        KIKO_SESSION_RATING_PREVIEW: '1',
+        KIKO_BASE_URL: 'http://127.0.0.1:9',
       }),
       logger: pino({ level: 'silent' }),
     });
@@ -291,7 +291,7 @@ describe('session rating lifecycle', () => {
       host: '127.0.0.1',
       port: 0,
       homeDir: home,
-      env: serverEnv({ KIMI_CODE_BASE_URL: `http://127.0.0.1:${port}` }),
+      env: serverEnv({ KIKO_BASE_URL: `http://127.0.0.1:${port}` }),
       logger: pino({ level: 'silent' }),
     });
     started.core.accessor.get(ITelemetryService).addAppender({

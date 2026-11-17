@@ -26,7 +26,7 @@ const exampleFlag: FlagDefinitionInput = {
   id: 'example_flag',
   title: 'Example flag',
   description: 'Example experimental flag used to exercise the flag registry.',
-  env: 'KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG',
+  env: 'KIKO_EXPERIMENTAL_EXAMPLE_FLAG',
   default: true,
   surface: 'core',
 };
@@ -36,7 +36,7 @@ describe('FlagRegistryService', () => {
     const reg = new FlagRegistryService();
     reg.register(exampleFlag);
     expect(reg.list().map((d) => d.id)).toEqual(['example_flag']);
-    expect(reg.get('example_flag')?.env).toBe('KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG');
+    expect(reg.get('example_flag')?.env).toBe('KIKO_EXPERIMENTAL_EXAMPLE_FLAG');
   });
 
   it('returns undefined for an unknown id', () => {
@@ -120,7 +120,7 @@ describe('FlagService', () => {
 
   it('lets per-feature env override config and the master env', async () => {
     const { config, flags } = makeFlags({
-      KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG: 'true',
+      KIKO_EXPERIMENTAL_EXAMPLE_FLAG: 'true',
       [MASTER_ENV]: '1',
     });
     await config.set(EXPERIMENTAL_SECTION, { example_flag: false });
@@ -132,7 +132,7 @@ describe('FlagService', () => {
 
   it('lets per-feature env force a flag off against config and the master env', async () => {
     const { config, flags } = makeFlags({
-      KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG: 'false',
+      KIKO_EXPERIMENTAL_EXAMPLE_FLAG: 'false',
       [MASTER_ENV]: '1',
     });
     await config.set(EXPERIMENTAL_SECTION, { example_flag: true });
@@ -140,6 +140,22 @@ describe('FlagService', () => {
     expect(state?.enabled).toBe(false);
     expect(state?.source).toBe('env');
     expect(state?.configValue).toBe(true);
+  });
+
+  it('ignores a legacy KIMI_CODE_EXPERIMENTAL_<FLAG> name', async () => {
+    const { config, flags } = makeFlags({ KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG: 'false' });
+    await config.set(EXPERIMENTAL_SECTION, { example_flag: true });
+    const state = flags.explain('example_flag');
+    expect(state?.enabled).toBe(true);
+    expect(state?.source).toBe('config');
+  });
+
+  it('ignores the legacy KIMI_CODE_EXPERIMENTAL_FLAG master switch', async () => {
+    const { config, flags } = makeFlags({ KIMI_CODE_EXPERIMENTAL_FLAG: '1' });
+    await config.set(EXPERIMENTAL_SECTION, { example_flag: false });
+    const state = flags.explain('example_flag');
+    expect(state?.enabled).toBe(false);
+    expect(state?.source).toBe('config');
   });
 
   it('lets config override the master env', async () => {
@@ -201,7 +217,7 @@ describe('FlagService', () => {
       id: 'assembled_only',
       title: 'Assembled-only flag',
       description: 'Enabled but only exposed once its feature is assembled.',
-      env: 'KIMI_CODE_EXPERIMENTAL_ASSEMBLED_ONLY',
+      env: 'KIKO_EXPERIMENTAL_ASSEMBLED_ONLY',
       default: true,
       surface: 'core',
       isExposed: () => false,
@@ -212,22 +228,22 @@ describe('FlagService', () => {
   });
 
   it('treats truthy env values case-insensitively', () => {
-    const { flags } = makeFlags({ KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG: 'YES' });
+    const { flags } = makeFlags({ KIKO_EXPERIMENTAL_EXAMPLE_FLAG: 'YES' });
     expect(flags.enabled('example_flag')).toBe(true);
   });
 
   it('treats falsy env values case-insensitively', () => {
-    const { flags } = makeFlags({ KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG: 'off' });
+    const { flags } = makeFlags({ KIKO_EXPERIMENTAL_EXAMPLE_FLAG: 'off' });
     expect(flags.enabled('example_flag')).toBe(false);
   });
 
   it('reads only the env name declared in the registry', () => {
-    const { flags } = makeFlags({ KIMI_CODE_EXPERIMENTAL_UNKNOWN: 'false' });
+    const { flags } = makeFlags({ KIKO_EXPERIMENTAL_UNKNOWN: 'false' });
     expect(flags.enabled('example_flag')).toBe(true);
   });
 
   it('ignores garbage env values', () => {
-    const { flags } = makeFlags({ KIMI_CODE_EXPERIMENTAL_EXAMPLE_FLAG: 'maybe' });
+    const { flags } = makeFlags({ KIKO_EXPERIMENTAL_EXAMPLE_FLAG: 'maybe' });
     expect(flags.enabled('example_flag')).toBe(true);
   });
 

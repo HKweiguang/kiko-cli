@@ -1271,8 +1271,8 @@ export async function applyTuiModeChoice(host: TuiModeHost, tuiMode: TuiMode): P
   if (resolved.mode !== tuiMode) {
     host.showNotice(
       resolved.overriddenByEnv
-        ? 'Saved to tui.toml; unset KIMI_CODE_TUI_FULL_SCREEN for it to take effect.'
-        : 'Saved to tui.toml; this terminal automatically falls back to regular mode unless KIMI_CODE_TUI_FULL_SCREEN=1 is set.',
+        ? 'Saved to tui.toml; unset KIKO_TUI_FULL_SCREEN for it to take effect.'
+        : 'Saved to tui.toml; this terminal automatically falls back to regular mode unless KIKO_TUI_FULL_SCREEN=1 is set.',
     );
     return;
   }

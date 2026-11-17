@@ -95,7 +95,7 @@ const NOOP_LOG = {
   error: () => {},
 } as unknown as ILogService;
 
-beforeEach(() => vi.stubEnv('KIMI_CODE_WATCH', 'false'));
+beforeEach(() => vi.stubEnv('KIKO_WATCH', 'false'));
 afterEach(() => vi.unstubAllEnvs());
 
 interface HostServices {

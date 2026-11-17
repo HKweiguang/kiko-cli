@@ -5,18 +5,18 @@ import { getNativeCacheBase } from '#/native/native-assets';
 describe('getNativeCacheBase precedence', () => {
   const baseOptions = { homeDir: '/home/u' };
 
-  it('uses KIMI_CODE_CACHE_DIR when set (highest precedence)', () => {
+  it('uses KIKO_CACHE_DIR when set (highest precedence)', () => {
     const got = getNativeCacheBase({
       ...baseOptions,
-      env: { KIMI_CODE_CACHE_DIR: '/custom/cache' },
+      env: { KIKO_CACHE_DIR: '/custom/cache' },
     });
     expect(got).toBe('/custom/cache');
   });
 
-  it('ignores KIMI_CODE_HOME (no longer affects native cache)', () => {
+  it('ignores KIKO_HOME (no longer affects native cache)', () => {
     const got = getNativeCacheBase({
       ...baseOptions,
-      env: { KIMI_CODE_HOME: '/legacy' },
+      env: { KIKO_HOME: '/legacy' },
       platform: 'darwin',
     });
     expect(got).toBe('/home/u/Library/Caches/kimi-code');

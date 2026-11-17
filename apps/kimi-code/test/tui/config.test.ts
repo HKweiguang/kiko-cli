@@ -22,8 +22,8 @@ let dir: string;
 let filePath: string;
 
 beforeEach(() => {
-  vi.stubEnv('KIMI_CODE_TUI_FULL_SCREEN', '');
-  vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '');
+  vi.stubEnv('KIKO_TUI_FULL_SCREEN', '');
+  vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '');
   dir = join(tmpdir(), `kimi-tui-config-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(dir, { recursive: true });
   filePath = join(dir, 'tui.toml');
@@ -665,8 +665,8 @@ tui_mode = "weird"
   );
 
   it('does not write tui_mode to disk when env flags are set', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '1');
-    vi.stubEnv('KIMI_CODE_TUI_FULL_SCREEN', '1');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '1');
+    vi.stubEnv('KIKO_TUI_FULL_SCREEN', '1');
 
     const created = await loadTuiConfig(filePath);
     expect(created.tuiMode).toBeUndefined();
@@ -689,7 +689,7 @@ describe('resolveTuiMode', () => {
       config: 'unset',
     });
     expect(
-      resolveTuiMode(undefined, { ...normalTermEnv, KIMI_CODE_EXPERIMENTAL_FLAG: '0' }),
+      resolveTuiMode(undefined, { ...normalTermEnv, KIKO_EXPERIMENTAL_FLAG: '0' }),
     ).toEqual({
       mode: 'regular',
       config: 'unset',
@@ -697,10 +697,10 @@ describe('resolveTuiMode', () => {
   });
 
   it.each(['1', 'true', 'TRUE', 'yes', 'on'])(
-    'defaults to fullscreen when tui_mode is unset and KIMI_CODE_EXPERIMENTAL_FLAG=%s',
+    'defaults to fullscreen when tui_mode is unset and KIKO_EXPERIMENTAL_FLAG=%s',
     (flag) => {
       expect(
-        resolveTuiMode(undefined, { ...normalTermEnv, KIMI_CODE_EXPERIMENTAL_FLAG: flag }),
+        resolveTuiMode(undefined, { ...normalTermEnv, KIKO_EXPERIMENTAL_FLAG: flag }),
       ).toEqual({
         mode: 'fullscreen',
         config: 'unset',
@@ -708,15 +708,15 @@ describe('resolveTuiMode', () => {
     },
   );
 
-  it('honors explicit regular or fullscreen in tui.toml over KIMI_CODE_EXPERIMENTAL_FLAG', () => {
+  it('honors explicit regular or fullscreen in tui.toml over KIKO_EXPERIMENTAL_FLAG', () => {
     expect(
-      resolveTuiMode('regular', { ...normalTermEnv, KIMI_CODE_EXPERIMENTAL_FLAG: '1' }),
+      resolveTuiMode('regular', { ...normalTermEnv, KIKO_EXPERIMENTAL_FLAG: '1' }),
     ).toEqual({
       mode: 'regular',
       config: 'regular',
     });
     expect(
-      resolveTuiMode('fullscreen', { ...normalTermEnv, KIMI_CODE_EXPERIMENTAL_FLAG: '0' }),
+      resolveTuiMode('fullscreen', { ...normalTermEnv, KIKO_EXPERIMENTAL_FLAG: '0' }),
     ).toEqual({
       mode: 'fullscreen',
       config: 'fullscreen',
@@ -736,7 +736,7 @@ describe('resolveTuiMode', () => {
       fallback: 'tmux_cc',
     });
     expect(
-      resolveTuiMode(undefined, { ...realTmuxCcEnv, KIMI_CODE_EXPERIMENTAL_FLAG: '1' }, () => true),
+      resolveTuiMode(undefined, { ...realTmuxCcEnv, KIKO_EXPERIMENTAL_FLAG: '1' }, () => true),
     ).toEqual({
       mode: 'regular',
       config: 'unset',
@@ -792,21 +792,21 @@ describe('resolveTuiMode', () => {
     });
   });
 
-  it('treats KIMI_CODE_TUI_FULL_SCREEN as highest-priority override bypassing fallback', () => {
+  it('treats KIKO_TUI_FULL_SCREEN as highest-priority override bypassing fallback', () => {
     const tmuxCcEnv = {
       TMUX: '/tmp/tmux-501/default,123,0',
       TERM_PROGRAM: 'tmux',
       TERM: 'tmux-256color',
     };
     expect(
-      resolveTuiMode('regular', { ...tmuxCcEnv, KIMI_CODE_TUI_FULL_SCREEN: '1' }, () => true),
+      resolveTuiMode('regular', { ...tmuxCcEnv, KIKO_TUI_FULL_SCREEN: '1' }, () => true),
     ).toEqual({
       mode: 'fullscreen',
       config: 'regular',
       overriddenByEnv: true,
     });
     expect(
-      resolveTuiMode('fullscreen', { ...normalTermEnv, KIMI_CODE_TUI_FULL_SCREEN: '0' }),
+      resolveTuiMode('fullscreen', { ...normalTermEnv, KIKO_TUI_FULL_SCREEN: '0' }),
     ).toEqual({
       mode: 'regular',
       config: 'fullscreen',
@@ -816,8 +816,8 @@ describe('resolveTuiMode', () => {
 });
 
 describe('resolveAnimationFrameRate', () => {
-  it.each([undefined, '', '   '])('keeps the default frame rate when KIMI_CODE_TUI_ANIMATION_FPS is %j', (value) => {
-    expect(resolveAnimationFrameRate({ KIMI_CODE_TUI_ANIMATION_FPS: value })).toEqual({});
+  it.each([undefined, '', '   '])('keeps the default frame rate when KIKO_TUI_ANIMATION_FPS is %j', (value) => {
+    expect(resolveAnimationFrameRate({ KIKO_TUI_ANIMATION_FPS: value })).toEqual({});
   });
 
   it.each([
@@ -825,21 +825,21 @@ describe('resolveAnimationFrameRate', () => {
     ['8', 8],
     [' 30 ', 30],
     ['60', 60],
-  ])('reads KIMI_CODE_TUI_ANIMATION_FPS=%j as %d frames per second', (value, fps) => {
-    expect(resolveAnimationFrameRate({ KIMI_CODE_TUI_ANIMATION_FPS: value })).toEqual({ fps });
+  ])('reads KIKO_TUI_ANIMATION_FPS=%j as %d frames per second', (value, fps) => {
+    expect(resolveAnimationFrameRate({ KIKO_TUI_ANIMATION_FPS: value })).toEqual({ fps });
   });
 
   it.each(['abc', '0', '61', '-5', '2.5', '1e1', '0x10', '+8'])(
-    'ignores KIMI_CODE_TUI_ANIMATION_FPS=%j and explains why',
+    'ignores KIKO_TUI_ANIMATION_FPS=%j and explains why',
     (value) => {
-      expect(resolveAnimationFrameRate({ KIMI_CODE_TUI_ANIMATION_FPS: value })).toEqual({
-        warning: `Ignored KIMI_CODE_TUI_ANIMATION_FPS="${value}": expected a whole number from 1 to 60.`,
+      expect(resolveAnimationFrameRate({ KIKO_TUI_ANIMATION_FPS: value })).toEqual({
+        warning: `Ignored KIKO_TUI_ANIMATION_FPS="${value}": expected a whole number from 1 to 60.`,
       });
     },
   );
 
   it('reads process.env by default', () => {
-    vi.stubEnv('KIMI_CODE_TUI_ANIMATION_FPS', '20');
+    vi.stubEnv('KIKO_TUI_ANIMATION_FPS', '20');
     expect(resolveAnimationFrameRate()).toEqual({ fps: 20 });
   });
 });

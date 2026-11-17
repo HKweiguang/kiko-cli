@@ -317,7 +317,7 @@ describe('PluginUpdateNotifier', () => {
 
   it('refreshes plugin slash commands after a background availability reload', async () => {
     vi.stubEnv('KIKO_HOME', tempDir);
-    vi.stubEnv('KIMI_CODE_PLUGIN_MARKETPLACE_URL', 'https://marketplace.test/catalog');
+    vi.stubEnv('KIKO_PLUGIN_MARKETPLACE_URL', 'https://marketplace.test/catalog');
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
       plugins: makeMarketplace().plugins,
     }), { status: 200 })));

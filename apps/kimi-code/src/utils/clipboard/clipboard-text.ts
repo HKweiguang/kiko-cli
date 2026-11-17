@@ -56,7 +56,7 @@ function isRemoteSession(env: NodeJS.ProcessEnv): boolean {
 }
 
 export function planClipboardWrite(platform: NodeJS.Platform, env: NodeJS.ProcessEnv): ClipboardWritePlan {
-  const forceOSC52 = isRemoteSession(env) || env['KIMI_CODE_CLIPBOARD_OSC52'] === '1';
+  const forceOSC52 = isRemoteSession(env) || env['KIKO_CLIPBOARD_OSC52'] === '1';
   if (platform === 'darwin' || platform === 'win32') {
     return {
       nativeModule: true,

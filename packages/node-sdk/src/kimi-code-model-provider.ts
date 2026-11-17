@@ -1,6 +1,6 @@
 import {
   createKimiDefaultHeaders,
-  KIMI_CODE_FLOW_CONFIG,
+  KIKO_FLOW_CONFIG,
   KIMI_CODE_PROVIDER_NAME,
   KimiOAuthToolkit,
   kimiCodeBaseUrl,
@@ -56,7 +56,7 @@ export class KimiForCodingProvider implements ModelProvider {
       userAgentSuffix: options.userAgentSuffix,
     };
     this.oauthRef = resolveKimiCodeOAuthRef({
-      oauthHost: KIMI_CODE_FLOW_CONFIG.oauthHost,
+      oauthHost: KIKO_FLOW_CONFIG.oauthHost,
       baseUrl: this.baseUrl,
     });
     this.toolkit = new KimiOAuthToolkit({

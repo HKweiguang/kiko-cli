@@ -56,7 +56,7 @@ vi.mock('@moonshot-ai/kimi-code-sdk', async (importOriginal) => {
 
 describe('initializeServerTelemetry', () => {
   beforeEach(() => {
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
+    vi.stubEnv('KIKO_OAUTH_HOST', 'https://auth.kimi.com');
     resetKimiRegionCache();
     mocks.initializeTelemetry.mockClear();
     mocks.loadRuntimeConfigSafe.mockClear();

@@ -7,7 +7,7 @@ export const KIKO_DATA_DIR_NAME = '.kiko';
 
 /**
  * Resolve the Kiko data home: an explicit `homeDir`, else `KIKO_HOME`, else
- * `~/.kiko`. Legacy `KIMI_CODE_HOME` and `~/.kimi-code` are not consulted.
+ * `~/.kiko`.
  */
 export function resolveKimiHome(
   homeDir?: string,

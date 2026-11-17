@@ -563,7 +563,7 @@ export class SessionEventHandler {
   }
 
   private maybeShowDebugTiming(event: TurnStepCompletedEvent): void {
-    if (process.env['KIMI_CODE_DEBUG'] !== '1') return;
+    if (process.env['KIKO_DEBUG'] !== '1') return;
     const text = formatStepDebugTiming(event);
     if (text === undefined) return;
     this.host.appendTranscriptEntry({

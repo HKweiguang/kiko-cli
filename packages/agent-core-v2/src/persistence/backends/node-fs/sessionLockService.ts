@@ -20,7 +20,7 @@ import {
 
 const LOCK_FILE_VERSION = 1;
 
-export const SESSION_LOCK_ENV = 'KIMI_CODE_SESSION_LOCK';
+export const SESSION_LOCK_ENV = 'KIKO_SESSION_LOCK';
 
 const UNREADABLE_HOLDER: SessionLockHolder = {
   version: 0,

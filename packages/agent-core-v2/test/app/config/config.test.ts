@@ -550,11 +550,11 @@ describe('ConfigService env overlay (live)', () => {
 
     expect(config.get(BUILTIN_PRODUCT_SKILLS_SECTION)).toBe(true);
 
-    env['KIMI_CODE_BUILTIN_PRODUCT_SKILLS'] = '0';
+    env['KIKO_BUILTIN_PRODUCT_SKILLS'] = '0';
     expect(config.get(BUILTIN_PRODUCT_SKILLS_SECTION)).toBe(false);
 
     await config.replace(BUILTIN_PRODUCT_SKILLS_SECTION, true);
-    delete env['KIMI_CODE_BUILTIN_PRODUCT_SKILLS'];
+    delete env['KIKO_BUILTIN_PRODUCT_SKILLS'];
     expect(config.get(BUILTIN_PRODUCT_SKILLS_SECTION)).toBe(true);
 
     disposables.dispose();
@@ -575,11 +575,11 @@ describe('ConfigService env overlay (live)', () => {
     await config.replace(BUILTIN_PRODUCT_SKILLS_SECTION, false);
 
     for (const invalid of ['', '   ', 'maybe']) {
-      env['KIMI_CODE_BUILTIN_PRODUCT_SKILLS'] = invalid;
+      env['KIKO_BUILTIN_PRODUCT_SKILLS'] = invalid;
       expect(config.get(BUILTIN_PRODUCT_SKILLS_SECTION)).toBe(false);
     }
 
-    env['KIMI_CODE_BUILTIN_PRODUCT_SKILLS'] = 'on';
+    env['KIKO_BUILTIN_PRODUCT_SKILLS'] = 'on';
     expect(config.get(BUILTIN_PRODUCT_SKILLS_SECTION)).toBe(true);
 
     disposables.dispose();

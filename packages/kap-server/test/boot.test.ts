@@ -164,9 +164,9 @@ describe('server-v2 boot', () => {
         port: 0,
         homeDir: home,
         logLevel: 'silent',
-        env: { KIMI_CODE_SESSION_IDLE_RECLAIM_MS: 'nope' },
+        env: { KIKO_SESSION_IDLE_RECLAIM_MS: 'nope' },
       }),
-    ).rejects.toThrow(/KIMI_CODE_SESSION_IDLE_RECLAIM_MS.*non-negative integer/);
+    ).rejects.toThrow(/KIKO_SESSION_IDLE_RECLAIM_MS.*non-negative integer/);
     expect(await listLiveServerInstances(home)).toEqual([]);
   });
 

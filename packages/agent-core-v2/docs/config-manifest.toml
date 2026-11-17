@@ -49,11 +49,11 @@
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#     keep_alive_on_exit <- KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT (custom parse)
-#     bash_task_timeout_s <- KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S (custom parse)
-#     print_wait_ceiling_s <- KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S (custom parse)
-#     print_background_mode <- KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE (custom parse)
-#     print_max_turns <- KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS (custom parse)
+#     keep_alive_on_exit <- KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT (custom parse)
+#     bash_task_timeout_s <- KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S (custom parse)
+#     print_wait_ceiling_s <- KIKO_BACKGROUND_PRINT_WAIT_CEILING_S (custom parse)
+#     print_background_mode <- KIKO_BACKGROUND_PRINT_BACKGROUND_MODE (custom parse)
+#     print_max_turns <- KIKO_BACKGROUND_PRINT_MAX_TURNS (custom parse)
 # ##########################################################################
 
 [background]
@@ -71,7 +71,7 @@
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#      <- KIMI_CODE_BUILTIN_PRODUCT_SKILLS (custom parse)
+#      <- KIKO_BUILTIN_PRODUCT_SKILLS (custom parse)
 # ##########################################################################
 
 builtin_product_skills = true
@@ -105,11 +105,11 @@ manual_tick = false
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#     base <- KIMI_CODE_PERSISTENCE_MINIDB_READMODEL (custom parse)
-#     global_search <- KIMI_CODE_GLOBAL_SEARCH (custom parse)
-#     search <- KIMI_CODE_SEARCH_WORKER (custom parse)
-#     search_sync_session_cap <- KIMI_CODE_SEARCH_SYNC_SESSION_CAP (custom parse)
-#     search_sync_debounce_ms <- KIMI_CODE_SEARCH_SYNC_DEBOUNCE_MS (custom parse)
+#     base <- KIKO_PERSISTENCE_MINIDB_READMODEL (custom parse)
+#     global_search <- KIKO_GLOBAL_SEARCH (custom parse)
+#     search <- KIKO_SEARCH_WORKER (custom parse)
+#     search_sync_session_cap <- KIKO_SEARCH_SYNC_SESSION_CAP (custom parse)
+#     search_sync_debounce_ms <- KIKO_SEARCH_SYNC_DEBOUNCE_MS (custom parse)
 # ##########################################################################
 
 [database]
@@ -190,8 +190,8 @@ extra_skill_dirs = []
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#     name <- KIMI_CODE_IDENTITY_NAME (custom parse)
-#     slug <- KIMI_CODE_IDENTITY_SLUG (custom parse)
+#     name <- KIKO_IDENTITY_NAME (custom parse)
+#     slug <- KIKO_IDENTITY_SLUG (custom parse)
 # ##########################################################################
 
 [identity]
@@ -326,7 +326,7 @@ merge_all_available_skills = true
 #   scope: core
 #   hooks: custom fromToml · custom toToml · stripEnv
 #   env:
-#     dangerous_command_guard <- KIMI_CODE_DANGEROUS_COMMAND_GUARD (custom parse)
+#     dangerous_command_guard <- KIKO_DANGEROUS_COMMAND_GUARD (custom parse)
 # ##########################################################################
 
 [permission]
@@ -440,7 +440,7 @@ timeout_ms = 7200000
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#     timeout_ms <- KIMI_CODE_SWARM_TIMEOUT_MS (custom parse)
+#     timeout_ms <- KIKO_SWARM_TIMEOUT_MS (custom parse)
 # ##########################################################################
 
 [swarm]
@@ -452,11 +452,11 @@ timeout_ms = 7200000
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#     keep_alive_on_exit <- KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT (custom parse)
-#     bash_task_timeout_s <- KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S (custom parse)
-#     print_wait_ceiling_s <- KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S (custom parse)
-#     print_background_mode <- KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE (custom parse)
-#     print_max_turns <- KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS (custom parse)
+#     keep_alive_on_exit <- KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT (custom parse)
+#     bash_task_timeout_s <- KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S (custom parse)
+#     print_wait_ceiling_s <- KIKO_BACKGROUND_PRINT_WAIT_CEILING_S (custom parse)
+#     print_background_mode <- KIKO_BACKGROUND_PRINT_BACKGROUND_MODE (custom parse)
+#     print_max_turns <- KIKO_BACKGROUND_PRINT_MAX_TURNS (custom parse)
 # ##########################################################################
 
 [task]
@@ -511,7 +511,7 @@ strategy = "measured+estimated"
 #   scope: core
 #   hooks: stripEnv
 #   env:
-#     enabled <- KIMI_CODE_WATCH (custom parse)
+#     enabled <- KIKO_WATCH (custom parse)
 # ##########################################################################
 
 [watch]
