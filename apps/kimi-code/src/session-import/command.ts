@@ -15,7 +15,7 @@ export function registerImportSessionsCommand(
 ): void {
   parent
     .command('import-sessions')
-    .description('Import recent Claude Code and Codex sessions into Kimi Code.')
+    .description('Import recent Claude Code and Codex sessions into Kiko.')
     .action(async () => {
       process.exitCode = await run();
     });
