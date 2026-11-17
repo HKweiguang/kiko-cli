@@ -4,4 +4,6 @@ for (const key of Object.keys(process.env)) {
   }
 }
 
+delete process.env['KIKO_HOME'];
+
 process.env['KIMI_CODE_PERSISTENCE_MINIDB_READMODEL'] = 'false';

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { HostFileSystem } from '#/os/backends/node-local/hostFsService';
 import type { IHostFileSystem } from '#/os/interface/hostFileSystem';
 import {
+  agentsMdWatchRoots,
   extractAgentsMdPathsFromSystemPrompt,
   loadAgentsMd,
   loadAgentsMdDetailed,
@@ -59,6 +60,18 @@ describe('loadAgentsMd user-level discovery', () => {
     const result = await loadAgentsMd({ fs, homeDir }, workDir);
 
     expect(result).toContain('dot-agents generic');
+  });
+
+  it('prefers the canonical ~/.kiko instructions over the legacy ~/.kimi-code file', async () => {
+    await mkdir(join(homeDir, '.kiko'), { recursive: true });
+    await writeFile(join(homeDir, '.kiko', 'AGENTS.md'), 'canonical home', 'utf-8');
+    await mkdir(join(homeDir, '.kimi-code'), { recursive: true });
+    await writeFile(join(homeDir, '.kimi-code', 'AGENTS.md'), 'legacy home', 'utf-8');
+
+    const result = await loadAgentsMd({ fs, homeDir }, workDir);
+
+    expect(result).toContain('canonical home');
+    expect(result).not.toContain('legacy home');
   });
 
   it('falls back to project-level only when no user-level files exist', async () => {
@@ -289,6 +302,41 @@ describe('loadAgentsMdDetailed discovered paths', () => {
       normalize(join(workDir, '.kimi-code', 'AGENTS.md')),
       normalize(join(workDir, 'AGENTS.md')),
     ]);
+  });
+
+  it('reads project .kiko instructions and reports the canonical source path', async () => {
+    await mkdir(join(workDir, '.kiko'), { recursive: true });
+    await writeFile(join(workDir, '.kiko', 'AGENTS.md'), 'canonical project', 'utf-8');
+
+    const result = await loadAgentsMdDetailed({ fs, homeDir }, workDir);
+
+    expect(result.content).toContain('canonical project');
+    expect(result.paths).toEqual([normalize(join(workDir, '.kiko', 'AGENTS.md'))]);
+  });
+
+  it('prefers project .kiko instructions over the legacy .kimi-code file', async () => {
+    await mkdir(join(workDir, '.kiko'), { recursive: true });
+    await writeFile(join(workDir, '.kiko', 'AGENTS.md'), 'canonical project', 'utf-8');
+    await mkdir(join(workDir, '.kimi-code'), { recursive: true });
+    await writeFile(join(workDir, '.kimi-code', 'AGENTS.md'), 'legacy project', 'utf-8');
+
+    const result = await loadAgentsMdDetailed({ fs, homeDir }, workDir);
+
+    expect(result.content).toContain('canonical project');
+    expect(result.content).not.toContain('legacy project');
+    expect(result.paths).toEqual([normalize(join(workDir, '.kiko', 'AGENTS.md'))]);
+  });
+
+  it('watches both the canonical .kiko and legacy .kimi-code instruction files', async () => {
+    await mkdir(join(workDir, '.git'), { recursive: true });
+
+    const plan = await agentsMdWatchRoots({ fs, homeDir }, workDir);
+    const projectRoot = plan.at(-1);
+    const candidates = projectRoot?.candidates ?? [];
+
+    expect(candidates).toContain(join(workDir, '.kiko', 'AGENTS.md'));
+    expect(candidates).toContain(join(workDir, '.kimi-code', 'AGENTS.md'));
+    expect(candidates).toContain(join(workDir, 'AGENTS.md'));
   });
 
   it('prefers AGENTS.md over agents.md within one directory', async () => {

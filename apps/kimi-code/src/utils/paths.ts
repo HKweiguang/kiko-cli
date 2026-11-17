@@ -9,13 +9,13 @@ import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
+import { resolveKimiHome } from '@moonshot-ai/kimi-code-sdk';
+
 import {
   KIMI_CODE_BANNER_DIR_NAME,
   KIMI_CODE_BANNER_STATE_FILE_NAME,
   KIMI_CODE_BIN_DIR_NAME,
   KIMI_CODE_CACHE_DIR_NAME,
-  KIMI_CODE_DATA_DIR_NAME,
-  KIMI_CODE_HOME_ENV,
   KIMI_CODE_INPUT_HISTORY_DIR_NAME,
   KIMI_CODE_LOG_DIR_NAME,
   KIMI_CODE_MODEL_MIGRATION_STATE_FILE_NAME,
@@ -31,16 +31,16 @@ import {
 } from '#/constant/app';
 
 /**
- * Return the root data directory for Kimi Code.
+ * Return the root data directory for the CLI.
  *
- * Priority: `KIMI_CODE_HOME` env var > `~/.kimi-code`.
+ * Priority: `KIKO_HOME` > legacy `KIMI_CODE_HOME` > `~/.kiko`, migrating an
+ * existing `~/.kimi-code` home on first use.
  */
-export function getDataDir(): string {
-  const envDir = process.env[KIMI_CODE_HOME_ENV];
-  if (envDir) {
-    return envDir;
-  }
-  return join(homedir(), KIMI_CODE_DATA_DIR_NAME);
+export function getDataDir(
+  env: NodeJS.ProcessEnv = process.env,
+  osHomeDir: string = homedir(),
+): string {
+  return resolveKimiHome(undefined, env, osHomeDir);
 }
 
 /**
@@ -106,7 +106,7 @@ export function getPluginUpdateNoticeStateFile(): string {
 /**
  * Return the native staged-update directory: `<exe dir>/.staging/`.
  *
- * Anchored on the running executable (not `~/.kimi-code/bin`) because the
+ * Anchored on the running executable (not `<dataDir>/bin`) because the
  * Windows installer honors `KIMI_INSTALL_DIR`, and the swap's atomic renames
  * require the staged binary to sit on the same volume as the exe.
  */

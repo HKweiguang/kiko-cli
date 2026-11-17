@@ -18,6 +18,7 @@ plugins/cdn/
 .worktrees/
 .tower/
 .kimi-code/local.toml
+.kiko/local.toml
 .kimi-sandbox/
 .vscode/
 !apps/vscode/.vscode/

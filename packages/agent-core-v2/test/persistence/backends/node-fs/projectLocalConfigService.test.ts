@@ -1,8 +1,13 @@
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 import { parse as parseToml } from 'smol-toml';
 
 import { HostFsError, OsFsErrors } from '#/os/interface/hostFsErrors';
 import type { IHostFileSystem } from '#/os/interface/hostFileSystem';
+import { HostFileSystem } from '#/os/backends/node-local/hostFsService';
 import { FileProjectLocalConfigService } from '#/persistence/backends/node-fs/projectLocalConfigService';
 
 function serviceWithReadError(error: Error): FileProjectLocalConfigService {
@@ -32,7 +37,7 @@ describe('FileProjectLocalConfigService permissionRules', () => {
     const existing = { decision: 'deny', scope: 'project', pattern: 'Bash(git push *)' };
     const added = { decision: 'allow', scope: 'project', pattern: 'Read(**)' };
     const concurrentAdded = { decision: 'ask', scope: 'project', pattern: 'Edit(**)' };
-    const configPath = '/repo/.kimi-code/local.toml';
+    const configPath = '/repo/.kiko/local.toml';
     let text = `[workspace]\nadditional_dir = []\n\n[[permission.rules]]\ndecision = "deny"\nscope = "project"\npattern = "Bash(git push *)"\n`;
     const staged = new Map<string, string>();
     const writes: string[] = [];
@@ -49,7 +54,7 @@ describe('FileProjectLocalConfigService permissionRules', () => {
         return value;
       },
       lstat: async (path: string) => {
-        if (['/repo', '/repo/.git', '/repo/.kimi-code', configPath].includes(path)) {
+        if (['/repo', '/repo/.git', '/repo/.kiko', configPath].includes(path)) {
           return { isSymbolicLink: symlinks.has(path) };
         }
         throw missing();
@@ -98,7 +103,7 @@ describe('FileProjectLocalConfigService permissionRules', () => {
     await expect(service.appendPermissionRules('/repo', [added])).rejects.toThrow();
     expect(text).toBe(validText);
     failRename = false;
-    for (const path of [configPath, '/repo/.kimi-code']) {
+    for (const path of [configPath, '/repo/.kiko']) {
       symlinks.add(path);
       await expect(service.appendPermissionRules('/repo', [added])).rejects.toThrow('symlink');
       symlinks.clear();
@@ -109,6 +114,46 @@ describe('FileProjectLocalConfigService permissionRules', () => {
     await expect(service.readPermissionRules('/repo')).rejects.toThrow('permission.rules must be an array');
     text = '[permission\nrules = []\n';
     await expect(service.readPermissionRules('/repo')).rejects.toThrow('Invalid TOML');
+  });
+});
+
+describe('FileProjectLocalConfigService project .kiko directory', () => {
+  it('reads a legacy .kimi-code/local.toml and carries its rules into .kiko on write', async () => {
+    const repo = mkdtempSync(join(tmpdir(), 'kiko-project-local-'));
+    try {
+      mkdirSync(join(repo, '.git'), { recursive: true });
+      mkdirSync(join(repo, '.kimi-code'), { recursive: true });
+      const legacyRule = {
+        decision: 'deny',
+        scope: 'project',
+        pattern: 'Bash(git push *)',
+      };
+      const added = { decision: 'allow', scope: 'project', pattern: 'Read(**)' };
+      const legacyConfig = join(repo, '.kimi-code', 'local.toml');
+      const canonicalConfig = join(repo, '.kiko', 'local.toml');
+      writeFileSync(
+        legacyConfig,
+        '[workspace]\nadditional_dir = []\n\n[[permission.rules]]\ndecision = "deny"\nscope = "project"\npattern = "Bash(git push *)"\n',
+      );
+      const service = new FileProjectLocalConfigService(
+        { _serviceBrand: undefined, osHomeDir: '' } as never,
+        new HostFileSystem(),
+      );
+
+      const described = await service.readPermissionRules(repo);
+      expect(described.configPath).toBe(legacyConfig);
+      expect(described.rules).toEqual([legacyRule]);
+
+      const appended = await service.appendPermissionRules(repo, [added]);
+      expect(appended.configPath).toBe(canonicalConfig);
+      expect(appended.rules).toEqual([legacyRule, added]);
+      expect(parseToml(readFileSync(canonicalConfig, 'utf-8'))).toMatchObject({
+        permission: { rules: [legacyRule, added] },
+      });
+      expect(readFileSync(legacyConfig, 'utf-8')).not.toContain('Read(**)');
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
   });
 });
 

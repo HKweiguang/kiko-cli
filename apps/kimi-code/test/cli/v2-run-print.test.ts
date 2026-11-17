@@ -63,7 +63,8 @@ const mocks = vi.hoisted(() => ({
   resolveMcpJsonPaths: vi.fn(async () => ({
     user: '/tmp/kimi-code-test-home/mcp.json',
     projectRoot: '/tmp/project/.mcp.json',
-    project: '/tmp/project/.kimi-code/mcp.json',
+    project: '/tmp/project/.kiko/mcp.json',
+    legacyProject: '/tmp/project/.kimi-code/mcp.json',
   })),
   createKimiDefaultHeaders: vi.fn(() => ({})),
   resolveKimiHome: vi.fn((homeDir?: string) => homeDir ?? '/tmp/kimi-code-test-home'),

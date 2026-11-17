@@ -30,6 +30,28 @@ describe('agentRoots', () => {
   }
 
   describe('projectRoots', () => {
+    it('resolves the canonical .kiko/agents directory at the .git root', async () => {
+      await markGitRoot();
+      await mkdir(join(root, '.kiko/agents'), { recursive: true });
+
+      const roots = await projectAgentRoots(hostFs, root);
+
+      expect(roots.some((r) => r.path.endsWith('.kiko/agents') && r.source === 'project')).toBe(
+        true,
+      );
+    });
+
+    it('prefers .kiko/agents over the legacy .kimi-code/agents directory', async () => {
+      await markGitRoot();
+      await mkdir(join(root, '.kiko/agents'), { recursive: true });
+      await mkdir(join(root, '.kimi-code/agents'), { recursive: true });
+
+      const roots = await projectAgentRoots(hostFs, root);
+
+      expect(roots.some((r) => r.path.endsWith('.kiko/agents'))).toBe(true);
+      expect(roots.some((r) => r.path.endsWith('.kimi-code/agents'))).toBe(false);
+    });
+
     it('resolves the brand .kimi-code/agents directory at the .git root', async () => {
       await markGitRoot();
       await mkdir(join(root, '.kimi-code/agents'), { recursive: true });

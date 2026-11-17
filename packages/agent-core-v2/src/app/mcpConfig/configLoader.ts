@@ -1,6 +1,10 @@
 import { dirname, join, normalize } from 'pathe';
 
-import { resolveKimiHome } from '#/app/bootstrap/bootstrap';
+import {
+  KIKO_DATA_DIR_NAME,
+  LEGACY_KIMI_CODE_DATA_DIR_NAME,
+  resolveKimiHome,
+} from '#/app/bootstrap/bootstrap';
 import { findGitWorkTree } from '#/app/git/workTree';
 import { resolvePath } from '#/_base/utils/paths';
 import { ErrorCodes, Error2 } from '#/errors';
@@ -12,6 +16,7 @@ export interface McpJsonPaths {
   readonly user: string;
   readonly projectRoot: string;
   readonly project: string;
+  readonly legacyProject: string;
 }
 
 export interface ResolveMcpJsonPathsInput {
@@ -27,7 +32,8 @@ export async function resolveMcpJsonPaths(input: ResolveMcpJsonPathsInput): Prom
   return {
     user: join(resolveKimiHome(input.homeDir), 'mcp.json'),
     projectRoot: join(projectRoot, '.mcp.json'),
-    project: join(input.cwd, '.kimi-code', 'mcp.json'),
+    project: join(input.cwd, KIKO_DATA_DIR_NAME, 'mcp.json'),
+    legacyProject: join(input.cwd, LEGACY_KIMI_CODE_DATA_DIR_NAME, 'mcp.json'),
   };
 }
 
@@ -61,10 +67,12 @@ export async function loadMcpServersDetailed(
     await Promise.all([
       readMcpJson(input.fs, paths.user),
       readMcpJson(input.fs, paths.projectRoot, { stdioCwdBase: dirname(paths.projectRoot) }),
+      readMcpJson(input.fs, paths.legacyProject),
       readMcpJson(input.fs, paths.project),
-    ]).then(([user, projectRoot, project]) => [
+    ]).then(([user, projectRoot, legacyProject, project]) => [
       [paths.user, user],
       [paths.projectRoot, projectRoot],
+      [paths.legacyProject, legacyProject],
       [paths.project, project],
     ]);
   const servers: Record<string, McpServerConfig> = Object.create(null);

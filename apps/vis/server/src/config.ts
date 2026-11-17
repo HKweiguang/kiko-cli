@@ -1,13 +1,42 @@
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-/** Resolve KIMI_CODE_HOME (env > ~/.kimi-code). */
+/** Resolve the data home: KIKO_HOME > legacy KIMI_CODE_HOME > a completed ~/.kiko (legacy ~/.kimi-code while present). */
 export function resolveKimiCodeHome(): string {
-  const envHome = process.env['KIMI_CODE_HOME'];
-  if (envHome !== undefined && envHome.length > 0) {
+  const envHome =
+    nonEmpty(process.env['KIKO_HOME']) ?? nonEmpty(process.env['KIMI_CODE_HOME']);
+  if (envHome !== undefined) {
     return envHome;
   }
-  return join(homedir(), '.kimi-code');
+  const osHome = homedir();
+  const canonical = join(osHome, '.kiko');
+  if (isCompletedKimiHome(canonical)) return canonical;
+  const legacy = join(osHome, '.kimi-code');
+  if (isDirectory(legacy)) return legacy;
+  return canonical;
+}
+
+function isCompletedKimiHome(homeDir: string): boolean {
+  try {
+    if (!statSync(homeDir).isDirectory()) return false;
+    if (existsSync(join(homeDir, '.kiko-migration.json'))) return true;
+    return readdirSync(homeDir).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function nonEmpty(value: string | undefined): string | undefined {
+  return value !== undefined && value.length > 0 ? value : undefined;
 }
 
 /** HTTP port for the vis API server. */

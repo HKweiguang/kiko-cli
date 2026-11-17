@@ -8,6 +8,7 @@ import {
   configuredRoots,
   projectRoots,
   projectRootsForDirs,
+  projectSkillRootCandidates,
   userRoots,
 } from '#/features/skill/catalog/skillRoots';
 
@@ -27,6 +28,50 @@ describe('skillRoots', () => {
   }
 
   describe('projectRoots', () => {
+    it('resolves the canonical .kiko/skills directory at the .git root', async () => {
+      await markGitRoot();
+      await mkdir(join(root, '.kiko/skills/commit'), { recursive: true });
+
+      const roots = await projectRoots(root);
+
+      expect(roots.some((r) => r.path.endsWith('.kiko/skills') && r.source === 'project')).toBe(
+        true,
+      );
+    });
+
+    it('dual-reads the legacy .kimi-code/skills directory', async () => {
+      await markGitRoot();
+      await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
+
+      const roots = await projectRoots(root);
+
+      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills') && r.source === 'project')).toBe(
+        true,
+      );
+    });
+
+    it('orders .kiko/skills before the legacy .kimi-code/skills directory', async () => {
+      await markGitRoot();
+      await mkdir(join(root, '.kiko/skills'), { recursive: true });
+      await mkdir(join(root, '.kimi-code/skills'), { recursive: true });
+
+      const roots = await projectRoots(root);
+      const canonicalIdx = roots.findIndex((r) => r.path.endsWith('.kiko/skills'));
+      const legacyIdx = roots.findIndex((r) => r.path.endsWith('.kimi-code/skills'));
+
+      expect(canonicalIdx).toBeGreaterThanOrEqual(0);
+      expect(legacyIdx).toBeGreaterThan(canonicalIdx);
+    });
+
+    it('exposes both project directories as trust-disclosure candidates', async () => {
+      await markGitRoot();
+
+      const { projectRoot, candidates } = await projectSkillRootCandidates(root);
+
+      expect(candidates).toContain(join(projectRoot, '.kiko/skills'));
+      expect(candidates).toContain(join(projectRoot, '.kimi-code/skills'));
+    });
+
     it('resolves the brand .kimi-code/skills directory at the .git root', async () => {
       await markGitRoot();
       await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
