@@ -964,7 +964,9 @@ describe('Remote Control single-instance lock', () => {
         relayOrigin: `http://127.0.0.1:${relay.port}`,
         stderr: { write: () => true },
       }),
-    ).rejects.toThrow(/already running[\s\S]*127\.0\.0\.1:58627[\s\S]*\/devices\//);
+    ).rejects.toThrow(
+      /already running[\s\S]*127\.0\.0\.1:58627[\s\S]*\/devices\/[\s\S]*`kiko web --remote-control`/,
+    );
     expect(relay.requests).toHaveLength(2);
   });
 
@@ -1766,7 +1768,7 @@ describe('Remote Control manager', () => {
           relayOrigin: `http://127.0.0.1:${relay.port}`,
           stderr: { write: () => true },
         }),
-      ).rejects.toThrow('Remote Control requires a Kimi login');
+      ).rejects.toThrow('Remote Control requires a Kimi login. Run `kiko login` first.');
       expect(existsSync(remoteControlLockPath(homeDir))).toBe(false);
     } finally {
       vi.restoreAllMocks();

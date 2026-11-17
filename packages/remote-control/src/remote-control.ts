@@ -356,7 +356,7 @@ export async function startRemoteControl(
   const storage = new FileTokenStorage(join(options.homeDir, 'credentials'));
   const token = await storage.load(resolveKimiTokenStorageName({ oauthKey: auth.oauthKey }));
   if (token?.refreshToken === undefined || token.refreshToken.length === 0) {
-    throw new Error('Remote Control requires a Kimi login. Run `kimi login` first.');
+    throw new Error('Remote Control requires a Kimi login. Run `kiko login` first.');
   }
   const relayOrigin =
     options.relayOrigin ?? resolveRemoteControlRelayOrigin(process.env, auth.relayOrigin);
@@ -371,7 +371,7 @@ export async function startRemoteControl(
   const tokenAfterLock = await storage.load(resolveKimiTokenStorageName({ oauthKey: auth.oauthKey }));
   if (tokenAfterLock?.refreshToken !== token.refreshToken) {
     await lock.release();
-    throw new Error('Remote Control requires a Kimi login. Run `kimi login` first.');
+    throw new Error('Remote Control requires a Kimi login. Run `kiko login` first.');
   }
   const client = new RemoteControlClient({
     ...options,

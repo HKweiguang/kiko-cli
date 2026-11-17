@@ -54,9 +54,9 @@ function pidAlive(pid: number): boolean {
 }
 
 const CLIENT_DISPLAY_NAMES: Record<string, string> = {
-  kimi_code_cli: 'Kimi Code CLI',
-  kimi_code_desktop: 'Kimi Code Desktop',
-  kimi_code_vscode: 'Kimi Code for VS Code',
+  kimi_code_cli: 'Kiko CLI',
+  kimi_code_desktop: 'Kiko Desktop',
+  kimi_code_vscode: 'Kiko for VS Code',
 };
 
 export class SessionLockService extends SessionLockHolds {
@@ -78,7 +78,7 @@ export class SessionLockService extends SessionLockHolds {
     this.clientIdentity = bootstrap.clientIdentity.platform || bootstrap.clientIdentity.productName;
     this.clientDisplayName =
       this.clientIdentity === 'kimi_code_cli' && bootstrap.clientIdentity.userAgentSuffix === 'web'
-        ? 'Kimi Code Web'
+        ? 'Kiko Web'
         : CLIENT_DISPLAY_NAMES[this.clientIdentity];
     this.disabled = parseBooleanEnv(bootstrap.getEnv(SESSION_LOCK_ENV)) === false;
   }

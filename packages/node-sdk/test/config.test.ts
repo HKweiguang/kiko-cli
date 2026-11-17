@@ -1,11 +1,17 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createKimiConfigRpc } from '#/index';
-import { configToTomlData, parseConfigString } from '#/config/index';
+import {
+  configToTomlData,
+  ensureConfigFile,
+  loadRuntimeConfigSafe,
+  parseConfigString,
+  readConfigFileForUpdate,
+} from '#/config/index';
 
 const toPosix = (p: string): string => p.replaceAll('\\', '/');
 
@@ -29,6 +35,38 @@ describe('SDK config TOML', () => {
     const rpc = createKimiConfigRpc();
 
     await expect(rpc.resolveConfigPath({ homeDir: dir })).resolves.toBe(toPosix(join(dir, 'config.toml')));
+  });
+
+  it('writes the canonical Kiko config template', async () => {
+    const dir = await makeTempDir();
+    const filePath = join(dir, 'config.toml');
+
+    await ensureConfigFile(filePath);
+
+    const text = await readFile(filePath, 'utf8');
+    expect(text).toContain('# ~/.kiko/config.toml');
+    expect(text).toContain('# Environment settings for Kiko.');
+    expect(text).not.toContain('kimi-code');
+    expect(text).not.toContain('Kimi Code');
+  });
+
+  it('points config validation warnings at `kiko doctor`', async () => {
+    const dir = await makeTempDir();
+    const filePath = join(dir, 'config.toml');
+    await writeFile(filePath, 'plan_mode = 123\n', 'utf8');
+
+    const result = loadRuntimeConfigSafe(filePath);
+
+    expect(result.fileWarnings.join('\n')).toContain('Run `kiko doctor` for details.');
+    expect(result.fileWarnings.join('\n')).not.toContain('kimi doctor');
+  });
+
+  it('points config update failures at `kiko doctor`', async () => {
+    const dir = await makeTempDir();
+    const filePath = join(dir, 'config.toml');
+    await writeFile(filePath, 'not = valid [ toml\n', 'utf8');
+
+    expect(() => readConfigFileForUpdate(filePath)).toThrowError(/run `kiko doctor` for details/);
   });
 
   it('returns structured validation issues through the config RPC wrapper', async () => {

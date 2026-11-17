@@ -104,22 +104,22 @@ describe('SessionLockService', () => {
     {
       platform: 'kimi_code_cli',
       userAgentSuffix: undefined,
-      displayName: 'Kimi Code CLI',
+      displayName: 'Kiko CLI',
     },
     {
       platform: 'kimi_code_desktop',
       userAgentSuffix: undefined,
-      displayName: 'Kimi Code Desktop',
+      displayName: 'Kiko Desktop',
     },
     {
       platform: 'kimi_code_cli',
       userAgentSuffix: 'web',
-      displayName: 'Kimi Code Web',
+      displayName: 'Kiko Web',
     },
     {
       platform: 'kimi_code_vscode',
       userAgentSuffix: undefined,
-      displayName: 'Kimi Code for VS Code',
+      displayName: 'Kiko for VS Code',
     },
   ])('names $displayName in the occupied error', ({ platform, userAgentSuffix, displayName }) => {
     const lockingService = new SessionLockService(
@@ -191,19 +191,19 @@ describe('SessionLockService', () => {
     serviceA.hold('warmup');
     serviceA.release('warmup');
     writeFileSync(lockPath(homeDir, SID), JSON.stringify(foreign), { mode: 0o600 });
-    expect(() => serviceA.hold(SID)).toThrowError(/in use by another Kimi Code process/);
+    expect(() => serviceA.hold(SID)).toThrowError(/in use by another Kiko process/);
     expect(readLockFile(homeDir, SID).token).toBe('foreign-token');
   });
 
   it('takeover evicts a live holder and leaves the new lock alone when the old holder releases', () => {
     serviceB.hold(SID);
-    expect(() => serviceA.hold(SID)).toThrowError(/in use by another Kimi Code process/);
+    expect(() => serviceA.hold(SID)).toThrowError(/in use by another Kiko process/);
     serviceA.takeover(SID);
     serviceA.hold(SID);
     const token = readLockFile(homeDir, SID).token;
     serviceB.release(SID);
     expect(readLockFile(homeDir, SID).token).toBe(token);
-    expect(() => serviceB.hold(SID)).toThrowError(/in use by another Kimi Code process/);
+    expect(() => serviceB.hold(SID)).toThrowError(/in use by another Kiko process/);
     serviceA.release(SID);
   });
 
@@ -289,7 +289,7 @@ describe('SessionLockService', () => {
     serviceA.hold(SID);
     serviceA.release(SID);
     expect(existsSync(lockPath(homeDir, SID))).toBe(true);
-    expect(() => serviceB.hold(SID)).toThrowError(/in use by another Kimi Code process/);
+    expect(() => serviceB.hold(SID)).toThrowError(/in use by another Kiko process/);
     lease.release();
     expect(existsSync(lockPath(homeDir, SID))).toBe(false);
     expect(() => serviceB.hold(SID)).not.toThrow();

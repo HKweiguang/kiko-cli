@@ -110,7 +110,7 @@ function assertSearchWireReaderVersion(line: string): void {
     const diff = Number(current[index] ?? '0') - Number(required[index] ?? '0');
     if (diff < 0) {
       const error = new Error(
-        `This wire.jsonl requires reader protocol ${minReaderVersion}; current Kimi Code supports ${SEARCH_WIRE_PROTOCOL_VERSION}. Upgrade Kimi Code to read this session.`,
+        `This wire.jsonl requires reader protocol ${minReaderVersion}; current Kiko supports ${SEARCH_WIRE_PROTOCOL_VERSION}. Upgrade Kiko to read this session.`,
       ) as Error & { code: string };
       error.code = 'wire.version_too_low';
       throw error;
