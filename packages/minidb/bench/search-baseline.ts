@@ -1,24 +1,26 @@
 // bench/search-baseline.ts
 //
-// "Without minidb" search baseline over the SAME real ~/.kimi-code sessions
+// "Without minidb" search baseline over the SAME real ~/.kiko sessions
 // used by import-kimi-code.ts. Loads every session's extracted text into an
 // in-memory array, then answers the same queries with a naive full scan
 // (substring token-AND for text, linear Array.filter for secondary index / dt
 // range). Paired with import-kimi-code.ts, this shows what minidb's indexes
 // buy you on real data.
 //
-// Run:  node --import tsx bench/search-baseline.ts [--data ~/.kimi-code]
+// Run:  node --import tsx bench/search-baseline.ts [--data ~/.kiko]
 
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+
+import { readWorkspaceEntries } from './read-workspaces.js';
 
 const argv = process.argv.slice(2);
 const arg = (name: string, def: string) => {
   const i = argv.indexOf(`--${name}`);
   return i === -1 ? def : argv[i + 1]!;
 };
-const DATA = path.resolve(arg('data', path.join(os.homedir(), '.kimi-code')));
+const DATA = path.resolve(arg('data', path.join(os.homedir(), '.kiko')));
 const FULL = argv.includes('--full'); // also index full tool results (matches import-kimi-code --full)
 
 const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -123,8 +125,7 @@ function med<T>(fn: () => T, runs = 7): { value: T; ms: number } {
 async function main() {
   console.log(`data: ${DATA}`);
 
-  const wsRaw = JSON.parse(readFileSync(path.join(DATA, 'workspaces.json'), 'utf8'));
-  const workspaces = wsRaw.workspaces || wsRaw;
+  const workspaces = readWorkspaceEntries(DATA);
   const lines = readFileSync(path.join(DATA, 'session_index.jsonl'), 'utf8').trim().split('\n');
 
   const t0 = performance.now();
@@ -212,7 +213,7 @@ async function main() {
   console.log(`\ndone.`);
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });

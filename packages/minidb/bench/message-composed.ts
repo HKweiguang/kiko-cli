@@ -36,7 +36,7 @@ interface Msg {
 }
 
 function loadAllMessages(): Msg[] {
-  const DATA = path.join(os.homedir(), '.kimi-code');
+  const DATA = path.join(os.homedir(), '.kiko');
   const lines = readFileSync(path.join(DATA, 'session_index.jsonl'), 'utf8').trim().split('\n');
   const out: Msg[] = [];
   for (const line of lines) {
@@ -137,7 +137,7 @@ async function runCase(label: string, msgs: Msg[]) {
     }).length;
   });
   const aNaive = med(() => {
-    aHits = msgs.filter((m) => m.role === 'user' && m.ts >= since).sort((a, b) => b.ts - a.ts).slice(0, LIMIT).length;
+    aHits = msgs.filter((m) => m.role === 'user' && m.ts >= since).toSorted((a, b) => b.ts - a.ts).slice(0, LIMIT).length;
   });
 
   // B. ALL user in window (no limit)
@@ -190,7 +190,7 @@ async function main() {
   console.log('\ndone.');
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });

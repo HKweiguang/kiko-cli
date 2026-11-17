@@ -1,6 +1,6 @@
 // bench/search-kimi-code.js
 //
-// Import ~/.kimi-code sessions (useful extraction) and full-text-search for a
+// Import ~/.kiko sessions (useful extraction) and full-text-search for a
 // query, printing hits with context snippets.
 //
 // Run:  node bench/search-kimi-code.js <query>  [--full]
@@ -10,6 +10,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { MiniDb } from '../src/index.js';
+import { readWorkspaceEntries } from './read-workspaces.js';
 
 const argv = process.argv.slice(2);
 const FULL = argv.includes('--full');
@@ -19,7 +20,7 @@ if (!query) {
   process.exit(1);
 }
 
-const DATA = path.join(os.homedir(), '.kimi-code');
+const DATA = path.join(os.homedir(), '.kiko');
 const ARG_FIELDS = ['command', 'pattern', 'path', 'description', 'query', 'prompt', 'file_path'];
 
 function extractWireText(wirePath, full) {
@@ -60,17 +61,17 @@ function extractWireText(wirePath, full) {
 
 function snippet(text, q, radius = 60) {
   const i = text.indexOf(q);
-  if (i === -1) return text.slice(0, radius * 2).replace(/\s+/g, ' ') + '…';
+  if (i === -1) return text.slice(0, radius * 2).replaceAll(/\s+/g, ' ') + '…';
   const s = Math.max(0, i - radius);
   const e = Math.min(text.length, i + q.length + radius);
-  return (s > 0 ? '…' : '') + text.slice(s, e).replace(/\s+/g, ' ') + (e < text.length ? '…' : '');
+  return (s > 0 ? '…' : '') + text.slice(s, e).replaceAll(/\s+/g, ' ') + (e < text.length ? '…' : '');
 }
 
 async function main() {
   const OUT = path.join(os.tmpdir(), 'minidb-search-' + Date.now());
   await fs.rm(OUT, { recursive: true, force: true });
 
-  const workspaces = JSON.parse(readFileSync(path.join(DATA, 'workspaces.json'), 'utf8')).workspaces || {};
+  const workspaces = readWorkspaceEntries(DATA);
   const lines = readFileSync(path.join(DATA, 'session_index.jsonl'), 'utf8').trim().split('\n');
 
   const db = await MiniDb.open({ dir: OUT, valueCodec: 'json', fsyncPolicy: 'no', autoCompact: false });
@@ -118,7 +119,7 @@ async function main() {
   await db.close();
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });
