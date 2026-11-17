@@ -27,7 +27,7 @@ const hostPackage = JSON.parse(readFileSync(resolve(appRoot, 'package.json'), 'u
 
 describe('isExecServerArgv', () => {
   it('matches the SEA argv shape without a script slot', () => {
-    expect(isExecServerArgv(['/home/me/.kimi-code/bin/kimi', 'exec-server', '--listen', 'stdio'])).toBe(
+    expect(isExecServerArgv(['/home/me/.kiko/bin/kiko', 'exec-server', '--listen', 'stdio'])).toBe(
       true,
     );
   });

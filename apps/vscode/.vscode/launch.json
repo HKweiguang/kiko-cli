@@ -16,7 +16,7 @@
         "${workspaceFolder}/../../.tmp/vscode-extension-dev/workspace"
       ],
       "env": {
-        "KIMI_CODE_HOME": "${workspaceFolder}/../../.tmp/vscode-extension-dev/kimi-home"
+        "KIKO_HOME": "${workspaceFolder}/../../.tmp/vscode-extension-dev/kiko-home"
       },
       "outFiles": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/dist/**/*.mjs"],
       "sourceMaps": true,

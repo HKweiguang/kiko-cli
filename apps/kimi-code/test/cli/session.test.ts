@@ -19,7 +19,7 @@ function summary(overrides: Partial<SessionSummary> = {}): SessionSummary {
   return {
     id: 'ses_1',
     workDir: '/repo',
-    sessionDir: '/home/.kimi-code/sessions/wd_repo/ses_1',
+    sessionDir: '/home/.kiko/sessions/wd_repo/ses_1',
     createdAt: 1,
     updatedAt: new Date('2026-09-01T10:00:00').getTime(),
     ...overrides,
