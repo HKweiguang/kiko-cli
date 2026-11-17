@@ -37,30 +37,36 @@ tools exist and the user didn't name one, ask which.
 
 ## Config edit
 
-Config lives in three files; on key collision, later entries in this
+Config lives in three scopes; on key collision, later entries in this
 precedence order override earlier ones.
 
-The kimi-code runtime resolves the user-global directory as `KIMI_CODE_HOME`
-first, falling back to `~/.kimi-code`. Before touching the user-global file,
-resolve the actual directory with Bash so you don't read or write the wrong
-one. Check whether `KIMI_CODE_HOME` is set and fall back to `~/.kimi-code`
-when it is empty:
+The canonical user-global directory is `$KIKO_HOME` when set, otherwise the
+default is `~/.kiko`. Before touching the user-global file, take the actual
+directory from the running CLI instead of assuming either: run **`kiko
+doctor`** and use the directory containing the `config.toml` / `tui.toml`
+paths it reports (the command prints them even when a file is missing or
+invalid):
 
 ```bash
-echo "$KIMI_CODE_HOME"
-echo "$HOME/.kimi-code"
+kiko doctor
 ```
 
-Use the first line when it is non-empty; otherwise use the second line. In the
-rest of this skill, `<KIMI_CODE_HOME>` means that resolved data root —
-**never assume `~/.kimi-code`**.
+If `kiko doctor` is unavailable, fall back to the canonical default and
+confirm the directory with the user:
 
-- User-global: `<KIMI_CODE_HOME>/mcp.json`. Use for servers you want
+```bash
+echo "${KIKO_HOME:-$HOME/.kiko}"
+```
+
+In the rest of this skill, `<KIKO_HOME>` means that resolved data root —
+**never assume `~/.kiko`**.
+
+- User-global: `<KIKO_HOME>/mcp.json`. Use for servers you want
   everywhere.
 - Project-root: `<project root>/.mcp.json`, where project root is found
   by walking up from `<cwd>` to the nearest `.git`. Use for
   Claude-compatible, repo-shared, or cross-agent servers.
-- Project-local: `<cwd>/.kimi-code/mcp.json`. Use for Kimi-specific
+- Project-local: `<cwd>/.kiko/mcp.json`. Use for Kimi-specific
   overrides in the current working directory.
 
 Mention once that project-root and project-local stdio entries spawn
@@ -102,7 +108,7 @@ For changes, the flow is:
 1. **Pick a scope.** Infer it from the user's words when you can
    (global / everywhere / all projects → user-global; root / repo /
    shared / cross-agent / Claude / `.mcp.json` → project-root; cwd /
-   current directory / Kimi-specific / `.kimi-code` → project-local). When
+   current directory / Kimi-specific / `.kiko` → project-local). When
    the request is genuinely scope-less, use one `AskUserQuestion` to ask
    user-global vs project-root vs project-local, defaulting to
    user-global. Use plain text for every other question — `AskUserQuestion`

@@ -130,3 +130,36 @@ describe('import-from-cc-codex prompt rendering', () => {
     expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('KIMI_SESSION_ID');
   });
 });
+
+describe('builtin skill data-home guidance', () => {
+  const DATA_HOME_SKILLS = [
+    'update-config',
+    'custom-theme',
+    'mcp-config',
+    'import-from-cc-codex',
+  ];
+
+  it('defers to kiko doctor and keeps canonical KIKO_HOME paths only', () => {
+    for (const name of DATA_HOME_SKILLS) {
+      const skill = BUILTIN_SKILLS.find((candidate) => candidate.name === name);
+      expect(skill, name).toBeDefined();
+      expect(skill?.content, name).toContain('kiko doctor');
+      expect(skill?.content, name).toContain('KIKO_HOME');
+      expect(skill?.content, name).toContain('~/.kiko');
+      expect(skill?.content, name).not.toContain('KIMI_CODE_HOME');
+      expect(skill?.content, name).not.toContain('.kimi-code');
+    }
+  });
+
+  it('targets canonical .kiko project paths when importing', () => {
+    const content = IMPORT_FROM_CC_CODEX_SKILL.content;
+    expect(content).toContain('<dir>/.kiko/AGENTS.md');
+    expect(content).toContain('<project root>/.kiko/skills/');
+    expect(content).toContain('<cwd>/.kiko/mcp.json');
+  });
+
+  it('targets the canonical project-local mcp.json from mcp-config', () => {
+    const skill = BUILTIN_SKILLS.find((candidate) => candidate.name === 'mcp-config');
+    expect(skill?.content).toContain('<cwd>/.kiko/mcp.json');
+  });
+});
