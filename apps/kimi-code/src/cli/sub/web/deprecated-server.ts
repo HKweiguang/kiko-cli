@@ -28,7 +28,7 @@ export const DEPRECATED_SERVER_NOTICE =
 
 export function registerDeprecatedServerCommand(program: Command): void {
   const server = program
-    .command('server')
+    .command('server', { hidden: true })
     .description('Deprecated — use `kiko web` instead.')
     // Swallow every legacy subcommand/flag (`run`, `kill`, `--port`, …) so
     // they all land in the same notice instead of a commander parse error.
