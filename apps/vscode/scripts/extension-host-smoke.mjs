@@ -50,7 +50,7 @@ export async function runExtensionHostSmoke(options = {}) {
       paths.workspace,
       paths.harness,
     ].map((path) => mkdir(path, { recursive: true })));
-    await writeFile(join(paths.workspace, "README.md"), "# Kimi VSIX Extension Host smoke\n", "utf8");
+    await writeFile(join(paths.workspace, "README.md"), "# Kiko VSIX Extension Host smoke\n", "utf8");
     await writeHarnessManifest(paths.harness);
 
     const installProfileArgs = [
@@ -119,7 +119,7 @@ async function writeHarnessManifest(directory) {
     join(directory, "package.json"),
     JSON.stringify({
       name: "kimi-vscode-extension-host-smoke",
-      displayName: "Kimi VSCode Extension Host Smoke",
+      displayName: "Kiko VSCode Extension Host Smoke",
       publisher: "local-test",
       version: "0.0.0",
       engines: { vscode: "^1.70.0" },

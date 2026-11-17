@@ -1,6 +1,6 @@
 # Hooks
 
-Hooks are an automatic trigger mechanism: you tell Kimi Code CLI in advance "whenever X happens, run this script." The script runs on your local machine, and you can put any logic inside it. This stays true when a session is bound to a [remote environment](../guides/remote-environment.md): hooks always execute on the machine running Kimi Code, so in a remote session they observe local files and processes, not the target's. Typical use cases:
+Hooks are an automatic trigger mechanism: you tell Kiko CLI in advance "whenever X happens, run this script." The script runs on your local machine, and you can put any logic inside it. This stays true when a session is bound to a [remote environment](../guides/remote-environment.md): hooks always execute on the machine running Kiko, so in a remote session they observe local files and processes, not the target's. Typical use cases:
 
 - **Security interception**: Before the Agent executes a shell command, check whether it contains dangerous operations (such as `rm -rf`) and block execution if so
 - **Desktop notifications**: When a background task completes, pop up a system notification to bring you back to review the results
@@ -32,7 +32,7 @@ The following hook flashes a notification in the terminal title bar each time a 
 [[hooks]]
 event = "Notification"           # Trigger: when a background task status changes
 matcher = "task\\.completed"     # Only care about "completed" notifications
-command = "terminal-notifier -title Kimi -message 'Task done'"
+command = "terminal-notifier -title Kiko -message 'Task done'"
 ```
 
 Save the config, start a new session, and a notification will appear the next time a background task completes.
@@ -54,7 +54,7 @@ All hook rules are written in the `[[hooks]]` array in `~/.kiko/config.toml`, wh
 
 Hook rules live only in your user-level `config.toml` and in local plugins — there is no project-level hook file, so content checked out on a remote target can never inject hook definitions into your session.
 
-Hook commands always execute on the machine running Kimi Code, with the current session's **local** project directory as their working directory. When the session is bound to a [remote environment](../guides/remote-environment.md), hooks that reference project paths operate on that local directory (the carrier of the binding), never on the target; running hooks on the target itself is not supported and remains a future, undesigned concept.
+Hook commands always execute on the machine running Kiko, with the current session's **local** project directory as their working directory. When the session is bound to a [remote environment](../guides/remote-environment.md), hooks that reference project paths operate on that local directory (the carrier of the binding), never on the target; running hooks on the target itself is not supported and remains a future, undesigned concept.
 
 <details>
 <summary>Process group and timeout handling</summary>
@@ -162,7 +162,7 @@ process.stdin.on('end', () => {
 });
 ```
 
-After blocking, Kimi Code CLI writes the blocking reason back into the context, and the model can use this to choose a safer alternative.
+After blocking, Kiko CLI writes the blocking reason back into the context, and the model can use this to choose a safer alternative.
 
 ::: warning Note
 This example only demonstrates the blocking mechanism and is not a production-grade security parser. Real scenarios are better served by whitelists, or a dedicated shell parser to handle quoting, variable expansion, and multi-command sequences.

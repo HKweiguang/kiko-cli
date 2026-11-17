@@ -94,7 +94,7 @@ HTTP 状态码几乎总是 200，业务结果以 `code` 为准。例外情况如
 
 `40931` 和 `40932` 只在同一个会话被多个客户端打开时出现。
 
-- **`40931`**：另一个 Kimi Code 进程正在写入这个会话。等它空闲后重试。如果确认那个进程已经退出、只是留下了锁，先调用 [`POST /api/v1/sessions/{session_id}:takeover`](./server-api-sessions.md#post-api-v1-sessions-session-id-takeover) 再重试。
+- **`40931`**：另一个 Kiko 进程正在写入这个会话。等它空闲后重试。如果确认那个进程已经退出、只是留下了锁，先调用 [`POST /api/v1/sessions/{session_id}:takeover`](./server-api-sessions.md#post-api-v1-sessions-session-id-takeover) 再重试。
 - **`40932`**：会话已被其他客户端更新。提交提示词、激活 Skill 和压缩遇到这种情况时，服务端会重新载入会话，向订阅者推送最新的 `turns` 帧，然后重新执行请求，调用方不会收到 `40932`。只有撤销会返回 `40932`：服务端已经重新载入会话，这次没有撤销任何内容。客户端应让用户先查看刷新后的历史，再决定是否撤销。
 
 ## 分页
@@ -168,5 +168,5 @@ HTTP 状态码几乎总是 200，业务结果以 `code` 为准。例外情况如
 ## 下一步
 
 - [会话与对话](./server-api-conversation.md)：WebSocket 协议和客户端流程
-- [在网页中使用](../guides/web.md)：启动服务并在浏览器中使用 Kimi Code
+- [在网页中使用](../guides/web.md)：启动服务并在浏览器中使用 Kiko
 - [kiko 命令](./kimi-command.md#kiko-web)：`kiko web` 的全部命令行选项

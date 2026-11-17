@@ -4,7 +4,7 @@ AI coding assistant for VS Code, built for long-context workflows and complex co
 
 ## Features
 
-- **Works alongside you**: Kimi autonomously explores your codebase, reads and writes code, and runs terminal commands with your permission
+- **Works alongside you**: Kiko autonomously explores your codebase, reads and writes code, and runs terminal commands with your permission
 - **Thinking controls**: Toggle reasoning or choose a model-supported thinking effort
 - **Provider-aware models**: Distinguish and select same-named models across configured providers
 - **Native editor integration**: Review AI-proposed changes directly in VS Code's diff viewer

@@ -1,6 +1,6 @@
 # Data locations
 
-Kimi Code CLI stores the config file, session history, login credentials, diagnostic logs, and other runtime data under `~/.kiko/`. This page helps you understand where each type of data lives, what it is for, and how to clean up or relocate it when needed.
+Kiko CLI stores the config file, session history, login credentials, diagnostic logs, and other runtime data under `~/.kiko/`. This page helps you understand where each type of data lives, what it is for, and how to clean up or relocate it when needed.
 
 ## Data root directory
 
@@ -16,11 +16,11 @@ If you need to move the data directory elsewhere (for example, to isolate config
 export KIKO_HOME="$HOME/.config/kiko"
 ```
 
-Once set, **all** Kimi Code data lands under the new path: config, sessions, logs, OAuth credentials, Kimi-specific user Skills, global `AGENTS.md`, and more. For the full reference on `KIKO_HOME`, see [Environment variables](./env-vars.md).
+Once set, **all** Kiko data lands under the new path: config, sessions, logs, OAuth credentials, Kiko-specific user Skills, global `AGENTS.md`, and more. For the full reference on `KIKO_HOME`, see [Environment variables](./env-vars.md).
 
 ::: tip Note
 
-**Generic `.agents` resources** stay under the real OS home so they can be shared across tools. For example, user-level generic Skills remain at `~/.agents/skills/`, while Kimi-specific user Skills move with `KIKO_HOME` as `$KIKO_HOME/skills/`.
+**Generic `.agents` resources** stay under the real OS home so they can be shared across tools. For example, user-level generic Skills remain at `~/.agents/skills/`, while Kiko-specific user Skills move with `KIKO_HOME` as `$KIKO_HOME/skills/`.
 :::
 
 ## Directory layout
@@ -29,9 +29,9 @@ Once set, **all** Kimi Code data lands under the new path: config, sessions, log
 $KIKO_HOME  (default: ~/.kiko)
 ├── config.toml             # User configuration
 ├── tui.toml                # Terminal UI preferences (including auto-update toggle)
-├── AGENTS.md               # Global Kimi-specific agent instructions (optional)
+├── AGENTS.md               # Global Kiko-specific agent instructions (optional)
 ├── mcp.json                # User-level MCP server declarations (optional)
-├── skills/                 # Kimi-specific user-level Skills (optional)
+├── skills/                 # Kiko-specific user-level Skills (optional)
 ├── plugins/
 │   ├── installed.json      # Installed plugin records and enabled state
 │   └── managed/            # Plugin copies installed from zip/local paths
@@ -64,9 +64,9 @@ Each top-level file under the data root serves a specific purpose; most are mana
 
 - **`config.toml`**: the main runtime configuration file, storing user-level settings such as providers, models, and loop control. See [Configuration files](./config-files.md).
 - **`tui.toml`**: terminal UI client preferences, including `[upgrade].auto_install` (auto-update, on by default). You can disable it in `/settings` or by manually setting `auto_install = false`.
-- **`AGENTS.md`**: global Kimi-specific agent instructions. This file moves with `KIKO_HOME`; generic cross-tool instructions can still live under `~/.agents/AGENTS.md`.
+- **`AGENTS.md`**: global Kiko-specific agent instructions. This file moves with `KIKO_HOME`; generic cross-tool instructions can still live under `~/.agents/AGENTS.md`.
 - **`mcp.json`**: user-level MCP server declarations, merged with the project-local `.kiko/mcp.json` on startup. See [MCP](../customization/mcp.md).
-- **`skills/`**: Kimi-specific user-level Skills. This directory moves with `KIKO_HOME`; generic cross-tool Skills can still live under `~/.agents/skills/`. See [Agent Skills](../customization/skills.md).
+- **`skills/`**: Kiko-specific user-level Skills. This directory moves with `KIKO_HOME`; generic cross-tool Skills can still live under `~/.agents/skills/`. See [Agent Skills](../customization/skills.md).
 - **`plugins/installed.json`**: records installed plugins, each plugin's enabled state, and MCP server capability state changes made via `/plugins` or `/plugins mcp disable|enable`. Files installed from local paths or zip URLs are copied to `plugins/managed/<id>/`. See [Plugins](../customization/plugins.md).
 - **`credentials/`**: OAuth credential directory, with permissions `0o700` (directory) / `0o600` (files), readable and writable only by the current user. Managed provider credentials are stored as `credentials/<name>.json`; MCP server credentials are stored under `credentials/mcp/`. Credentials are written using an atomic flow (tmp → fsync → rename) to prevent corruption.
 
@@ -118,9 +118,9 @@ Deleting the data root directory (`~/.kiko/` or the path set by `KIKO_HOME`) rem
 | Clear provider OAuth login state | Run `/logout`, or delete the corresponding `credentials/<name>.json` |
 | Clear MCP server OAuth login state | Delete `credentials/mcp/` (`/logout` does not clear MCP credentials) |
 | Remove user-level MCP declarations | Delete `$KIKO_HOME/mcp.json` (default `~/.kiko/mcp.json`) |
-| Clear global Kimi-specific agent instructions | Delete `$KIKO_HOME/AGENTS.md` (default `~/.kiko/AGENTS.md`) |
+| Clear global Kiko-specific agent instructions | Delete `$KIKO_HOME/AGENTS.md` (default `~/.kiko/AGENTS.md`) |
 | Clear plugin install records | Delete `$KIKO_HOME/plugins/` (local plugin source directories are not affected) |
-| Clear Kimi-specific user-level Skills | Delete `$KIKO_HOME/skills/` (default `~/.kiko/skills/`) |
+| Clear Kiko-specific user-level Skills | Delete `$KIKO_HOME/skills/` (default `~/.kiko/skills/`) |
 
 ## Next steps
 

@@ -1,6 +1,6 @@
 # Hooks
 
-Hooks（钩子）是一种自动触发机制：你预先告诉 Kimi Code CLI"每当发生 X，运行这个脚本"。脚本在你的本机执行，你可以在里面写任何逻辑。即使会话绑定了 [远程环境](../guides/remote-environment.md) 也是如此：钩子始终在运行 Kimi Code 的机器上执行，因此在远程会话中它们读到的是本机的文件和进程，而非目标环境的。典型的使用场景：
+Hooks（钩子）是一种自动触发机制：你预先告诉 Kiko CLI"每当发生 X，运行这个脚本"。脚本在你的本机执行，你可以在里面写任何逻辑。即使会话绑定了 [远程环境](../guides/remote-environment.md) 也是如此：钩子始终在运行 Kiko 的机器上执行，因此在远程会话中它们读到的是本机的文件和进程，而非目标环境的。典型的使用场景：
 
 - **安全拦截**：Agent 要执行 Shell 命令前，检查是否包含危险操作（如 `rm -rf`），包含则阻断执行
 - **桌面通知**：后台任务完成时，弹出系统通知提醒你回来查看结果
@@ -32,7 +32,7 @@ Hooks（钩子）是一种自动触发机制：你预先告诉 Kimi Code CLI"每
 [[hooks]]
 event = "Notification"           # 触发时机：后台任务状态变化时
 matcher = "task\\.completed"     # 只关心"已完成"的通知
-command = "terminal-notifier -title Kimi -message 'Task done'"
+command = "terminal-notifier -title Kiko -message 'Task done'"
 ```
 
 保存配置、重开会话，下次后台任务完成时就会弹出通知。
@@ -54,7 +54,7 @@ command = "terminal-notifier -title Kimi -message 'Task done'"
 
 Hook 规则只存在于用户级 `config.toml` 和本地插件中，没有项目级 hook 文件，因此远程目标上检出的内容永远无法向你的会话注入 hook 定义。
 
-Hook 命令始终在运行 Kimi Code 的机器上执行，工作目录是当前会话的**本地**项目目录。会话绑定 [远程环境](../guides/remote-environment.md) 时，引用项目路径的 hook 操作的是这个本地目录（绑定的载体），而不是目标环境；暂不支持在目标环境上运行 hook，这仍是未来才可能设计的能力。
+Hook 命令始终在运行 Kiko 的机器上执行，工作目录是当前会话的**本地**项目目录。会话绑定 [远程环境](../guides/remote-environment.md) 时，引用项目路径的 hook 操作的是这个本地目录（绑定的载体），而不是目标环境；暂不支持在目标环境上运行 hook，这仍是未来才可能设计的能力。
 
 <details>
 <summary>进程组与超时处理</summary>
@@ -162,7 +162,7 @@ process.stdin.on('end', () => {
 });
 ```
 
-阻断后，Kimi Code CLI 会把阻断原因写回上下文，模型可以据此选择更安全的替代方案。
+阻断后，Kiko CLI 会把阻断原因写回上下文，模型可以据此选择更安全的替代方案。
 
 ::: warning 注意
 此示例仅演示阻断机制，不是生产级的安全解析器。真实场景更适合用白名单，或用专门的 Shell 解析器处理引号、变量展开和多段命令。

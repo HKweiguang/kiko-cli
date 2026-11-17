@@ -39,7 +39,7 @@ You can also enable **Tower mode** in `/experiments` and apply the change for th
 KIKO_EXPERIMENTAL_TOWER=1 kiko
 ```
 
-Set the environment variable before launch. If you modify `/experiments` or `config.toml` while Kimi Code is running, restart Kimi Code: Tower tools and the worker profile load only at process startup. `/tower` appears in the command list only after the experiment is enabled.
+Set the environment variable before launch. If you modify `/experiments` or `config.toml` while Kiko is running, restart Kiko: Tower tools and the worker profile load only at process startup. `/tower` appears in the command list only after the experiment is enabled.
 
 Before starting, check out the local branch that should receive the changes and inspect the worktree:
 
@@ -107,9 +107,9 @@ These actions clean up different things:
 | --- | --- | --- |
 | `/tower off` | Exits Tower mode in the current session without stopping background agents or cleaning up files | `.tower/`, mission branches, and worktrees |
 | `/tower teardown` | Asks the agent to remove eligible mission worktrees and report the result; worktrees with uncommitted changes or running agents are not removed | Mission branches and `.tower/comms/` audit records; Tower mode stays on |
-| Exit Kimi Code or close the session | Stops Tower workers and reviewers; they must be spawned again later | On-disk `.tower/` state, branches, and worktrees |
+| Exit Kiko or close the session | Stops Tower workers and reviewers; they must be spawned again later | On-disk `.tower/` state, branches, and worktrees |
 
-After Kimi Code restarts, if another session takes over the current project, the previous session's roster entries become inactive, but missions and worktrees are preserved. The new coordinator must spawn workers again. A project cannot have multiple tower coordinators at the same time.
+After Kiko restarts, if another session takes over the current project, the previous session's roster entries become inactive, but missions and worktrees are preserved. The new coordinator must spawn workers again. A project cannot have multiple tower coordinators at the same time.
 
 ## Mode exclusivity and secondary model
 

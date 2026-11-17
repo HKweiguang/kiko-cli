@@ -1,6 +1,6 @@
 # Interaction and input
 
-Kimi Code CLI runs as an interactive TUI (terminal user interface) built around three components: the input box, the conversation view, and the status bar. This page covers how to enter text, paste media, navigate the approval flow, and switch between modes.
+Kiko CLI runs as an interactive TUI (terminal user interface) built around three components: the input box, the conversation view, and the status bar. This page covers how to enter text, paste media, navigate the approval flow, and switch between modes.
 
 ## Input box basics
 
@@ -10,15 +10,15 @@ The input box accepts free-form text. Press `Enter` to send, or `Shift-Enter` / 
 
 ## Prompt prediction (experimental)
 
-After a main agent turn completes normally, Kimi Code CLI can suggest the next prompt in an empty input box. The suggestion is generated in a side request and never submitted automatically.
+After a main agent turn completes normally, Kiko CLI can suggest the next prompt in an empty input box. The suggestion is generated in a side request and never submitted automatically.
 
 Set `KIKO_EXPERIMENTAL_PROMPT_PREDICTION=1` before launching to enable it, or run `/experiments` and enable `Prompt prediction`. Press `Tab` or `→` to insert the full suggestion, edit it if needed, and press `Enter` to submit. Typing, pressing `Esc`, starting a new turn, or switching sessions cancels or clears the suggestion. Cancelled, failed, or blocked turns do not produce suggestions.
 
 ## Pasting images and video
 
-Kimi Code CLI supports pasting images and video directly into the input box, so you can discuss screenshots, UI mockups, architecture diagrams, or code demos without uploading or converting files first.
+Kiko CLI supports pasting images and video directly into the input box, so you can discuss screenshots, UI mockups, architecture diagrams, or code demos without uploading or converting files first.
 
-**Video input is a distinctive Kimi Code capability** — you can paste a video clip and have the model analyze its content, UI flow, or code walkthrough.
+**Video input is a distinctive Kiko capability** — you can paste a video clip and have the model analyze its content, UI flow, or code walkthrough.
 
 How to paste:
 
@@ -54,7 +54,7 @@ Type `@` to trigger file-path completion; the selected path is inserted in relat
 - **Where it works**: both git and non-git directories; hidden paths are included, `.git` is excluded
 - **Ignored files**: paths excluded by `.gitignore` are included; non-ignored matches appear first at equal match quality
 - **Folder suggestions**: end with `/`, so you can keep completing paths inside them
-- **Fallback**: while the fast search helper is still downloading, Kimi Code falls back to a basic filesystem scan
+- **Fallback**: while the fast search helper is still downloading, Kiko falls back to a basic filesystem scan
 - **Remote sessions**: when the session is bound to a [remote environment](../guides/remote-environment.md), completion candidates are served from the target's filesystem. Paths you type into a prompt also resolve on the target — the agent cannot read your local files by path, while pasted images and videos are unaffected (they travel as binary attachments)
 
 > `@` references and slash commands are two separate mechanisms: `@` gives the agent file context, while `/` invokes built-in features or Skills.
@@ -100,7 +100,7 @@ Shell mode lets you run terminal commands without leaving the conversation. The 
 - Recall previous commands: with the input box empty in shell mode, press `↑` to browse earlier shell commands; recalling one keeps you in shell mode so it runs as a command again.
 - Long output: when a finished command's output is too long, the output card collapses automatically; press `Ctrl-O` to expand or collapse it together with tool output.
 
-In shell mode the input box shows a `!` prompt on the left and the border turns violet. For example, you can run `!gh auth login` to sign in to the GitHub CLI without opening a new terminal, so Kimi can use `gh` afterward.
+In shell mode the input box shows a `!` prompt on the left and the border turns violet. For example, you can run `!gh auth login` to sign in to the GitHub CLI without opening a new terminal, so Kiko can use `gh` afterward.
 
 ### Goal mode
 

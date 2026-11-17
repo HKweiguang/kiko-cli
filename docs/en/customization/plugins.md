@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins package reusable Kimi Code CLI capabilities into installable units: they can add [Agent Skills](./skills.md), custom [agents](./agents.md), automatically load a specified Skill at session start, contribute system-prompt instructions, and declare MCP servers to provide real tool capabilities. They are ideal for sharing workflows with a team, connecting to external services, or installing extensions from the [official plugins](#official-plugins).
+Plugins package reusable Kiko CLI capabilities into installable units: they can add [Agent Skills](./skills.md), custom [agents](./agents.md), automatically load a specified Skill at session start, contribute system-prompt instructions, and declare MCP servers to provide real tool capabilities. They are ideal for sharing workflows with a team, connecting to external services, or installing extensions from the [official plugins](#official-plugins).
 
 ## Installation and Management
 
@@ -111,7 +111,7 @@ You must first complete OAuth login with a Kimi Code account via `/login`; data 
 
 #### How to use
 
-1. Describe your need in natural language, and Kimi Code will automatically invoke the data capabilities
+1. Describe your need in natural language, and Kiko will automatically invoke the data capabilities
 2. Explicitly trigger the data query skill with `/skill:kimi-datasource:kimi-datasource`
 
 #### What you can do
@@ -216,7 +216,7 @@ Kimi Computer Use lets AI operate your desktop apps directly, clicking, dragging
 The first time you use Kimi Computer Use after installation, it shows an authorization window. Just follow the prompts:
 
 1. Click **Authorize** next to **Accessibility** and **Screen Recording**, and enable both permissions in System Settings: the former lets it perform clicks, typing, and scrolling; the latter lets it read screen content and locate UI elements
-2. Turn on the **Kimi Code** switch under "Connect local agents", then restart Kimi Code for it to take effect
+2. Turn on the **Kimi Code** switch under "Connect local agents", then restart Kiko for it to take effect
 
 <div style="max-width: 380px; margin: 0 auto;">
 
@@ -226,7 +226,7 @@ The first time you use Kimi Computer Use after installation, it shows an authori
 
 #### Notes for the Windows version
 
-The Windows version (WinCU) installs differently from the macOS one: run `/plugins install https://cdn.kimi.com/kimi-computer-use-windows/latest/kimi-cu-win-plugin.zip` in Kimi Code, then restart after installation. A few things to know before using it:
+The Windows version (WinCU) installs differently from the macOS one: run `/plugins install https://cdn.kimi.com/kimi-computer-use-windows/latest/kimi-cu-win-plugin.zip` in Kiko, then restart after installation. A few things to know before using it:
 
 - **It may briefly take over your mouse and keyboard**: Unlike the macOS version, the Windows version cannot reliably inject input in the background; it may briefly activate the target window and use your real mouse and keyboard while performing actions
 - **System requirements**: Windows 10 version 1903 (Build 18362) or later, or Windows 11, x64; a real interactive desktop session is required, and Windows Server needs Desktop Experience
@@ -262,7 +262,7 @@ Example:
 {
   "name": "kimi-finance",
   "version": "1.0.0",
-  "description": "Finance data and analysis workflows for Kimi Code CLI",
+  "description": "Finance data and analysis workflows for Kiko CLI",
   "skills": "./skills/",
   "systemPromptPath": "./SYSTEM.md",
   "sessionStart": {
@@ -323,7 +323,7 @@ Each field (the inline `systemPrompt` and the `systemPromptPath` file) is limite
 
 ### Differences between the two engines
 
-System-prompt contributions take effect on every Kimi Code surface: the interactive TUI, `kiko -p`, and `kiko web` all run on the v2 engine.
+System-prompt contributions take effect on every Kiko surface: the interactive TUI, `kiko -p`, and `kiko web` all run on the v2 engine.
 
 <details>
 <summary>Instruction refresh behavior under the two engines</summary>
@@ -373,7 +373,7 @@ After installing and enabling the plugin, type this in the chat:
 /kimi-finance:report TSLA
 ```
 
-Kimi replaces `$ARGUMENTS` in the body with `TSLA`, then runs the prompt. The three details below cover each step.
+Kiko replaces `$ARGUMENTS` in the body with `TSLA`, then runs the prompt. The three details below cover each step.
 
 ### Declaring Commands (the `commands` field)
 
@@ -410,7 +410,7 @@ my-plugin/
       SKILL.md
 ```
 
-`sessionStart.skill` loads a plugin Skill into the main Agent at session start, making it suitable for initialization instructions, workflow rules, or mapping terminology from other tools to Kimi Code CLI. It only injects text; it does not execute code. The value is the Skill's frontmatter name as declared inside the plugin, without the `<plugin-id>:` prefix.
+`sessionStart.skill` loads a plugin Skill into the main Agent at session start, making it suitable for initialization instructions, workflow rules, or mapping terminology from other tools to Kiko CLI. It only injects text; it does not execute code. The value is the Skill's frontmatter name as declared inside the plugin, without the `<plugin-id>:` prefix.
 
 Plugin Skills are listed and invoked under the qualified name `<plugin-id>:<skill-name>` — for example `/skill:my-plugin:using-my-plugin` — mirroring [plugin slash commands](#plugin-slash-commands). This keeps same-named Skills from different plugins distinct, and a bare skill name never resolves to a plugin Skill. If a plugin command and a plugin Skill share the same name, `/plugin-id:name` runs the command; invoke the Skill with the explicit `/skill:plugin-id:name` form.
 

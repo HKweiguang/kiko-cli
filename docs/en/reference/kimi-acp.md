@@ -1,6 +1,6 @@
 # `kiko acp` Subcommand
 
-`kiko acp` switches Kimi Code CLI to **ACP (Agent Client Protocol)** mode: it communicates with an ACP client (such as Zed, JetBrains AI Chat, etc.) via JSON-RPC over stdin/stdout, letting the IDE directly drive kimi's sessions, prompts, and tool calls.
+`kiko acp` switches Kiko CLI to **ACP (Agent Client Protocol)** mode: it communicates with an ACP client (such as Zed, JetBrains AI Chat, etc.) via JSON-RPC over stdin/stdout, letting the IDE directly drive Kiko's sessions, prompts, and tool calls.
 
 ```sh
 kiko acp
@@ -42,7 +42,7 @@ With `@agentclientprotocol/sdk@1.x`, the ACP method set is organized by namespac
 
 | Method | Implemented | Description |
 | --- | --- | --- |
-| `initialize` | Yes | Version negotiation; returns `agentInfo: { name: 'Kimi Code CLI', version }`, capability matrix, and `authMethods` (first-class `type:'terminal'` plus the legacy `_meta['terminal-auth']` fallback) |
+| `initialize` | Yes | Version negotiation; returns `agentInfo: { name: 'Kiko CLI', version }`, capability matrix, and `authMethods` (first-class `type:'terminal'` plus the legacy `_meta['terminal-auth']` fallback) |
 | `authenticate` | Yes | Validates `method_id='login'`; returns `authRequired (-32000)` if the token is missing, `invalidParams (-32602)` for an unknown ID |
 | `logout` | Yes | Drops the managed provider's token; subsequent gated calls return `auth_required` again |
 
@@ -86,9 +86,9 @@ All methods not listed above return `methodNotFound`.
 
 When an ACP client provides `mcpServers` in `session/new` or `session/load`, the ACP server performs the following conversions:
 
-- `http` → kimi's `transport: 'http'` configuration
-- `stdio` → kimi's `transport: 'stdio'` configuration
-- `sse` → kimi's `transport: 'sse'` configuration
+- `http` → Kiko's `transport: 'http'` configuration
+- `stdio` → Kiko's `transport: 'stdio'` configuration
+- `sse` → Kiko's `transport: 'sse'` configuration
 - `acp` → discarded with a warn log entry
 
 ## Next steps

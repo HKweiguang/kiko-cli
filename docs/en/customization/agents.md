@@ -1,12 +1,12 @@
 # Agents and Sub-Agents
 
-Every session in Kimi Code CLI is driven by a **main Agent**. The main Agent understands the user's intent, plans steps, calls tools, and when needed dispatches **sub-agents** to handle more focused sub-tasks, such as exploring an unfamiliar codebase, reviewing multiple implementations in parallel, or planning a large refactor without touching the main context.
+Every session in Kiko CLI is driven by a **main Agent**. The main Agent understands the user's intent, plans steps, calls tools, and when needed dispatches **sub-agents** to handle more focused sub-tasks, such as exploring an unfamiliar codebase, reviewing multiple implementations in parallel, or planning a large refactor without touching the main context.
 
 A sub-agent receives a task description from the main Agent, works in its own isolated context, and then returns its conclusions. It does not communicate with the user directly, and its intermediate reasoning and tool call records do not mix into the main Agent's history.
 
 ## Built-in Sub-Agents
 
-Kimi Code CLI includes three built-in sub-agents, ready to use out of the box, each aimed at a different task shape:
+Kiko CLI includes three built-in sub-agents, ready to use out of the box, each aimed at a different task shape:
 
 - **`coder`**: The default sub-agent, a general-purpose software engineering assistant that can read and write files, execute commands, search code, and land concrete changes.
 - **`explore`**: Dedicated to codebase exploration; performs read-only operations only and does not modify any files. Ideal for quickly searching, reading, and summarizing a repository without touching files.
@@ -55,13 +55,13 @@ Beyond the three built-in sub-agents, you can define your own agents as Markdown
 
 ### Agent Locations
 
-Kimi Code CLI discovers agent files by scope; more specific scopes take higher priority: **Explicit (`--agent-file`) > Project > Extra > User > Plugin > Built-in**. When two files define the same `name`, the higher-priority scope wins. Each directory is scanned recursively for `.md` files.
+Kiko CLI discovers agent files by scope; more specific scopes take higher priority: **Explicit (`--agent-file`) > Project > Extra > User > Plugin > Built-in**. When two files define the same `name`, the higher-priority scope wins. Each directory is scanned recursively for `.md` files.
 
 **User level** (applies to all projects):
 - `$KIKO_HOME/agents/` (default: `~/.kiko/agents/`)
 - `~/.agents/agents/`
 
-The Kimi-specific user agent directory moves with `KIKO_HOME`, while the generic `~/.agents/agents/` directory stays under the real OS home so it can be shared across tools.
+The Kiko-specific user agent directory moves with `KIKO_HOME`, while the generic `~/.agents/agents/` directory stays under the real OS home so it can be shared across tools.
 
 **Project level** (project root = the nearest directory containing `.git`, searching upward from the working directory):
 - `.kiko/agents/`
@@ -80,7 +80,7 @@ extra_agent_dirs = ["~/team-agents", ".agents/team-agents"]
 Separately, `$KIKO_HOME/SYSTEM.md` permanently overrides the default main agent's system prompt; it is not part of agent-file discovery. Its precedence interactions are covered in the [SYSTEM.md section](#overriding-the-main-agents-system-prompt-with-systemmd).
 
 ::: warning Trust model
-Agent files are prompt configuration, and project-level files come from the repository itself, including repositories you have just cloned and do not trust yet. A project-scoped file can take over a built-in agent entirely: naming it `agent.md` with `override: true` replaces the **default main agent's whole system prompt**, and `coder.md` with `override: true` replaces the default sub-agent type. Unlike `AGENTS.md` content, which is injected into the prompt as reference data, an override file *is* the system prompt, and a file without a `tools` list keeps every tool. Review `.kiko/agents/` and `.agents/agents/` in unfamiliar repositories with the same caution you would apply to scripts, before running Kimi Code inside them.
+Agent files are prompt configuration, and project-level files come from the repository itself, including repositories you have just cloned and do not trust yet. A project-scoped file can take over a built-in agent entirely: naming it `agent.md` with `override: true` replaces the **default main agent's whole system prompt**, and `coder.md` with `override: true` replaces the default sub-agent type. Unlike `AGENTS.md` content, which is injected into the prompt as reference data, an override file *is* the system prompt, and a file without a `tools` list keeps every tool. Review `.kiko/agents/` and `.agents/agents/` in unfamiliar repositories with the same caution you would apply to scripts, before running Kiko inside them.
 :::
 
 ### Agent File Format
@@ -185,7 +185,7 @@ Like the body of a regular agent file, SYSTEM.md is rendered as a template each 
 Unknown variables stay verbatim, a bare `$` is never special, and a variable with no context value renders as an empty string. Four pre-composed blocks (`${windows_notes}`, `${additional_dirs_section}`, `${skills_section}`, and `${plugin_sections}`) render the matching built-in prompt section, or an empty string when it does not apply. The built-in default prompt already includes `${plugin_sections}`, so do not add it again when `${base_prompt}` already expands to that prompt. The variables are enough to rebuild the skeleton of the built-in prompt, for example:
 
 ```markdown
-You are Kimi, running at ${cwd} on ${os}.
+You are Kiko CLI, running at ${cwd} on ${os}.
 
 ${agents_md}
 
@@ -196,7 +196,7 @@ ${plugin_sections}
 
 ## Instruction Files
 
-Global Kimi-specific instructions can live at `$KIKO_HOME/AGENTS.md` (default: `~/.kiko/AGENTS.md`). When you relocate the data root with `KIKO_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.kiko/AGENTS.md` or `AGENTS.md`.
+Global Kiko-specific instructions can live at `$KIKO_HOME/AGENTS.md` (default: `~/.kiko/AGENTS.md`). When you relocate the data root with `KIKO_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.kiko/AGENTS.md` or `AGENTS.md`.
 
 ## Storage Location in the Session Directory
 

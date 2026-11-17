@@ -4,7 +4,7 @@
 
 Kiko CLI 是 [Kimi Code CLI](https://github.com/MoonshotAI/kimi-code) 的定制分支，承载 kiko 在终端编码 Agent 上的自有增强。
 
-> 当前状态：已与上游 `main` 对齐，kiko 的定制改动尚未落地。
+> 当前状态：kiko 的定制改动已在 `main` 上并推送到 `origin`，尚未发布。
 
 ## 与上游的关系
 

@@ -1,6 +1,6 @@
 # 会话与上下文
 
-Kimi Code CLI 把每次对话持久化为一个「会话」，保留消息历史和元数据，可以随时关闭终端后再回来继续。本页介绍如何恢复会话、管理上下文，以及导出和派生会话。
+Kiko CLI 把每次对话持久化为一个「会话」，保留消息历史和元数据，可以随时关闭终端后再回来继续。本页介绍如何恢复会话、管理上下文，以及导出和派生会话。
 
 ## 会话存储
 
@@ -67,7 +67,7 @@ kiko --session
 
 ## 上下文压缩
 
-对话变长时，Kimi Code CLI 会在上下文接近窗口上限时自动压缩历史消息，释放 token 空间。也可以随时手动触发：
+对话变长时，Kiko CLI 会在上下文接近窗口上限时自动压缩历史消息，释放 token 空间。也可以随时手动触发：
 
 ```
 /compact
@@ -122,7 +122,7 @@ kiko export <sessionId> -o ~/Desktop/my-session.zip
 
 ## 从 Claude Code 和 Codex 导入会话
 
-想继续在 Claude Code 或 Codex 中开始的工作，可以把这些会话导入为普通的 Kimi Code 会话：
+想继续在 Claude Code 或 Codex 中开始的工作，可以把这些会话导入为普通的 Kiko 会话：
 
 ```sh
 kiko import-sessions
