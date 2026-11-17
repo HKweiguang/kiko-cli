@@ -146,6 +146,13 @@ await test('check passes on clean product copy', () => {
   });
 });
 
+await test('telemetry-token ignores repository URLs and quoted repository names', () => {
+  withFixture('clean-tree', (root) => {
+    const report = checkPaths({ root, paths: ['src/app.ts'] });
+    assert.deepEqual(report.violations, []);
+  });
+});
+
 await test('check reports product, command, and platform-identity violations', () => {
   withFixture('violations-tree', (root) => {
     const report = checkPaths({ root, paths: ['.'] });
@@ -168,9 +175,11 @@ await test('check reports product, command, and platform-identity violations', (
       'src/app.ts:9:platform-oauth',
       'src/app.ts:11:platform-env',
       'src/app.ts:13:vscode-contribution-id',
-      'src/app.ts:15:telemetry-name',
+      'src/app.ts:15:telemetry-token',
       'src/app.ts:17:kimi-code',
       'src/app.ts:19:kimi-code',
+      'src/app.ts:21:telemetry-token',
+      'src/app.ts:23:telemetry-token',
     ]);
 
     assert.ok(
@@ -187,9 +196,27 @@ await test('check reports product, command, and platform-identity violations', (
         (violation) =>
           violation.file === 'src/app.ts' &&
           violation.line === 15 &&
-          violation.rule === 'telemetry-name',
+          violation.rule === 'telemetry-token',
       ),
       'the kiko-cli telemetry token must be rejected',
+    );
+    assert.ok(
+      report.violations.some(
+        (violation) =>
+          violation.file === 'src/app.ts' &&
+          violation.line === 21 &&
+          violation.rule === 'telemetry-token',
+      ),
+      'an appName telemetry token must be rejected',
+    );
+    assert.ok(
+      report.violations.some(
+        (violation) =>
+          violation.file === 'src/app.ts' &&
+          violation.line === 23 &&
+          violation.rule === 'telemetry-token',
+      ),
+      'a User-Agent token must be rejected',
     );
     assert.ok(
       report.violations.some(
@@ -292,6 +319,9 @@ await test('mapping tables have unique ids', () => {
   ]) {
     const ids = table.map((entry) => entry.id);
     assert.equal(new Set(ids).size, ids.length, ids.join(', '));
+  }
+  for (const rule of OVER_RENAME_RULES) {
+    if (rule.context !== undefined) assert.equal(rule.context.global, false, rule.id);
   }
 });
 

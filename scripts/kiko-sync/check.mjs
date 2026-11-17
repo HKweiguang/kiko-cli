@@ -50,6 +50,7 @@ function printAllowlist() {
   lines.push('', 'Over-rename rules (Kiko forms that fail the check):');
   for (const rule of OVER_RENAME_RULES) {
     lines.push(`  ${rule.id}  ${rule.pattern.source}`);
+    if (rule.context !== undefined) lines.push(`    context: ${rule.context.source}`);
     lines.push(`    ${rule.reason}`);
   }
   lines.push('', 'History paths (product copy and command checks exempt):');

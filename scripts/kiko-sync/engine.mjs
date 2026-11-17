@@ -247,6 +247,10 @@ function collectIdentityViolations(relPath, masked, starts, violations, seen) {
   for (const rule of OVER_RENAME_RULES) {
     for (const match of masked.matchAll(rule.pattern)) {
       const start = match.index ?? 0;
+      if (rule.context !== undefined) {
+        const { start: lineStart, end: lineEnd } = lineBounds(masked, start);
+        if (!rule.context.test(masked.slice(lineStart, lineEnd))) continue;
+      }
       const key = `${relPath}:${start}`;
       if (seen.has(key)) continue;
       seen.add(key);

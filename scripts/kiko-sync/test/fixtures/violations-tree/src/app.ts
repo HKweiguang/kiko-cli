@@ -17,3 +17,7 @@ export const telemetry = 'kiko-cli';
 export const modelSentence = 'The Kimi Code model picker shows the current model.';
 
 export const serviceSentence = 'The Kimi Code service exposes a local API.';
+
+export const appName = 'kiko-cli';
+
+export const telemetryUserAgent = 'kiko-cli/1.2.3';

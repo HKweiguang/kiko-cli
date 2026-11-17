@@ -442,8 +442,15 @@ export const OVER_RENAME_RULES = [
   },
   {
     id: 'telemetry-name',
-    pattern: /\bkiko-code-cli\b|\bkiko_code_cli\b|\bkiko-cli(?=['"]|\/\d)/g,
-    reason: 'User-Agent and telemetry names stay kimi-code-cli / kimi_code_cli; the kiko-cli repository name is not a telemetry token.',
+    pattern: /\bkiko-code-cli\b|\bkiko_code_cli\b/g,
+    reason: 'User-Agent and telemetry names stay kimi-code-cli / kimi_code_cli.',
+  },
+  {
+    id: 'telemetry-token',
+    pattern: /(?<![\w/.-])kiko-cli(?=['"]|\/\d)/g,
+    context: /\b(?:user-?agent|CLI_USER_AGENT_PRODUCT|CLI_MSH_PLATFORM|telemetry\w*|appName|owner|app|productName)\b/i,
+    reason:
+      'A kiko-cli User-Agent/telemetry token must stay kimi-code-cli; repository names and URLs are not telemetry tokens.',
   },
   {
     id: 'log-name',
