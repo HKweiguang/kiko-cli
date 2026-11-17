@@ -12,6 +12,7 @@ import {
   TEXT_BUILD_WORKER_PROTOCOL_VERSION,
   type TextBuildWorkerRuntimeEntry,
 } from '../worker-runtime.ts';
+import { devWorkerExecArgv, transformTypesSupported } from './dev-exec-argv.ts';
 import { buildTextArtifacts } from './text-build-core.ts';
 import type { TextBuildCoreResult, TextBuildCoreSpec } from './text-build-core.ts';
 
@@ -91,8 +92,20 @@ export async function verifyFileCrcAsync(
   }
 }
 
+function workerSourceUrl(): URL {
+  return transformTypesSupported()
+    ? new URL('./text-build-worker.ts', import.meta.url)
+    : new URL('./text-build-worker-transform.mjs', import.meta.url);
+}
+
+function siblingSourceUrl(url: URL): URL {
+  if (transformTypesSupported()) return url;
+  const sibling = new URL('./text-build-worker.ts', import.meta.url);
+  return url.href === sibling.href ? workerSourceUrl() : url;
+}
+
 function siblingWorkerEntry(): TextBuildWorkerRuntimeEntry | null {
-  const url = new URL('./text-build-worker.ts', import.meta.url);
+  const url = workerSourceUrl();
   try {
     return fsSync.statSync(url).isFile() ? { kind: 'source', url } : null;
   } catch {
@@ -102,7 +115,10 @@ function siblingWorkerEntry(): TextBuildWorkerRuntimeEntry | null {
 
 function workerRuntimeEntry(): TextBuildWorkerRuntimeEntry | null {
   const state = getTextBuildWorkerRuntimeState();
-  return state.configured ? state.entry : siblingWorkerEntry();
+  if (!state.configured) return siblingWorkerEntry();
+  return state.entry.kind === 'source'
+    ? { kind: 'source', url: siblingSourceUrl(state.entry.url) }
+    : state.entry;
 }
 
 export function textBuildWorkerAvailable(): boolean {
@@ -122,9 +138,9 @@ function spawnWorker(
   }
   return new Worker(entry.url, {
     workerData: spec,
-    // --experimental-transform-types runs the TS worker source directly in dev;
-    // silence its experimental warning so it does not bleed into the TUI.
-    execArgv: ['--experimental-transform-types', '--disable-warning=ExperimentalWarning'],
+    // The TS worker source runs directly in dev; the flag set adapts to what
+    // this runtime accepts and keeps its experimental notice out of the TUI.
+    execArgv: devWorkerExecArgv(),
     resourceLimits,
   });
 }

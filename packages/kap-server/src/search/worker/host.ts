@@ -18,6 +18,7 @@ import type {
   SearchCoreLog,
   SyncSessionInput,
 } from '../indexCore';
+import { devWorkerExecArgv, transformTypesSupported } from './execArgv';
 import {
   SEARCH_WORKER_PROTOCOL_VERSION,
   type SearchWorkerData,
@@ -293,11 +294,16 @@ export class SearchWorkerHost {
     const source = new URL('./entry.ts', import.meta.url);
     try {
       if (fsSync.statSync(source).isFile()) {
+        if (!transformTypesSupported()) {
+          return {
+            url: new URL('./entry-transform.mjs', import.meta.url),
+            execArgv: devWorkerExecArgv(),
+          };
+        }
         return {
           url: source,
           execArgv: [
-            '--experimental-transform-types',
-            '--disable-warning=ExperimentalWarning',
+            ...devWorkerExecArgv(),
             '--import',
             new URL('./register-dev-hooks.mjs', import.meta.url).href,
           ],
