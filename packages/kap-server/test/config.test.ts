@@ -4,7 +4,9 @@ import { join } from 'node:path';
 
 import {
   ConfigChanged,
+  ConfigRegistry,
   ConfigWarning,
+  IConfigRegistry,
   IConfigService,
   IEventService,
   type ConfigSectionChangedEvent,
@@ -425,6 +427,7 @@ describe('configChangedPublisher', () => {
               getAll: () => backing,
             };
           }
+          if (token === IConfigRegistry) return new ConfigRegistry();
           return {
             publish: (event: Event2<unknown>) => published.push(event as ConfigChanged),
           };

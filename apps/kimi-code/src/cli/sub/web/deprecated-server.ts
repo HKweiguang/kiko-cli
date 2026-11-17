@@ -1,19 +1,23 @@
 /**
  * Deprecated `kiko server` shim.
  *
- * The `kiko server` command tree was replaced by `kiko web` (a foreground
- * server opened in the browser). Any `kiko server …` invocation — bare or
+ * The `kiko server` command tree was replaced by `kiko web` (the foreground
+ * REST/WebSocket server). Any `kiko server …` invocation — bare or
  * with any legacy subcommand/flags — lands here, prints the deprecation
  * notice, and exits 1. The shim itself is scheduled for removal in the next
- * major version of Kimi Code.
+ * major version of Kiko.
  *
- * One subcommand stays functional: `kiko server kill`, the cleanup path for
+ * Two subcommands stay functional: `kiko server kill`, the cleanup path for
  * background servers started by pre-0.28.0 builds (recorded in the legacy
- * single-instance lock, which the instance registry never sees).
+ * single-instance lock, which the instance registry never sees), and the
+ * hidden `kiko server ensure-daemon`, the internal bootstrap the SSH host
+ * bridge runs on the remote — the subcommand name is part of the host
+ * protocol and must stay `server ensure-daemon`.
  */
 
 import type { Command } from 'commander';
 
+import { registerEnsureDaemonCommand } from './ensure-daemon';
 import { registerLegacyKillCommand } from './legacy-kill';
 
 export const DEPRECATED_SERVER_NOTICE =
@@ -34,5 +38,6 @@ export function registerDeprecatedServerCommand(program: Command): void {
       process.stderr.write(DEPRECATED_SERVER_NOTICE);
       process.exit(1);
     });
+  registerEnsureDaemonCommand(server);
   registerLegacyKillCommand(server);
 }
