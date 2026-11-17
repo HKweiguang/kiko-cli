@@ -149,9 +149,10 @@ describe('PluginManager', () => {
         event: 'Stop',
         command: 'echo stop',
         cwd: root,
-        env: { KIKO_HOME: home, KIMI_PLUGIN_ROOT: root },
+        env: { KIKO_HOME: home, KIKO_PLUGIN_ROOT: root },
       },
     ]);
+    expect(manager.enabledHooks()[0]?.env).not.toHaveProperty('KIMI_PLUGIN_ROOT');
     await expect(manager.enabledCommands()).resolves.toEqual([
       expect.objectContaining({ pluginId: 'demo', name: 'deploy', description: 'Deploy' }),
     ]);

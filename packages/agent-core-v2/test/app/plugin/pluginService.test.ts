@@ -1031,10 +1031,11 @@ describe('PluginService (plugin boundary)', () => {
             KIKO_OAUTH_HOST: 'https://auth.example.test',
             CUSTOM: '1',
             KIKO_HOME: home,
-            KIMI_PLUGIN_ROOT: await realpath(managedRoot),
+            KIKO_PLUGIN_ROOT: await realpath(managedRoot),
           }),
         }),
       );
+      expect(JSON.stringify(servers['plugin-demo:finance'])).not.toContain('KIMI_PLUGIN_ROOT');
       expect(JSON.stringify(servers['plugin-demo:docs'])).not.toContain('KIKO_BASE_URL');
     } finally {
       host.dispose();
@@ -1077,7 +1078,7 @@ describe('PluginService (plugin boundary)', () => {
             KIKO_OAUTH_HOST: 'https://auth.example.test',
             CUSTOM: '1',
             KIKO_HOME: home,
-            KIMI_PLUGIN_ROOT: managedRoot,
+            KIKO_PLUGIN_ROOT: managedRoot,
           }),
         }),
       );

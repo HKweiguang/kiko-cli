@@ -255,7 +255,7 @@ try {
   );
   const pluginOutput = await runKimiWithEnv(['__plugin_run_node', pluginEntry, 'alpha', 'beta'], {
     KIKO_HOME: smokeHome,
-    KIMI_PLUGIN_ROOT: pluginRoot,
+    KIKO_PLUGIN_ROOT: pluginRoot,
   });
   assertIncludes(pluginOutput, 'plugin entry ran alpha beta', 'plugin node entry');
 } finally {

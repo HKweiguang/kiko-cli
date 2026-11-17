@@ -18,6 +18,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { MiniDb } from '../src/index.js';
+import { readWorkspaceEntries } from './read-workspaces.js';
 
 export interface WorkspaceDoc {
   name: string;
@@ -113,10 +114,7 @@ export class SessionStore {
   // ---- ingest -------------------------------------------------------------
 
   async ingestKimiCode(homeDir: string): Promise<{ workspaces: number; sessions: number; textBytes: number }> {
-    const wsRaw = JSON.parse(readFileSync(path.join(homeDir, 'workspaces.json'), 'utf8')) as {
-      workspaces?: Record<string, { name: string; root: string; created_at?: string; last_opened_at?: string }>;
-    };
-    const workspaces = wsRaw.workspaces ?? {};
+    const workspaces = readWorkspaceEntries(homeDir);
     const lines = readFileSync(path.join(homeDir, 'session_index.jsonl'), 'utf8').trim().split('\n');
 
     let wsCount = 0;

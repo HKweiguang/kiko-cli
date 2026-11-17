@@ -495,7 +495,7 @@ describe('PluginManager consumption plane', () => {
         'plugin-demo:finance': expect.objectContaining({
           command: 'finance-mcp',
           cwd: managedRoot,
-          env: expect.objectContaining({ KIKO_HOME: home, KIMI_PLUGIN_ROOT: managedRoot }),
+          env: expect.objectContaining({ KIKO_HOME: home, KIKO_PLUGIN_ROOT: managedRoot }),
         }),
         'plugin-demo:docs': expect.objectContaining({ url: 'https://example.com/mcp' }),
         'plugin-demo:events': expect.objectContaining({
@@ -662,10 +662,11 @@ describe('PluginManager consumption plane', () => {
         env: expect.objectContaining({
           CUSTOM: '1',
           KIKO_HOME: home,
-          KIMI_PLUGIN_ROOT: managedRoot,
+          KIKO_PLUGIN_ROOT: managedRoot,
         }),
       }),
     );
+    expect(JSON.stringify(finance?.config)).not.toContain('KIMI_PLUGIN_ROOT');
     const docs = entries.find((entry) => entry.name === 'plugin-demo:docs');
     expect(docs?.config).toEqual(
       expect.objectContaining({
@@ -674,7 +675,7 @@ describe('PluginManager consumption plane', () => {
         enabled: true,
       }),
     );
-    expect(JSON.stringify(docs?.config)).not.toContain('KIMI_PLUGIN_ROOT');
+    expect(JSON.stringify(docs?.config)).not.toContain('PLUGIN_ROOT');
   });
 
   it('mcpServerEntries() skips plugins in error state', async () => {
@@ -749,7 +750,7 @@ describe('PluginManager consumption plane', () => {
         command: './hooks/guard.sh',
         timeout: 10,
         cwd: installedRoot,
-        env: { KIKO_HOME: home, KIMI_PLUGIN_ROOT: installedRoot },
+        env: { KIKO_HOME: home, KIKO_PLUGIN_ROOT: installedRoot },
       },
     ]);
   });
@@ -934,7 +935,7 @@ describe('PluginManager consumption plane', () => {
           cwd: managedRoot,
           env: expect.objectContaining({
             KIKO_HOME: home,
-            KIMI_PLUGIN_ROOT: managedRoot,
+            KIKO_PLUGIN_ROOT: managedRoot,
             ELECTRON_RUN_AS_NODE: '1',
           }),
         }),

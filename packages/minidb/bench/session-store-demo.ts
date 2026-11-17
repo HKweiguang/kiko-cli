@@ -1,6 +1,6 @@
 // bench/session-store-demo.ts
 //
-// Demonstrate the 4 core queries against ~/.kimi-code with timing.
+// Demonstrate the 4 core queries against ~/.kiko with timing.
 // Run: node --import tsx bench/session-store-demo.ts
 
 import fs from 'node:fs/promises';
@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { SessionStore } from './session-store.js';
 
-const HOME = path.join(os.homedir(), '.kimi-code');
+const HOME = path.join(os.homedir(), '.kiko');
 const OUT = path.join(os.tmpdir(), 'minidb-session-store-' + Date.now());
 
 const ms = (t: number) => t.toFixed(2) + 'ms';
@@ -42,7 +42,7 @@ async function main() {
   for (const s of p1.items) console.log(`    ${new Date(s.updatedAt ?? 0).toISOString().slice(0, 10)}  ${s.title.slice(0, 50)}`);
 
   // 3. precise get
-  if (p1.items.length) {
+  if (p1.items.length > 0) {
     const sid = p1.items[0]!.sessionId;
     t = performance.now();
     const s = store.getSession(sid);
@@ -70,7 +70,7 @@ async function main() {
   console.log('\ndone.');
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });
