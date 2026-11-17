@@ -175,7 +175,7 @@ describe('`kiko web` ready banner', () => {
     );
 
     const plain = stripAnsi(readStdout());
-    expect(plain).toContain('Kimi server ready');
+    expect(plain).toContain('Kiko server ready');
     expect(plain).toContain('Local:');
     expect(plain).toContain('http://127.0.0.1:58628/#token=tok');
     expect(plain).toContain('Token:');
@@ -192,10 +192,10 @@ describe('`kiko web` ready banner', () => {
     expect(plain).not.toContain('╰');
     expect(plain).toContain('▐█▛█▛█▌');
     expect(plain).toContain('▐█████▌');
-    expect(plain).not.toContain('Kimi server:');
+    expect(plain).not.toContain('Kiko server:');
 
     // Title is above the URLs; Logs/Stop are at the bottom.
-    expect(plain.indexOf('Kimi server ready')).toBeLessThan(plain.indexOf('Local:'));
+    expect(plain.indexOf('Kiko server ready')).toBeLessThan(plain.indexOf('Local:'));
     expect(plain.indexOf('Logs:')).toBeLessThan(plain.indexOf('Stop:'));
   });
 
@@ -218,7 +218,7 @@ describe('`kiko web` ready banner', () => {
     const out = readStdout();
     const color = new Chalk({ level: 3 });
     expect(out).toContain(color.hex(darkColors.primary)('▐█▛█▛█▌'));
-    expect(out).toContain(color.bold.hex(darkColors.primary)('Kimi server ready'));
+    expect(out).toContain(color.bold.hex(darkColors.primary)('Kiko server ready'));
     expect(out).toContain(color.hex(darkColors.accent)('http://127.0.0.1:58627/'));
     expect(out).toContain(color.bold.hex(darkColors.textDim)('Local:    '));
     expect(out).toContain(color.hex(darkColors.textMuted)('off'));
@@ -301,7 +301,7 @@ describe('ready banner reflects the bind class', () => {
     );
 
     const raw = stripAnsi(readStdout());
-    expect(raw).toContain('Kimi server ready');
+    expect(raw).toContain('Kiko server ready');
     expect(raw).toContain('Local:');
     expect(raw).toContain('Network:');
     // Full token-bearing URLs are printed plainly (no box, no truncation) so
@@ -333,7 +333,7 @@ describe('ready banner reflects the bind class', () => {
     );
 
     const raw = stripAnsi(readStdout());
-    expect(raw).toContain('Kimi server ready');
+    expect(raw).toContain('Kiko server ready');
     expect(raw).toContain('Local:');
     expect(raw).toContain('http://127.0.0.1:58627/#token=tok-loop');
     expect(raw).toContain('Token:');
@@ -614,6 +614,18 @@ describe('kiko rc', () => {
   });
 });
 
+describe('kiko web/rc help copy', () => {
+  it('describes both commands as the local Kiko server', () => {
+    const descriptions = makeProgram()
+      .commands.filter((command) => command.name() === 'web' || command.name() === 'rc')
+      .map((command) => command.description());
+    expect(descriptions).toEqual([
+      'Run the local Kiko server and open the web UI.',
+      'Run the local Kiko server and open the web UI through Remote Control.',
+    ]);
+  });
+});
+
 describe('`kiko web` option threading', () => {
   it('threads the CLI flags into the foreground runner options', async () => {
     const { handleWebCommand } = await import('#/cli/sub/web/run');
@@ -746,8 +758,8 @@ describe('`kiko web` option threading', () => {
     );
 
     const plain = stripAnsi(readStdout());
-    expect(plain).toContain('Kimi server: http://127.0.0.1:58627/#token=tok');
-    expect(plain).not.toContain('Kimi server ready');
+    expect(plain).toContain('Kiko server: http://127.0.0.1:58627/#token=tok');
+    expect(plain).not.toContain('Kiko server ready');
     expect(plain).not.toContain('Local:');
   });
 
@@ -891,13 +903,13 @@ describe('`kiko server kill` (deprecated, legacy servers only)', () => {
     expect(notice).toContain('Ctrl+C');
   });
 
-  it('prints "No running legacy Kimi server." and sends no signal when no lock exists', async () => {
+  it('prints "No running legacy Kiko server." and sends no signal when no lock exists', async () => {
     const { handleLegacyKillCommand } = await import('#/cli/sub/web/legacy-kill');
     const { deps, writes, signals } = makeLegacyKillDeps({ readLock: async () => undefined });
 
     await handleLegacyKillCommand(deps);
 
-    expect(writes.join('')).toContain('No running legacy Kimi server.');
+    expect(writes.join('')).toContain('No running legacy Kiko server.');
     expect(signals).toEqual([]);
   });
 
@@ -910,7 +922,7 @@ describe('`kiko server kill` (deprecated, legacy servers only)', () => {
 
     await handleLegacyKillCommand(deps);
 
-    expect(writes.join('')).toContain('No running legacy Kimi server.');
+    expect(writes.join('')).toContain('No running legacy Kiko server.');
     expect(signals).toEqual([]);
     expect(state.shutdownCalls).toBe(0);
     expect(state.removeCalls).toBe(1);

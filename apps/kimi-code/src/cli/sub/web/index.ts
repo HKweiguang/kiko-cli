@@ -20,7 +20,7 @@ export function registerWebCommand(program: Command): void {
   const web = buildWebCommand(
     program
       .command('web')
-      .description('Run the local Kimi server and open the web UI.'),
+      .description('Run the local Kiko server and open the web UI.'),
   );
   registerRotateTokenCommand(web);
   registerDeprecatedServerCommand(program);
@@ -28,7 +28,7 @@ export function registerWebCommand(program: Command): void {
     program
       .command('rc')
       .alias('remote')
-      .description('Run the local Kimi server and open the web UI through Remote Control.'),
+      .description('Run the local Kiko server and open the web UI through Remote Control.'),
     { forceRemoteControl: true },
   );
 }

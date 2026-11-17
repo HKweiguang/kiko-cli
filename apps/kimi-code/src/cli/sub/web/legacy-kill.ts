@@ -104,7 +104,7 @@ export async function handleLegacyKillCommand(deps: LegacyKillDeps): Promise<voi
 
   const lock = await deps.readLock();
   if (lock === undefined) {
-    deps.stdout.write('No running legacy Kimi server.\n');
+    deps.stdout.write('No running legacy Kiko server.\n');
     return;
   }
 
@@ -112,13 +112,13 @@ export async function handleLegacyKillCommand(deps: LegacyKillDeps): Promise<voi
     // Stale lock from a server that died without releasing it; sweep it so the
     // cleanup is done in one run.
     await deps.removeLock().catch(() => {});
-    deps.stdout.write('No running legacy Kimi server.\n');
+    deps.stdout.write('No running legacy Kiko server.\n');
     return;
   }
 
   const outcome = await killLegacyServer(lock, deps);
   await deps.removeLock().catch(() => {});
-  deps.stdout.write(`Legacy Kimi server (pid ${String(lock.pid)}) ${outcome}.\n`);
+  deps.stdout.write(`Legacy Kiko server (pid ${String(lock.pid)}) ${outcome}.\n`);
 }
 
 /**
@@ -155,7 +155,7 @@ async function killLegacyServer(
   }
 
   throw new Error(
-    `Failed to stop legacy Kimi server (pid ${String(pid)}); insufficient permissions?`,
+    `Failed to stop legacy Kiko server (pid ${String(pid)}); insufficient permissions?`,
   );
 }
 
