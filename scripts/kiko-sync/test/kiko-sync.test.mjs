@@ -53,7 +53,7 @@ await test('apply rewrites product copy and legacy commands but keeps comments a
     assert.equal(result.totalReplacements, 5);
     assert.deepEqual(
       result.skipped.map((entry) => entry.reason),
-      ['history', 'manifest', 'test'],
+      ['history', 'manifest', 'manifest', 'test'],
     );
 
     const source = read(root, 'product.ts');
@@ -105,7 +105,7 @@ await test('apply is idempotent', () => {
 await test('apply leaves over-renamed forms alone and check rejects them', () => {
   withFixture('apply-tree', (root) => {
     applyPaths({ root, paths: ['.'] });
-    const clean = checkPaths({ root, paths: ['.'] });
+    const clean = checkPaths({ root, paths: ['product.ts'] });
     assert.deepEqual(clean.violations, []);
   });
 });
@@ -129,6 +129,11 @@ await test('apply rewrites history, manifests, and tests only when asked', () =>
 
     assert.match(read(root, 'test/sample.test.ts'), /'Kiko CLI'/);
     assert.match(read(root, 'test/sample.test.ts'), /run `kiko web`/);
+    assert.match(read(root, 'packages/example/README.md'), /The TypeScript SDK for Kimi Code/);
+    assert.match(
+      read(root, 'packages/example/README.md'),
+      /\[Kimi Code\]\(https:\/\/github\.com\/MoonshotAI\/kimi-code\)/,
+    );
   });
 });
 
@@ -137,7 +142,7 @@ await test('check passes on clean product copy', () => {
     const report = checkPaths({ root, paths: ['.'] });
     assert.equal(report.ok, true);
     assert.deepEqual(report.violations, []);
-    assert.equal(report.scannedFiles, 2);
+    assert.equal(report.scannedFiles, 4);
   });
 });
 
@@ -153,13 +158,46 @@ await test('check reports product, command, and platform-identity violations', (
       '.github/workflows/ci.yml:9:artifact-name',
       'CHANGELOG.md:4:build-define',
       'docs/guide.md:3:kimi-code',
+      'docs/guide.md:7:kimi-code',
+      'packages/example/package.json:3:kimi-code',
+      'packages/example/README.md:3:kimi-code',
       'src/app.ts:1:kimi-code',
       'src/app.ts:3:backticked-command',
       'src/app.ts:5:backticked-command',
       'src/app.ts:7:provider-key',
       'src/app.ts:9:platform-oauth',
       'src/app.ts:11:platform-env',
+      'src/app.ts:13:vscode-contribution-id',
+      'src/app.ts:15:telemetry-name',
+      'src/app.ts:17:kimi-code',
+      'src/app.ts:19:kimi-code',
     ]);
+
+    assert.ok(
+      report.violations.some(
+        (violation) =>
+          violation.file === 'src/app.ts' &&
+          violation.line === 13 &&
+          violation.rule === 'vscode-contribution-id',
+      ),
+      'VS Code context keys must reject the Kiko form',
+    );
+    assert.ok(
+      report.violations.some(
+        (violation) =>
+          violation.file === 'src/app.ts' &&
+          violation.line === 15 &&
+          violation.rule === 'telemetry-name',
+      ),
+      'the kiko-cli telemetry token must be rejected',
+    );
+    assert.ok(
+      report.violations.some(
+        (violation) =>
+          violation.file === 'packages/example/package.json' && violation.kind === 'product-brand',
+      ),
+      'manifest copy must be classified',
+    );
 
     assert.equal(report.suppressed.length, 1);
     assert.equal(report.suppressed[0].file, 'SECURITY.md');

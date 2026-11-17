@@ -82,13 +82,14 @@ export const PLATFORM_CONTEXT_ALLOWLIST = [
   {
     id: 'managed-service',
     pattern:
-      /\bKimi Code (?:managed service|service|managed endpoint)\b|\bKimi Code 托管(?:服务|账号)|\bKimi Code 服务/g,
-    reason: 'The managed service keeps the Kimi Code name in API errors and provider docs.',
+      /\bKimi Code managed service\b|\bby the Kimi Code service\b|\bfrom the Kimi Code service\b|\bthe Kimi Code service controls\b|\bKimi Code 托管(?:服务|账号)|由 Kimi Code 服务|从[^。\n]*Kimi Code 服务|Kimi Code 服务设定/g,
+    reason: 'The managed platform service keeps the Kimi Code name in remote-service docs and errors.',
   },
   {
     id: 'models',
-    pattern: /\bKimi Code (?:models?|model)\b|\bNo models available for Kimi Code\b/g,
-    reason: 'Managed model endpoint errors name the Kimi Code platform.',
+    pattern:
+      /\bKimi Code models? endpoint\b|\bKimi Code model "|\bManaged Kimi Code model\b|\bFailed to list Kimi Code models\b|\bNo models available for Kimi Code\b/g,
+    reason: 'Managed model endpoint errors and telemetry field descriptions name the Kimi Code platform.',
   },
   {
     id: 'cdn',
@@ -114,6 +115,11 @@ export const PLATFORM_CONTEXT_ALLOWLIST = [
     id: 'provider-name-value',
     pattern: /\bprovider(?:_name|Name)["']?\s*:\s*["']Kimi Code["']/g,
     reason: 'The managed provider display name is the platform identity "Kimi Code".',
+  },
+  {
+    id: 'provider-name-binding',
+    pattern: /\b(?:const|let|var)\s+providerName\s*=\s*["']Kimi Code["']/g,
+    reason: 'A provider display-name binding names the platform identity "Kimi Code".',
   },
   {
     id: 'auth-key-hint',
@@ -175,6 +181,23 @@ export const PLATFORM_CONTEXT_ALLOWLIST = [
     pattern: /与上游 Kimi Code CLI/g,
     reason: 'Chinese README text attributes the upstream project this fork tracks.',
   },
+  {
+    id: 'upstream-link',
+    pattern: /\[Kimi Code\]\(https?:\/\/github\.com\/MoonshotAI\/kimi-code\)/g,
+    reason: 'Inline links attribute the upstream Kimi Code repository.',
+  },
+  {
+    id: 'npm-package-description',
+    pattern:
+      /\bKimi Code server backed by the DI × Scope agent engine\b|\bShared telemetry infrastructure for Kimi Code\b|\bOAuth toolkit for managed Kimi Code authentication\b|\bTypeScript SDK for the Kimi Code Agent\b|\bKimi Code product logic shared by clients and hosts\b/g,
+    reason: 'Descriptions of the platform-scoped @moonshot-ai/kimi-code-* npm packages keep the Kimi Code name.',
+  },
+  {
+    id: 'npm-package-readme',
+    pattern:
+      /\bThe TypeScript SDK for Kimi Code\b|\bOAuth toolkit for Kimi Code managed authentication\b/g,
+    reason: 'README titles of the platform-scoped @moonshot-ai/kimi-code-* npm packages keep the Kimi Code name.',
+  },
 ];
 
 export const KNOWN_RESIDUALS = [
@@ -183,6 +206,27 @@ export const KNOWN_RESIDUALS = [
     path: /(^|\/)SECURITY\.md$/,
     pattern: /`kimi --version`/g,
     finding: 'SECURITY.md still shows the retired kimi command',
+    reason: 'Tracked by a Tower finding outside the harness scope; remove this entry after the fix.',
+  },
+  {
+    id: 'flake-description',
+    path: /(^|\/)flake\.nix$/,
+    pattern: /description = "Kimi Code CLI";/g,
+    finding: 'flake.nix user-visible descriptions still say "Kimi Code CLI"',
+    reason: 'Tracked by a Tower finding outside the harness scope; remove this entry after the fix.',
+  },
+  {
+    id: 'flake-node-error',
+    path: /(^|\/)flake\.nix$/,
+    pattern: /Kimi Code requires Node\.js/g,
+    finding: 'flake.nix user-visible descriptions still say "Kimi Code CLI"',
+    reason: 'Tracked by a Tower finding outside the harness scope; remove this entry after the fix.',
+  },
+  {
+    id: 'flake-target-error',
+    path: /(^|\/)flake\.nix$/,
+    pattern: /Unsupported Kimi Code native target/g,
+    finding: 'flake.nix user-visible descriptions still say "Kimi Code CLI"',
     reason: 'Tracked by a Tower finding outside the harness scope; remove this entry after the fix.',
   },
 ];
@@ -383,8 +427,8 @@ export const OVER_RENAME_RULES = [
   {
     id: 'vscode-contribution-id',
     pattern:
-      /\bkiko\.(?:clearAllState|openInTab|openInSideBar|focusInput|insertMention|newConversation|showLogs|resetKimi|logout|migrateLegacyData|yoloMode|autosave|enableNewConversationShortcut|useCtrlEnterToSend|showThinkingContent|showThinkingExpanded|editorContext)\b|\bkiko-sidebar\b|\bkiko\.webview\b/g,
-    reason: 'VS Code command, setting, and view ids stay compatible with existing installs.',
+      /\bkiko\.(?:clearAllState|openInTab|openInSideBar|focusInput|insertMention|newConversation|showLogs|resetKimi|logout|migrateLegacyData|isLoggedIn|yoloMode|autosave|enableNewConversationShortcut|useCtrlEnterToSend|showThinkingContent|showThinkingExpanded|editorContext)\b|\bkiko-sidebar\b|\bkiko\.webview\b/g,
+    reason: 'VS Code command, setting, context-key, and view ids stay compatible with existing installs.',
   },
   {
     id: 'github-repo',
@@ -398,8 +442,8 @@ export const OVER_RENAME_RULES = [
   },
   {
     id: 'telemetry-name',
-    pattern: /\bkiko-code-cli\b|\bkiko_code_cli\b/g,
-    reason: 'User-Agent and telemetry names stay kimi-code-cli / kimi_code_cli.',
+    pattern: /\bkiko-code-cli\b|\bkiko_code_cli\b|\bkiko-cli(?=['"]|\/\d)/g,
+    reason: 'User-Agent and telemetry names stay kimi-code-cli / kimi_code_cli; the kiko-cli repository name is not a telemetry token.',
   },
   {
     id: 'log-name',
@@ -471,11 +515,10 @@ export const CHECK_EXCLUDED_PATTERNS = [
 
 export const DEFAULT_COPY_SURFACES = [
   'apps/kimi-code/src',
-  'packages/agent-core-v2/src',
-  'packages/kap-server/src',
-  'packages/oauth/src',
+  'packages',
   'docs/en',
   'docs/zh',
+  'flake.nix',
   'README.md',
   'README.zh-CN.md',
   'SECURITY.md',
@@ -505,7 +548,7 @@ export const SCRIPT_EXTENSIONS = new Set([
   '.cts',
 ]);
 
-export const COPY_EXTENSIONS = new Set([...SCRIPT_EXTENSIONS, '.md', '.mdx']);
+export const COPY_EXTENSIONS = new Set([...SCRIPT_EXTENSIONS, '.md', '.mdx', '.json', '.nix']);
 
 export const IDENTITY_EXTENSIONS = new Set([
   ...COPY_EXTENSIONS,

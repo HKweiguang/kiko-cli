@@ -9,13 +9,15 @@ const REPO_ROOT = resolve(import.meta.dirname, '..', '..');
 const USAGE = `Usage: node scripts/kiko-sync/apply.mjs <paths...> [options]
 
 Rewrite upstream Kimi Code product copy to Kiko in the given files or directories.
-Comments, platform identities, and over-renamed Kiko forms are left alone.
+Comments in script files, platform identities, and over-renamed Kiko forms are left
+alone. Markdown is treated as copy, including HTML comments and fenced code blocks.
 
 Options:
   --root <dir>          Repository root (default: the repo containing this script)
   --dry-run             Report changes without writing files
   --include-history     Also rewrite changelogs, changesets, and migration guides
-  --include-manifests   Also rewrite package.json, flake.nix, native scripts, workflows, and package READMEs
+  --include-manifests   Also rewrite package.json, flake.nix, native scripts, and
+                        packages/*/README.md (.github is always skipped)
   --include-tests       Also rewrite test files and fixtures
   --help                Print this help
 `;

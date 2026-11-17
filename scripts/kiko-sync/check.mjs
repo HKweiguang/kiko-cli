@@ -19,8 +19,8 @@ const USAGE = `Usage: node scripts/kiko-sync/check.mjs [paths...] [options]
 Read-only scan for Kiko product copy and platform identities.
 
 With no paths, scans the default product surfaces:
-  apps/kimi-code/src, packages/agent-core-v2/src, packages/kap-server/src,
-  packages/oauth/src, docs/en, docs/zh, README.md, README.zh-CN.md, SECURITY.md
+  apps/kimi-code/src, packages (source, README, package.json), docs/en, docs/zh,
+  flake.nix, README.md, README.zh-CN.md, SECURITY.md
 
 When paths are given, both the copy and identity scans are limited to them.
 
