@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -5,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 
 const CLI_SRC_ROOT = join(__dirname, '..', '..', 'src', 'cli');
 const WEB_SRC_ROOT = join(CLI_SRC_ROOT, 'sub', 'web');
+const REPO_ROOT = join(__dirname, '..', '..', '..', '..');
+const HARNESS_CHECK = join(REPO_ROOT, 'scripts', 'kiko-sync', 'check.mjs');
 
 const PRODUCT_COPY_PATTERN = /Kimi Code/g;
 const SERVER_COPY_PATTERN = /Kimi server/g;
@@ -124,5 +127,19 @@ describe('CLI product copy guard', () => {
         'Comments are exempt.\n' +
         offenders.map((offender) => `  ${offender}`).join('\n'),
     ).toEqual([]);
+  });
+
+  it('passes the kiko-sync harness check across all of src', () => {
+    const result = spawnSync(process.execPath, [HARNESS_CHECK, '--json', 'apps/kimi-code/src'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+    });
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const report = JSON.parse(result.stdout) as {
+      ok: boolean;
+      violations: unknown[];
+    };
+    expect(report.ok).toBe(true);
+    expect(report.violations).toEqual([]);
   });
 });
