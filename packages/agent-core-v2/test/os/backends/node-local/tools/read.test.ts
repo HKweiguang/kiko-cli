@@ -1268,7 +1268,7 @@ describe('ReadTool', () => {
     expect(output).toContain(long);
     expect(output).not.toContain('...');
     expect(result.note).not.toContain('were truncated');
-    expect(result.note).toContain('Kimi Code agent event log');
+    expect(result.note).toContain('Kiko agent event log');
     expect(result.spillExempt).toBe(true);
   });
 

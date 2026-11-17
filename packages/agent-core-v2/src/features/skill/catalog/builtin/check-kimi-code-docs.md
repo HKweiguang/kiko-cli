@@ -1,11 +1,11 @@
 ---
 name: check-kimi-code-docs
-description: Answer questions about the Kimi Code product using the official documentation — CLI usage, configuration, slash commands, features, membership and quota, API onboarding, third-party tool setup, and error codes. Use when the user asks how Kimi Code works, how to set something up, or what a Kimi Code error message means.
+description: Answer questions about the Kiko product using the official documentation — CLI usage, configuration, slash commands, features, membership and quota, API onboarding, third-party tool setup, and error codes. Use when the user asks how Kiko works, how to set something up, or what a Kiko error message means.
 ---
 
-# Check Kimi Code docs (check-kimi-code-docs)
+# Check Kiko docs (check-kimi-code-docs)
 
-Answer Kimi Code **product** questions from the official documentation site, not from memory. This skill covers product usage ("how do I configure a provider", "what does this error mean", "how does membership quota work"); it is not for developing the Kimi Code repository itself.
+Answer Kiko **product** questions from the official documentation site, not from memory. This skill covers product usage ("how do I configure a provider", "what does this error mean", "how does membership quota work"); it is not for developing the Kiko repository itself.
 
 ## The single source of truth
 
