@@ -27,16 +27,16 @@ and MCP server declarations, with a user preview before any write.
 - Do **not** write anything until the user has chosen what to migrate, reviewed
   the final preview, and explicitly confirmed applying it.
 - Only write under Kimi Code targets:
-  - User-global: `$KIMI_CODE_HOME` if set, otherwise `~/.kimi-code`.
-  - Project instructions: `<dir>/.kimi-code/AGENTS.md`, where `<dir>` is the
+  - User-global: `$KIKO_HOME` if set, otherwise `~/.kiko`.
+  - Project instructions: `<dir>/.kiko/AGENTS.md`, where `<dir>` is the
     project root or one of the directories between the project root and the
     current working directory. The project root is the nearest parent
     directory containing `.git`; if no `.git` exists, use the current working
     directory.
-  - Project skills: `<project root>/.kimi-code/skills/`.
-  - Project-local MCP: `<cwd>/.kimi-code/mcp.json`, because Kimi reads the
+  - Project skills: `<project root>/.kiko/skills/`.
+  - Project-local MCP: `<cwd>/.kiko/mcp.json`, because Kimi reads the
     current working directory's Kimi-specific MCP file, not every project-root
-    `.kimi-code/mcp.json` from subdirectories.
+    `.kiko/mcp.json` from subdirectories.
 - Preserve existing Kimi files. Never overwrite existing skills or replace an
   existing AGENTS.md / mcp.json wholesale.
 
@@ -50,10 +50,18 @@ Resolve paths explicitly; `~` is the real OS home.
   `~/.claude.json`.
 - Codex home: `$CODEX_HOME` if set, otherwise `~/.codex`. Call it
   `<codex home>` below.
-- Kimi home: `$KIMI_CODE_HOME` if set, otherwise `~/.kimi-code`.
+- Kimi home: `$KIKO_HOME` if set, otherwise `~/.kiko`. Resolve it with Bash
+  before scanning:
 
-Check the environment variables with Bash before scanning; do not assume the
-defaults.
+  ```bash
+  echo "$KIKO_HOME"
+  echo "$HOME/.kiko"
+  ```
+
+  Use the first line when it is non-empty; otherwise use the second line.
+
+Check the other environment variables with Bash before scanning; do not assume
+the defaults.
 
 ## Conversation flow
 
@@ -142,16 +150,15 @@ source and target paths.
 
 Map user-level instruction sources to:
 
-- `$KIMI_CODE_HOME/AGENTS.md`, or `~/.kimi-code/AGENTS.md` if the env var is not
-  set.
+- `$KIKO_HOME/AGENTS.md`, or `~/.kiko/AGENTS.md` when the env var is not set.
 
 Map project-level instruction sources found in `<dir>` to:
 
-- `<dir>/.kimi-code/AGENTS.md`
+- `<dir>/.kiko/AGENTS.md`
 
-Kimi reads `.kimi-code/AGENTS.md` at each level from the project root to the
-current working directory, so the imported file keeps the directory scope it
-had in Claude Code or Codex.
+Kimi reads `.kiko/AGENTS.md` at each level from the project root to the current
+working directory, so the imported file keeps the directory scope it had in
+Claude Code or Codex.
 
 Plan all selected instruction sources, including symlinks and `@AGENTS.md`
 imports. Check content duplication after applying the import, as described
@@ -183,8 +190,8 @@ never follow a path outside those boundaries.
 Resolve relative imports from the file containing the import, including
 `@AGENTS.md` and `@./AGENTS.md`.
 
-Warn when a `CLAUDE.local.md` is imported: `.kimi-code/AGENTS.md` is not
-private by convention, so the user may want to gitignore `.kimi-code/`.
+Warn when a `CLAUDE.local.md` is imported: `.kiko/AGENTS.md` is not private by
+convention, so the user may want to gitignore `.kiko/`.
 
 Append imported instruction content as marked blocks. Do not duplicate a block
 that already exists in the target file.
@@ -208,12 +215,12 @@ and cannot be read as UTF-8 text, stop before writing and report the blocker.
 
 Map user-level skill sources to:
 
-- `$KIMI_CODE_HOME/skills/`, or `~/.kimi-code/skills/` if the env var is not set.
+- `$KIKO_HOME/skills/`, or `~/.kiko/skills/` when the env var is not set.
 
 Map project-level skill sources (from any `<dir>/.claude/skills/` or
 `<dir>/.codex/skills/`) to:
 
-- `<project root>/.kimi-code/skills/`
+- `<project root>/.kiko/skills/`
 
 Both Claude Code and Codex load only directory bundles: `<skill-name>/SKILL.md`
 (the directory may be a symlink). A loose `<name>.md` file under a skills
@@ -353,7 +360,7 @@ Claude Code MCP (user file `.claude.json`):
   lists one of its servers under `disabledMcpjsonServers`: Claude rejected
   that server, while Kimi will start every `.mcp.json` server. Suggest a
   complete server entry with `"enabled": false` in
-  `<cwd>/.kimi-code/mcp.json`; an entry containing only `enabled` is invalid.
+  `<cwd>/.kiko/mcp.json`; an entry containing only `enabled` is invalid.
 
 Codex MCP (`config.toml`):
 
@@ -391,10 +398,10 @@ Codex MCP (`config.toml`):
 
 For each MCP candidate, choose the target scope in the preview:
 
-- User-level source -> user-global MCP target (`$KIMI_CODE_HOME/mcp.json` or
-  `~/.kimi-code/mcp.json`).
+- User-level source -> user-global MCP target (`$KIKO_HOME/mcp.json`, or
+  `~/.kiko/mcp.json` when the env var is not set).
 - Project-level source (Claude local scope, `<dir>/.codex/config.toml`) ->
-  project-local Kimi MCP target (`<cwd>/.kimi-code/mcp.json`). If `<cwd>` is
+  project-local Kimi MCP target (`<cwd>/.kiko/mcp.json`). If `<cwd>` is
   not the project root, call this out in the preview so the user understands
   when Kimi will load it.
 
@@ -456,7 +463,7 @@ broader scope:
   non-empty `~/.agents/AGENTS.md` or `~/.agents/agents.md`.
 - Project instructions: those global files, plus each directory from the
   project root to the target's owning directory. At each level Kimi reads
-  `.kimi-code/AGENTS.md` and the first readable, non-empty `AGENTS.md` or
+  `.kiko/AGENTS.md` and the first readable, non-empty `AGENTS.md` or
   `agents.md`.
 
 Compare trimmed, expanded block bodies with retained instruction content or
