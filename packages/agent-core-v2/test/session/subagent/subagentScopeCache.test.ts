@@ -237,7 +237,7 @@ describe('resolveSubagentScopeCacheSize', () => {
   it('throws for non-integer or non-numeric values', () => {
     for (const raw of ['2.5', 'abc']) {
       expect(() => resolveSubagentScopeCacheSize({ [SUBAGENT_SCOPE_CACHE_SIZE_ENV]: raw })).toThrow(
-        /KIMI_CODE_SUBAGENT_SCOPE_CACHE_SIZE.*integer/,
+        /KIKO_SUBAGENT_SCOPE_CACHE_SIZE.*integer/,
       );
     }
   });
@@ -264,7 +264,7 @@ describe('resolveSubagentScopeEvictTimeoutMs', () => {
     for (const raw of ['2.5', 'abc', '0', '-10']) {
       expect(() =>
         resolveSubagentScopeEvictTimeoutMs({ [SUBAGENT_SCOPE_EVICT_TIMEOUT_ENV]: raw }),
-      ).toThrow(/KIMI_CODE_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS.*positive integer/);
+      ).toThrow(/KIKO_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS.*positive integer/);
     }
   });
 });

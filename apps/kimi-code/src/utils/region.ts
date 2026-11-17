@@ -59,7 +59,7 @@ function regionResolver(): KimiRegionResolver {
     homeDir: resolveKimiHome(),
     readAuth,
     authFilePath: resolveConfigPath({}),
-    readMarker: process.env['KIMI_CODE_REGION_MARKER'] !== 'off',
+    readMarker: process.env['KIKO_REGION_MARKER'] !== 'off',
   });
   return resolver;
 }

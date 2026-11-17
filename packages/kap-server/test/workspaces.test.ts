@@ -670,7 +670,7 @@ describe('server-v2 /api/v1/workspaces', () => {
   });
 
   it('reloads project config after a failed initial read under the environment override', async () => {
-    vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
+    vi.stubEnv('KIKO_TRUST_WORKSPACE', '1');
     const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-env-recovery-'));
     try {
       await mkdir(join(root, '.kiko'), { recursive: true });
@@ -749,8 +749,8 @@ describe('server-v2 /api/v1/workspaces', () => {
     }
   });
 
-  it('reports the effective trust state after untrust while KIMI_CODE_TRUST_WORKSPACE is set', async () => {
-    vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
+  it('reports the effective trust state after untrust while KIKO_TRUST_WORKSPACE is set', async () => {
+    vi.stubEnv('KIKO_TRUST_WORKSPACE', '1');
     const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-env-'));
     try {
       const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });

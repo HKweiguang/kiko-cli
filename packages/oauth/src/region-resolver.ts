@@ -226,9 +226,9 @@ export function createKimiRegionResolver(
 
     const basis = JSON.stringify([
       authBasis(auth),
-      env['KIMI_CODE_OAUTH_HOST'],
+      env['KIKO_OAUTH_HOST'],
       env['KIMI_OAUTH_HOST'],
-      env['KIMI_CODE_BASE_URL'],
+      env['KIKO_BASE_URL'],
       authFileFingerprint,
       markerFingerprint,
       cacheFingerprint,

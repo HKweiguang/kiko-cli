@@ -2,9 +2,9 @@ import type { KimiHostIdentity } from '@moonshot-ai/kimi-code-oauth';
 import { type KimiHarness, type Session, type Event } from '@moonshot-ai/kimi-code-sdk';
 
 export function smokeIdentityFromEnv(): KimiHostIdentity {
-  const version = process.env['KIMI_CODE_SMOKE_VERSION'];
+  const version = process.env['KIKO_SMOKE_VERSION'];
   if (version === undefined || version.trim().length === 0) {
-    throw new Error('KIMI_CODE_SMOKE_VERSION is required for Kimi SDK smoke examples.');
+    throw new Error('KIKO_SMOKE_VERSION is required for Kimi SDK smoke examples.');
   }
   return {
     productName: 'kimi-code-cli',

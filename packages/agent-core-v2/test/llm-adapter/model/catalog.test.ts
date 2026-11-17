@@ -106,14 +106,14 @@ function silentModelWrite(models: IModelService, records: Record<string, ModelRe
 let savedCustomHeaders: string | undefined;
 
 beforeEach(() => {
-  savedCustomHeaders = process.env['KIMI_CODE_CUSTOM_HEADERS'];
-  delete process.env['KIMI_CODE_CUSTOM_HEADERS'];
+  savedCustomHeaders = process.env['KIKO_CUSTOM_HEADERS'];
+  delete process.env['KIKO_CUSTOM_HEADERS'];
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
-  if (savedCustomHeaders === undefined) delete process.env['KIMI_CODE_CUSTOM_HEADERS'];
-  else process.env['KIMI_CODE_CUSTOM_HEADERS'] = savedCustomHeaders;
+  if (savedCustomHeaders === undefined) delete process.env['KIKO_CUSTOM_HEADERS'];
+  else process.env['KIKO_CUSTOM_HEADERS'] = savedCustomHeaders;
 });
 
 describe('Model assembly (pure data)', () => {

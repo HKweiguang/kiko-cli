@@ -160,8 +160,8 @@ async function runSshAskpassSmoke() {
       cwd: appRoot,
       env: {
         ...process.env,
-        KIMI_CODE_SSH_ASKPASS_PORT: String(server.address().port),
-        KIMI_CODE_SSH_ASKPASS_TOKEN: token,
+        KIKO_SSH_ASKPASS_PORT: String(server.address().port),
+        KIKO_SSH_ASKPASS_TOKEN: token,
       },
       timeout: 30_000,
     });
@@ -229,9 +229,9 @@ await rm(smokeHome, { recursive: true, force: true });
 await mkdir(smokeCache, { recursive: true });
 try {
   const nativeAssetOutput = await runKimiWithEnv(['--version'], {
-    KIMI_CODE_CACHE_DIR: smokeCache,
+    KIKO_CACHE_DIR: smokeCache,
     KIKO_HOME: smokeHome,
-    KIMI_CODE_NATIVE_ASSET_SMOKE: '1',
+    KIKO_NATIVE_ASSET_SMOKE: '1',
   });
   assertIncludes(nativeAssetOutput, `Native asset smoke passed: ${target}`, 'native asset smoke');
   assertIncludes(nativeAssetOutput, 'MiniDb worker build passed', 'MiniDb worker smoke');

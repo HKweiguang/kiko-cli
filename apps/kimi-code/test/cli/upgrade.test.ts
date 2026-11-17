@@ -326,7 +326,7 @@ describe('handleUpgrade', () => {
       await expect(handleUpgrade(CANARY, { ...deps, ...writable })).resolves.toBe(0);
 
       expect(deps.installUpdate).not.toHaveBeenCalled();
-      expect(stdout.join('')).toContain('KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes');
+      expect(stdout.join('')).toContain('KIKO_UPDATE_CHANNEL=canary kiko update --yes');
       expect(stdout.join('')).not.toContain('/install.sh');
     });
 
@@ -335,7 +335,7 @@ describe('handleUpgrade', () => {
       const deps = createDeps({
         latest: CANARY,
         source: 'native',
-        env: { KIMI_CODE_UPDATE_CHANNEL: 'canary' },
+        env: { KIKO_UPDATE_CHANNEL: 'canary' },
       });
       const plan = switchPlan('stable', 'canary', CANARY);
 
@@ -344,7 +344,7 @@ describe('handleUpgrade', () => {
       expect(deps.promptForInstallChoice).toHaveBeenCalledWith(expect.objectContaining({
         currentVersion: '2.5.0',
         plan,
-        installCommand: 'KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes',
+        installCommand: 'KIKO_UPDATE_CHANNEL=canary kiko update --yes',
       }));
       expect(deps.installUpdate).toHaveBeenCalledWith('native', plan, 'darwin');
       expect(stdout.join('')).toContain(`Switched @moonshot-ai/kimi-code to canary ${CANARY}`);
@@ -355,7 +355,7 @@ describe('handleUpgrade', () => {
       const deps = createDeps({
         latest: '2.4.1',
         source: 'native',
-        env: { KIMI_CODE_UPDATE_CHANNEL: 'stable' },
+        env: { KIKO_UPDATE_CHANNEL: 'stable' },
       });
       const plan = switchPlan('canary', 'stable', '2.4.1');
 
@@ -379,7 +379,7 @@ describe('handleUpgrade', () => {
         latest: CANARY,
         source: 'native',
         isInteractive: false,
-        env: { KIMI_CODE_UPDATE_CHANNEL: 'canary' },
+        env: { KIKO_UPDATE_CHANNEL: 'canary' },
       });
 
       await expect(handleUpgrade('2.5.0', { ...deps, ...writable })).resolves.toBe(0);
@@ -388,7 +388,7 @@ describe('handleUpgrade', () => {
       expect(deps.promptForInstallChoice).not.toHaveBeenCalled();
       expect(stdout.join('')).toContain('Release channel: stable -> canary');
       expect(stdout.join('')).toContain(CANARY);
-      expect(stdout.join('')).toContain('KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes');
+      expect(stdout.join('')).toContain('KIKO_UPDATE_CHANNEL=canary kiko update --yes');
       expect(stdout.join('')).not.toContain('/install.sh');
 
       const yesRun = captureOutput();
@@ -396,7 +396,7 @@ describe('handleUpgrade', () => {
         latest: CANARY,
         source: 'native',
         isInteractive: false,
-        env: { KIMI_CODE_UPDATE_CHANNEL: 'canary' },
+        env: { KIKO_UPDATE_CHANNEL: 'canary' },
       });
       await expect(handleUpgrade('2.5.0', { ...yesDeps, ...yesRun.writable, yes: true })).resolves.toBe(0);
       expect(yesDeps.promptForInstallChoice).not.toHaveBeenCalled();
@@ -407,12 +407,12 @@ describe('handleUpgrade', () => {
       const { stderr, writable } = captureOutput();
       const deps = createDeps({
         latest: NEXT_CANARY,
-        env: { KIMI_CODE_UPDATE_CHANNEL: 'nightly' },
+        env: { KIKO_UPDATE_CHANNEL: 'nightly' },
       });
 
       await expect(handleUpgrade(CANARY, { ...deps, ...writable })).resolves.toBe(0);
 
-      expect(stderr.join('')).toContain('warning: ignoring KIMI_CODE_UPDATE_CHANNEL="nightly"');
+      expect(stderr.join('')).toContain('warning: ignoring KIKO_UPDATE_CHANNEL="nightly"');
       expect(stderr.join('')).toContain('Using canary');
       expect(deps.refreshUpdateCache).toHaveBeenCalledWith('canary');
       expect(deps.installUpdate).toHaveBeenCalledWith('npm-global', upgradePlan('canary', NEXT_CANARY), 'darwin');
@@ -423,7 +423,7 @@ describe('handleUpgrade', () => {
       const deps = createDeps({
         latest: '0.5.0',
         source: 'homebrew',
-        env: { KIMI_CODE_UPDATE_CHANNEL: 'canary' },
+        env: { KIKO_UPDATE_CHANNEL: 'canary' },
       });
 
       await expect(handleUpgrade('0.4.0', { ...deps, ...writable })).resolves.toBe(0);
@@ -437,7 +437,7 @@ describe('handleUpgrade', () => {
     it('returns a check failure for a canary outage without falling back to stable', async () => {
       const { stderr, writable } = captureOutput();
       const deps = {
-        ...createDeps({ env: { KIMI_CODE_UPDATE_CHANNEL: 'canary' } }),
+        ...createDeps({ env: { KIKO_UPDATE_CHANNEL: 'canary' } }),
         refreshUpdateCache: vi.fn().mockRejectedValue(new Error('canary unavailable')),
       };
 

@@ -114,7 +114,7 @@ describe('native release artifacts', () => {
 
     await execFileAsync(process.execPath, [packageScript], {
       cwd: appRoot,
-      env: { ...process.env, KIMI_CODE_BUILD_TARGET: target },
+      env: { ...process.env, KIKO_BUILD_TARGET: target },
     });
 
     const archivePath = resolve(artifactsDir, `kimi-code-${target}.zip`);
@@ -134,7 +134,7 @@ describe('native release artifacts', () => {
     writeFileSync(fakeBinary, binaryContent, { mode: 0o755 });
     await execFileAsync(process.execPath, [packageScript], {
       cwd: appRoot,
-      env: { ...process.env, KIMI_CODE_BUILD_TARGET: target },
+      env: { ...process.env, KIKO_BUILD_TARGET: target },
     });
 
     await execFileAsync(process.execPath, [manifestScript, artifactsDir, '@moonshot-ai/kimi-code@0.5.0']);

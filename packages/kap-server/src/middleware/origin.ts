@@ -10,7 +10,7 @@ export interface OriginHookOptions {
 }
 
 export function parseCorsOrigins(env: NodeJS.ProcessEnv = process.env): string[] {
-  const raw = env['KIMI_CODE_CORS_ORIGINS'];
+  const raw = env['KIKO_CORS_ORIGINS'];
   if (raw === undefined) {
     return [];
   }

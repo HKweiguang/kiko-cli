@@ -81,8 +81,8 @@ export function installCommandFor(
 ): string {
   if (source === 'native' && channel === 'canary') {
     return platform === 'win32'
-      ? `$env:KIMI_CODE_UPDATE_CHANNEL='canary'; ${CLI_COMMAND_NAME} update --yes`
-      : `KIMI_CODE_UPDATE_CHANNEL=canary ${CLI_COMMAND_NAME} update --yes`;
+      ? `$env:KIKO_UPDATE_CHANNEL='canary'; ${CLI_COMMAND_NAME} update --yes`
+      : `KIKO_UPDATE_CHANNEL=canary ${CLI_COMMAND_NAME} update --yes`;
   }
   switch (source) {
     case 'npm-global':
@@ -538,16 +538,14 @@ async function showPendingBackgroundInstallNotice(
 }
 
 /**
- * `KIMI_CODE_NO_AUTO_UPDATE` (or the legacy `KIMI_CLI_NO_AUTO_UPDATE` alias)
- * fully disables automatic update behavior — no check, no background install,
- * no prompt, and no staged-swap at startup (see `native-swap.ts`). Migrated
- * from kimi-cli, where the variable gated all auto-update behavior. Accepts
- * the usual truthy values (`1`/`true`/`yes`/`on`).
+ * `KIKO_NO_AUTO_UPDATE` fully disables automatic update behavior — no check,
+ * no background install, no prompt, and no staged-swap at startup (see
+ * `native-swap.ts`). Accepts the usual truthy values (`1`/`true`/`yes`/`on`).
  */
 export function isAutoUpdateDisabledByEnv(env: NodeJS.ProcessEnv = process.env): boolean {
   const truthy = (value?: string): boolean =>
     ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
-  return truthy(env['KIMI_CODE_NO_AUTO_UPDATE']) || truthy(env['KIMI_CLI_NO_AUTO_UPDATE']);
+  return truthy(env['KIKO_NO_AUTO_UPDATE']);
 }
 
 /**

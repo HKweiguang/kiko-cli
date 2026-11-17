@@ -32,8 +32,8 @@ describe('/api/v1/meta experimental_flags', () => {
   });
 
   beforeEach(() => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '0');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOOL_SELECT', undefined);
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '0');
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOOL_SELECT', undefined);
   });
 
   afterEach(async () => {
@@ -78,8 +78,8 @@ describe('/api/v1/meta experimental_flags', () => {
     expect(flags['tool-select']).toBe(true);
   });
 
-  it('reflects a flag enabled via its KIMI_CODE_EXPERIMENTAL_* env var', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOOL_SELECT', '1');
+  it('reflects a flag enabled via its KIKO_EXPERIMENTAL_* env var', async () => {
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOOL_SELECT', '1');
     const base = await boot();
     const flags = await getMetaFlags(base);
     expect(flags['tool-select']).toBe(true);
@@ -100,7 +100,7 @@ describe('/api/v1/meta experimental_flags', () => {
   });
 
   it('keeps an env-forced flag on when the config section disables it', async () => {
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_TOOL_SELECT', '1');
+    vi.stubEnv('KIKO_EXPERIMENTAL_TOOL_SELECT', '1');
     const base = await boot();
 
     const res = await authedFetch(server as RunningServer, base, '/api/v1/config', {

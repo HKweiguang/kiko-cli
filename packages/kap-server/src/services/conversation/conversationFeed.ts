@@ -139,7 +139,7 @@ export class ConversationFeed implements IDisposable {
     private readonly handle: IAgentScopeHandle,
     fork?: ConversationFork,
   ) {
-    this.state = createConversationState(handle.id, fork, process.env['KIMI_CODE_DEBUG'] === '1');
+    this.state = createConversationState(handle.id, fork, process.env['KIKO_DEBUG'] === '1');
     this.ready = this.start().then(
       () => this,
       (error: unknown) => {

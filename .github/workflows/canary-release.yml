@@ -112,7 +112,7 @@ jobs:
           (cd apps/kimi-code && npm pkg set version="$CANARY_VERSION")
           CATALOG_FILE="$RUNNER_TEMP/kimi-code-built-in-catalog.json"
           node apps/kimi-code/scripts/update-catalog.mjs --out "$CATALOG_FILE"
-          export KIMI_CODE_BUILT_IN_CATALOG_FILE="$CATALOG_FILE"
+          export KIKO_BUILT_IN_CATALOG_FILE="$CATALOG_FILE"
           pnpm build
           cd apps/kimi-code
           pnpm publish --tag canary --access public --no-git-checks

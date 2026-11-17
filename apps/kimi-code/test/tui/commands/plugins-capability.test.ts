@@ -455,21 +455,21 @@ describe('plugins command capability surface', () => {
   });
 
   it('treats managed base URL catalogs as default and explicit catalogs as custom', () => {
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.kimi.com/coding/v1');
+    vi.stubEnv('KIKO_BASE_URL', 'https://api.kimi.com/coding/v1');
     expect(isDefaultMarketplaceCatalog(undefined, {})).toBe(true);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://coding.deva.msh.team/coding/v1');
+    vi.stubEnv('KIKO_BASE_URL', 'https://coding.deva.msh.team/coding/v1');
     expect(isDefaultMarketplaceCatalog(undefined, {})).toBe(true);
-    vi.stubEnv('KIMI_CODE_BASE_URL', 'https://gateway.example.test/coding/v1');
+    vi.stubEnv('KIKO_BASE_URL', 'https://gateway.example.test/coding/v1');
     expect(isDefaultMarketplaceCatalog(undefined, {})).toBe(true);
     expect(
       isDefaultMarketplaceCatalog(undefined, {
-        KIMI_CODE_PLUGIN_MARKETPLACE_URL: 'http://127.0.0.1:60056/marketplace.json',
-        KIMI_CODE_PLUGIN_MARKETPLACE_FROM_DEV_SERVER: '1',
+        KIKO_PLUGIN_MARKETPLACE_URL: 'http://127.0.0.1:60056/marketplace.json',
+        KIKO_PLUGIN_MARKETPLACE_FROM_DEV_SERVER: '1',
       }),
     ).toBe(true);
     expect(
       isDefaultMarketplaceCatalog(undefined, {
-        KIMI_CODE_PLUGIN_MARKETPLACE_URL: 'https://example.test/marketplace.json',
+        KIKO_PLUGIN_MARKETPLACE_URL: 'https://example.test/marketplace.json',
       }),
     ).toBe(false);
     expect(isDefaultMarketplaceCatalog('https://example.test/marketplace.json', {})).toBe(false);

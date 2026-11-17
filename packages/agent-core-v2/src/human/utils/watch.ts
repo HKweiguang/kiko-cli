@@ -508,7 +508,7 @@ export function createWatchService(runtime: WatchRuntime = NODE_WATCH_RUNTIME): 
 
 const defaultService = createWatchService();
 
-export const WATCH_ENV = 'KIMI_CODE_WATCH';
+export const WATCH_ENV = 'KIKO_WATCH';
 
 const TRUE_WATCH_ENV = new Set(['1', 'true', 'yes', 'on']);
 const FALSE_WATCH_ENV = new Set(['0', 'false', 'no', 'off']);

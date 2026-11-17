@@ -1,7 +1,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-import { KIMI_CODE_FLOW_CONFIG } from './constants';
+import { KIKO_FLOW_CONFIG } from './constants';
 import { OAuthUnauthorizedError } from './errors';
 import {
   assertKimiHostIdentity,
@@ -111,7 +111,7 @@ export class KimiOAuthToolkit<TConfig = unknown> {
     this.homeDir = options.homeDir ?? defaultKimiHome();
     const credentialsDir = options.credentialsDir ?? join(this.homeDir, 'credentials');
     this.storage = options.storage ?? new FileTokenStorage(credentialsDir);
-    this.flowConfig = options.flowConfig ?? KIMI_CODE_FLOW_CONFIG;
+    this.flowConfig = options.flowConfig ?? KIKO_FLOW_CONFIG;
     this.configAdapter = options.configAdapter;
     this.fetchImpl = options.fetchImpl;
     this.managerOptions = {

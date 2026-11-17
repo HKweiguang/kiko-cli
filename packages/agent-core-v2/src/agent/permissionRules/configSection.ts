@@ -53,7 +53,7 @@ export function readUserPermissionRules(config: IConfigService): readonly Permis
   return rules.filter((rule) => rule.scope === 'project' || rule.scope === 'user');
 }
 
-export const DANGEROUS_COMMAND_GUARD_ENV = 'KIMI_CODE_DANGEROUS_COMMAND_GUARD';
+export const DANGEROUS_COMMAND_GUARD_ENV = 'KIKO_DANGEROUS_COMMAND_GUARD';
 
 function parseDangerousCommandGuardEnv(raw: string): boolean | undefined {
   if (raw === 'true') return true;

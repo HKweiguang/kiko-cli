@@ -28,7 +28,7 @@ function shouldAlwaysBundle(id: string): boolean {
 }
 
 function buildTarget(): string {
-  return process.env['KIMI_CODE_BUILD_TARGET'] ?? `${process.platform}-${process.arch}`;
+  return process.env['KIKO_BUILD_TARGET'] ?? `${process.platform}-${process.arch}`;
 }
 
 export default defineConfig({
@@ -49,8 +49,8 @@ export default defineConfig({
   define: {
     [BUILT_IN_CATALOG_DEFINE]: builtInCatalogDefine(),
     __KIMI_CODE_VERSION__: JSON.stringify(packageJson.version),
-    __KIMI_CODE_CHANNEL__: JSON.stringify(process.env['KIMI_CODE_CHANNEL'] ?? ''),
-    __KIMI_CODE_COMMIT__: JSON.stringify(process.env['KIMI_CODE_COMMIT'] ?? ''),
+    __KIMI_CODE_CHANNEL__: JSON.stringify(process.env['KIKO_CHANNEL'] ?? ''),
+    __KIMI_CODE_COMMIT__: JSON.stringify(process.env['KIKO_COMMIT'] ?? ''),
     __KIMI_CODE_BUILD_TARGET__: JSON.stringify(buildTarget()),
     __KIMI_CODE_NATIVE_BUNDLE__: 'true',
   },

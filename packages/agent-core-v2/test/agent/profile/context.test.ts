@@ -127,7 +127,7 @@ describe('loadAgentsMd unreadable paths', () => {
   });
 });
 
-describe('loadAgentsMd brand home (KIMI_CODE_HOME)', () => {
+describe('loadAgentsMd brand home (KIKO_HOME)', () => {
   let brandHome: string;
 
   beforeEach(async () => {

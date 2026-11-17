@@ -2,8 +2,8 @@ import type { KimiHarness } from "@moonshot-ai/kimi-code-sdk";
 
 const DEFAULT_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const MAX_INTERVAL_MS = 2_147_483_647;
-const INTERVAL_ENV = "KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS";
-const REFRESH_ON_START_ENV = "KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START";
+const INTERVAL_ENV = "KIKO_MODEL_CATALOG_REFRESH_INTERVAL_MS";
+const REFRESH_ON_START_ENV = "KIKO_MODEL_CATALOG_REFRESH_ON_START";
 
 export interface ModelCatalogRefreshOptions {
   readonly harness: Pick<KimiHarness, "getConfig" | "refreshProviderModels">;

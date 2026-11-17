@@ -481,7 +481,7 @@ describe('AgentToolDedupeService', () => {
       });
     }
 
-    it('injects no reminders and never force-stops when KIMI_CODE_REPEAT_BREAKER is 0', async () => {
+    it('injects no reminders and never force-stops when KIKO_REPEAT_BREAKER is 0', async () => {
       const h = disabledHarness();
       h.registry.register(new EchoTool('Read'));
       let last: ToolResult | undefined;

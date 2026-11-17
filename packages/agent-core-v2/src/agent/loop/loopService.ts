@@ -150,7 +150,7 @@ import { AgentLoopProfileAdapter } from './profileAdapter';
 
 export type LoopInterruptReason = 'aborted' | 'max_steps' | 'error' | 'steered';
 
-const KIMI_CODE_INFINITE_RETRY_ENV = 'KIMI_CODE_INFINITE_RETRY';
+const KIKO_INFINITE_RETRY_ENV = 'KIKO_INFINITE_RETRY';
 
 type CoreRequestRest = LlmRequestRest<LlmDimension>;
 type Fields = Readonly<Record<string, unknown>>;
@@ -784,7 +784,7 @@ export class AgentLoopService extends Disposable implements IAgentLoopService {
   }
 
   private get infiniteRetryEnabled(): boolean {
-    return parseBooleanEnv(this.bootstrap.getEnv(KIMI_CODE_INFINITE_RETRY_ENV)) === true;
+    return parseBooleanEnv(this.bootstrap.getEnv(KIKO_INFINITE_RETRY_ENV)) === true;
   }
 
   private projectTaskEvent(event: LoopEmitted): void {

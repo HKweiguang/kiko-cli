@@ -9,7 +9,7 @@
  * `./constants`.
  *
  * Resolution order (first match wins):
- *   1. env override (`KIMI_CODE_OAUTH_HOST` / `KIMI_OAUTH_HOST`)
+ *   1. env override (`KIKO_OAUTH_HOST` / `KIMI_OAUTH_HOST`)
  *   2. persisted login (the `oauthHost` stored in config.toml's oauth ref)
  *   3. persisted default-slot login (the oauth ref's key equals
  *      `KIMI_CODE_OAUTH_KEY` — a mainland-China login persists no
@@ -26,8 +26,8 @@ import { join } from 'node:path';
 
 import { z } from 'zod';
 
-import { DEFAULT_KIMI_CODE_OAUTH_HOST } from './constants';
-import { DEFAULT_KIMI_CODE_BASE_URL } from './managed-usage';
+import { DEFAULT_KIKO_OAUTH_HOST } from './constants';
+import { DEFAULT_KIKO_BASE_URL } from './managed-usage';
 import {
   kimiCodeEnvBaseUrl,
   kimiCodeEnvOAuthHost,
@@ -60,8 +60,8 @@ export interface KimiRegionProfile {
 
 export const KIMI_REGION_PROFILES: Record<KimiRegion, KimiRegionProfile> = {
   'mainland-cn': {
-    oauthHost: DEFAULT_KIMI_CODE_OAUTH_HOST,
-    baseUrl: DEFAULT_KIMI_CODE_BASE_URL,
+    oauthHost: DEFAULT_KIKO_OAUTH_HOST,
+    baseUrl: DEFAULT_KIKO_BASE_URL,
     cdnBase: 'https://code.kimi.com/kimi-code',
     siteBase: 'https://www.kimi.com',
     telemetryEndpoint: 'https://telemetry-logs.kimi.com/v1/event',
@@ -93,7 +93,7 @@ export function kimiCdnContentUrl(path: string): string {
 
 /**
  * Login hosts for an explicit region choice, or `undefined` when an env
- * override (`KIMI_CODE_OAUTH_HOST` / `KIMI_OAUTH_HOST` / `KIMI_CODE_BASE_URL`)
+ * override (`KIKO_OAUTH_HOST` / `KIMI_OAUTH_HOST` / `KIKO_BASE_URL`)
  * is in play — env keeps full control of endpoints, so a region pick must not
  * smuggle profile hosts past it (requested hosts outrank env in
  * `resolveKimiCodeLoginAuth`).
@@ -215,7 +215,7 @@ export function resolveKimiRegionFromParts(
   parts: ResolveKimiRegionParts,
 ): KimiRegionResolution {
   const env = parts.env ?? process.env;
-  const envHost = env['KIMI_CODE_OAUTH_HOST'] ?? env['KIMI_OAUTH_HOST'];
+  const envHost = env['KIKO_OAUTH_HOST'] ?? env['KIMI_OAUTH_HOST'];
   if (envHost !== undefined && envHost.length > 0) {
     return { region: regionForOAuthHost(envHost) ?? 'mainland-cn', source: 'env' };
   }

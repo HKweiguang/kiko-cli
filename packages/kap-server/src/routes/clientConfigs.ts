@@ -49,7 +49,7 @@ export function registerClientConfigsRoutes(app: RouteHost, core: Scope): void {
       const config = await fetchClientConfig(
         name,
         clientConfigsBaseUrl(
-          bootstrap.getEnv('KIMI_CODE_BASE_URL') ?? process.env['KIMI_CODE_BASE_URL'],
+          bootstrap.getEnv('KIKO_BASE_URL') ?? process.env['KIKO_BASE_URL'],
           core.accessor.get(IOAuthService).getRegion(),
         ),
       );

@@ -7,6 +7,6 @@ import { currentKimiRegion } from '#/utils/region';
 
 export const clientConfigs = new ClientConfigClient({
   region: currentKimiRegion,
-  baseUrlOverride: () => process.env['KIMI_CODE_BASE_URL'],
+  baseUrlOverride: () => process.env['KIKO_BASE_URL'],
   cacheDir: () => join(getCacheDir(), 'client-configs'),
 });

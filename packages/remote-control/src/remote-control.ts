@@ -18,7 +18,7 @@ import { acquireRemoteControlLock } from './lock';
 
 export const REMOTE_CONTROL_RELAY_ORIGIN = 'https://code-rc.kimi.com';
 
-export const REMOTE_CONTROL_RELAY_URL_ENV = 'KIMI_CODE_REMOTE_CONTROL_RELAY_URL';
+export const REMOTE_CONTROL_RELAY_URL_ENV = 'KIKO_REMOTE_CONTROL_RELAY_URL';
 
 export function resolveRemoteControlRelayOrigin(
   env: Readonly<Record<string, string | undefined>> = process.env,

@@ -462,7 +462,7 @@ describe('region awareness', () => {
     expect(client.peek('estimated_cache_duration', configSchema)).toBeUndefined();
   });
 
-  it('keeps honoring the KIMI_CODE_BASE_URL override ahead of the profile', async () => {
+  it('keeps honoring the KIKO_BASE_URL override ahead of the profile', async () => {
     baseUrlOverride = 'https://env-api.example.com';
     const fetchImpl = vi.fn(async () => jsonResponse(ENVELOPE));
 

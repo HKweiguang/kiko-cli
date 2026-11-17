@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-export const BUILT_IN_CATALOG_ENV = 'KIMI_CODE_BUILT_IN_CATALOG_FILE';
+export const BUILT_IN_CATALOG_ENV = 'KIKO_BUILT_IN_CATALOG_FILE';
 export const BUILT_IN_CATALOG_DEFINE = '__KIMI_CODE_BUILT_IN_CATALOG__';
 
 export function builtInCatalogDefine(env = process.env) {

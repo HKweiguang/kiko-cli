@@ -270,7 +270,7 @@ describe('SessionLockService', () => {
     serviceA.release(SID);
   });
 
-  it('skips the lock file when KIMI_CODE_SESSION_LOCK is off', () => {
+  it('skips the lock file when KIKO_SESSION_LOCK is off', () => {
     const unlocked = new SessionLockService(
       bootstrapStub(homeDir, 'client_c', { [SESSION_LOCK_ENV]: '0' }),
       noopLogger,

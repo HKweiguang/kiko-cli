@@ -441,7 +441,7 @@ export const KIMI_ERROR_INFO = {
     title: 'Plugin state failed to load',
     retryable: true,
     public: true,
-    action: 'Fix the installed.json file under $KIMI_CODE_HOME/plugins/ and run /plugins reload.',
+    action: 'Fix the installed.json file under $KIKO_HOME/plugins/ and run /plugins reload.',
   },
   'plugin.catalog_changed': {
     title: 'Plugin marketplace entry changed',

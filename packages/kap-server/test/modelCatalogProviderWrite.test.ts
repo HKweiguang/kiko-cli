@@ -118,8 +118,8 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
 
   beforeAll(async () => {
     home = await mkdtemp(join(tmpdir(), 'kimi-server-v2-provider-write-'));
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'] = '0';
-    process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
+    process.env['KIKO_MODEL_CATALOG_REFRESH_ON_START'] = '0';
+    process.env['KIKO_MODEL_CATALOG_REFRESH_INTERVAL_MS'] = '0';
     server = await startServer({
       hostIdentity: TEST_HOST_IDENTITY,
       host: '127.0.0.1',
@@ -139,8 +139,8 @@ describe('server-v2 /api/v1 provider write endpoints', () => {
       await rm(home, { recursive: true, force: true });
       home = undefined;
     }
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START'];
-    delete process.env['KIMI_CODE_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
+    delete process.env['KIKO_MODEL_CATALOG_REFRESH_ON_START'];
+    delete process.env['KIKO_MODEL_CATALOG_REFRESH_INTERVAL_MS'];
   });
 
   async function boot(toml?: string): Promise<void> {

@@ -1,10 +1,10 @@
 /**
  * Proxy-aware `fetch` for LLM clients with an optional response-headers timeout configured by
- * `KIMI_CODE_LLM_HEADERS_TIMEOUT_MS`.
+ * `KIKO_LLM_HEADERS_TIMEOUT_MS`.
  */
 import { Agent, EnvHttpProxyAgent, type Dispatcher } from 'undici';
 
-export const LLM_HEADERS_TIMEOUT_ENV = 'KIMI_CODE_LLM_HEADERS_TIMEOUT_MS';
+export const LLM_HEADERS_TIMEOUT_ENV = 'KIKO_LLM_HEADERS_TIMEOUT_MS';
 
 const MAX_HEADERS_TIMEOUT_MS = 2 ** 31 - 1;
 

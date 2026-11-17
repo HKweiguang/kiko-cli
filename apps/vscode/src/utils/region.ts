@@ -42,7 +42,7 @@ export function resolveExtensionRegion(options: ExtensionRegionOptions): KimiReg
       homeDir: options.homeDir,
       readAuth: () => readAuth(options.homeDir),
       authFilePath: resolveConfigPath({ homeDir: options.homeDir }),
-      readMarker: process.env["KIMI_CODE_REGION_MARKER"] !== "off",
+      readMarker: process.env["KIKO_REGION_MARKER"] !== "off",
       allowLocalInference: vscode.env.remoteName === undefined,
     });
     resolvers.set(options.homeDir, resolver);

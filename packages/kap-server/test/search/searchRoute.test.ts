@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-process.env['KIMI_CODE_SEARCH_WORKER'] = '1';
+process.env['KIKO_SEARCH_WORKER'] = '1';
 
 import { ISessionIndex, type SessionSummary } from '@moonshot-ai/agent-core-v2';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -111,7 +111,7 @@ describe('server-v2 /api/v1/search', () => {
       host: '127.0.0.1',
       port: 0,
       homeDir: home,
-      env: { ...process.env, KIMI_CODE_GLOBAL_SEARCH: '1' },
+      env: { ...process.env, KIKO_GLOBAL_SEARCH: '1' },
       logLevel: 'silent',
       seeds: [[ISessionIndex, stubSessionIndex(summaries)]],
     });
@@ -240,7 +240,7 @@ describe('server-v2 session routes with the global search DB unavailable', () =>
       host: '127.0.0.1',
       port: 0,
       homeDir: home as string,
-      env: { ...process.env, KIMI_CODE_GLOBAL_SEARCH: '1' },
+      env: { ...process.env, KIKO_GLOBAL_SEARCH: '1' },
       logLevel: 'silent',
     });
     base = `http://127.0.0.1:${server.port}`;

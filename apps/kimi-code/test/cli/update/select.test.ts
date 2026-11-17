@@ -20,20 +20,26 @@ describe('updateChannelForVersion', () => {
 });
 
 describe('resolveUpdateChannel', () => {
-  it('follows the installed channel when KIMI_CODE_UPDATE_CHANNEL is unset or blank', () => {
+  it('follows the installed channel when KIKO_UPDATE_CHANNEL is unset or blank', () => {
     expect(resolveUpdateChannel('2.5.0', 'npm-global', {})).toEqual(DEFAULT);
     expect(resolveUpdateChannel(CANARY, 'native', {})).toEqual(CANARY_DEFAULT);
-    expect(resolveUpdateChannel(CANARY, 'native', { KIMI_CODE_UPDATE_CHANNEL: '  ' })).toEqual(CANARY_DEFAULT);
+    expect(resolveUpdateChannel(CANARY, 'native', { KIKO_UPDATE_CHANNEL: '  ' })).toEqual(CANARY_DEFAULT);
+  });
+
+  it('ignores the legacy KIMI_CODE_UPDATE_CHANNEL', () => {
+    expect(
+      resolveUpdateChannel('2.5.0', 'npm-global', { KIMI_CODE_UPDATE_CHANNEL: 'canary' }),
+    ).toEqual(DEFAULT);
   });
 
   it('accepts stable and canary case-insensitively', () => {
-    expect(resolveUpdateChannel(CANARY, 'native', { KIMI_CODE_UPDATE_CHANNEL: 'stable' })).toEqual(STABLE_ENV);
-    expect(resolveUpdateChannel('2.5.0', 'npm-global', { KIMI_CODE_UPDATE_CHANNEL: ' Canary ' })).toEqual(CANARY_ENV);
+    expect(resolveUpdateChannel(CANARY, 'native', { KIKO_UPDATE_CHANNEL: 'stable' })).toEqual(STABLE_ENV);
+    expect(resolveUpdateChannel('2.5.0', 'npm-global', { KIKO_UPDATE_CHANNEL: ' Canary ' })).toEqual(CANARY_ENV);
   });
 
   it('falls back to the installed channel for an unknown value and keeps it for the warning', () => {
     for (const raw of ['nightly', 'dev']) {
-      expect(resolveUpdateChannel(CANARY, 'native', { KIMI_CODE_UPDATE_CHANNEL: raw })).toEqual({
+      expect(resolveUpdateChannel(CANARY, 'native', { KIKO_UPDATE_CHANNEL: raw })).toEqual({
         channel: 'canary',
         origin: 'invalid',
         raw,
@@ -42,11 +48,11 @@ describe('resolveUpdateChannel', () => {
   });
 
   it('always uses stable for Homebrew and ignores the channel variable', () => {
-    expect(resolveUpdateChannel(CANARY, 'homebrew', { KIMI_CODE_UPDATE_CHANNEL: 'canary' })).toEqual({
+    expect(resolveUpdateChannel(CANARY, 'homebrew', { KIKO_UPDATE_CHANNEL: 'canary' })).toEqual({
       channel: 'stable',
       origin: 'homebrew',
     });
-    expect(resolveUpdateChannel('2.5.0', 'homebrew', { KIMI_CODE_UPDATE_CHANNEL: 'nightly' })).toEqual({
+    expect(resolveUpdateChannel('2.5.0', 'homebrew', { KIKO_UPDATE_CHANNEL: 'nightly' })).toEqual({
       channel: 'stable',
       origin: 'homebrew',
     });

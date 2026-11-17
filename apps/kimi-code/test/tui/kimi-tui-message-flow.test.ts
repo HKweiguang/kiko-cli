@@ -566,7 +566,7 @@ function countOccurrences(haystack: string, needle: string): number {
 
 const tempDirs: string[] = [];
 const originalKimiCodeHome = process.env['KIKO_HOME'];
-const originalPluginMarketplaceUrl = process.env['KIMI_CODE_PLUGIN_MARKETPLACE_URL'];
+const originalPluginMarketplaceUrl = process.env['KIKO_PLUGIN_MARKETPLACE_URL'];
 const originalVisual = process.env['VISUAL'];
 const originalEditor = process.env['EDITOR'];
 
@@ -638,9 +638,9 @@ afterEach(async () => {
     process.env['VISUAL'] = originalVisual;
   }
   if (originalPluginMarketplaceUrl === undefined) {
-    delete process.env['KIMI_CODE_PLUGIN_MARKETPLACE_URL'];
+    delete process.env['KIKO_PLUGIN_MARKETPLACE_URL'];
   } else {
-    process.env['KIMI_CODE_PLUGIN_MARKETPLACE_URL'] = originalPluginMarketplaceUrl;
+    process.env['KIKO_PLUGIN_MARKETPLACE_URL'] = originalPluginMarketplaceUrl;
   }
   if (originalEditor === undefined) {
     delete process.env['EDITOR'];
@@ -4096,8 +4096,8 @@ command = "vim"
 
   it('removes debug timing status from undone turns', async () => {
     const { driver, session } = await makeDriver();
-    const previousDebug = process.env['KIMI_CODE_DEBUG'];
-    process.env['KIMI_CODE_DEBUG'] = '1';
+    const previousDebug = process.env['KIKO_DEBUG'];
+    process.env['KIKO_DEBUG'] = '1';
     try {
       driver.handleUserInput('hello');
       driver.sessionEventHandler.handleEvent(
@@ -4130,9 +4130,9 @@ command = "vim"
       expect(transcript).not.toContain('[Debug]');
     } finally {
       if (previousDebug === undefined) {
-        delete process.env['KIMI_CODE_DEBUG'];
+        delete process.env['KIKO_DEBUG'];
       } else {
-        process.env['KIMI_CODE_DEBUG'] = previousDebug;
+        process.env['KIKO_DEBUG'] = previousDebug;
       }
     }
   });
@@ -12815,7 +12815,7 @@ capabilities = ["image_in", "video_in"]
       }),
       'utf8',
     );
-    process.env['KIMI_CODE_PLUGIN_MARKETPLACE_URL'] = marketplacePath;
+    process.env['KIKO_PLUGIN_MARKETPLACE_URL'] = marketplacePath;
     const session = makeSession();
     const { driver } = await makeDriver(session);
 
@@ -12871,7 +12871,7 @@ capabilities = ["image_in", "video_in"]
       }),
       'utf8',
     );
-    process.env['KIMI_CODE_PLUGIN_MARKETPLACE_URL'] = marketplacePath;
+    process.env['KIKO_PLUGIN_MARKETPLACE_URL'] = marketplacePath;
     const installPlugin = vi.fn(async () => {
       throw new Error('install failed');
     });
@@ -13027,8 +13027,8 @@ capabilities = ["image_in", "video_in"]
 
   it('installs default marketplace entries through plain install', async () => {
     const originalFetch = globalThis.fetch;
-    const originalBaseUrl = process.env['KIMI_CODE_BASE_URL'];
-    process.env['KIMI_CODE_BASE_URL'] = 'https://api.kimi.com/coding/v1';
+    const originalBaseUrl = process.env['KIKO_BASE_URL'];
+    process.env['KIKO_BASE_URL'] = 'https://api.kimi.com/coding/v1';
     const { KimiOAuthToolkit } = await import('@moonshot-ai/kimi-code-oauth');
     const tokenProvider = vi.spyOn(KimiOAuthToolkit.prototype, 'tokenProvider').mockReturnValue({
       getAccessToken: async () => 'managed-token',
@@ -13087,9 +13087,9 @@ capabilities = ["image_in", "video_in"]
     } finally {
       tokenProvider.mockRestore();
       if (originalBaseUrl === undefined) {
-        delete process.env['KIMI_CODE_BASE_URL'];
+        delete process.env['KIKO_BASE_URL'];
       } else {
-        process.env['KIMI_CODE_BASE_URL'] = originalBaseUrl;
+        process.env['KIKO_BASE_URL'] = originalBaseUrl;
       }
       vi.stubGlobal('fetch', originalFetch);
     }
@@ -13097,7 +13097,7 @@ capabilities = ["image_in", "video_in"]
 
   it('shows an inline Official error when the marketplace is unreachable, keeping the panel open', async () => {
     const originalFetch = globalThis.fetch;
-    process.env['KIMI_CODE_PLUGIN_MARKETPLACE_URL'] = 'https://example.test/marketplace.json';
+    process.env['KIKO_PLUGIN_MARKETPLACE_URL'] = 'https://example.test/marketplace.json';
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => {

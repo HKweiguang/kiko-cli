@@ -24,8 +24,8 @@ import { basename, dirname, join } from 'node:path';
 import { log } from '@moonshot-ai/kimi-code-sdk';
 
 import {
-  KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME,
-  KIMI_CODE_UPDATE_REEXEC_ENV,
+  KIKO_NATIVE_STAGED_STATE_FILE_NAME,
+  KIKO_UPDATE_REEXEC_ENV,
 } from '#/constant/app';
 
 import { readUpdateInstallState, writeUpdateInstallState } from './install-state';
@@ -378,7 +378,7 @@ async function cleanupStaleSwapClaims(exePath: string): Promise<boolean> {
   }
   let swapInProgress = false;
   for (const entry of entries) {
-    if (!entry.startsWith(`${KIMI_CODE_NATIVE_STAGED_STATE_FILE_NAME}.swap-`)) continue;
+    if (!entry.startsWith(`${KIKO_NATIVE_STAGED_STATE_FILE_NAME}.swap-`)) continue;
     const full = join(stagingDir, entry);
     const info = await stat(full).catch(() => null);
     if (info === null) continue;
@@ -438,7 +438,7 @@ function reexec(
     try {
       child = deps.spawnImpl(deps.exePath, deps.argv.slice(2), {
         stdio: 'inherit',
-        env: { ...deps.env, [KIMI_CODE_UPDATE_REEXEC_ENV]: '1' },
+        env: { ...deps.env, [KIKO_UPDATE_REEXEC_ENV]: '1' },
       }) as unknown as SpawnedChild;
     } catch (error) {
       logSwap('re-exec spawn threw', { error: String(error) });
@@ -477,10 +477,10 @@ export async function maybeRelaunchWithStagedNativeUpdate(
 ): Promise<boolean> {
   if (!deps.isNative) return false;
   const swapInProgress = await sweepStaleNativeUpdateArtifacts(deps.exePath);
-  if (isTruthy(deps.env[KIMI_CODE_UPDATE_REEXEC_ENV])) {
+  if (isTruthy(deps.env[KIKO_UPDATE_REEXEC_ENV])) {
     // Read-once guard: drop it so this session's children (and any nested
     // kiko launches from them) do not inherit the swap skip.
-    delete deps.env[KIMI_CODE_UPDATE_REEXEC_ENV];
+    delete deps.env[KIKO_UPDATE_REEXEC_ENV];
     return false;
   }
   if (swapInProgress) {

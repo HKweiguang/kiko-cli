@@ -86,7 +86,7 @@ describe('Remote Control URLs', () => {
   it('falls back to the default relay origin when the env is unset or blank', () => {
     expect(resolveRemoteControlRelayOrigin({})).toBe('https://code-rc.kimi.com');
     expect(
-      resolveRemoteControlRelayOrigin({ KIMI_CODE_REMOTE_CONTROL_RELAY_URL: '  ' }),
+      resolveRemoteControlRelayOrigin({ KIKO_REMOTE_CONTROL_RELAY_URL: '  ' }),
     ).toBe('https://code-rc.kimi.com');
     expect(resolveRemoteControlRelayOrigin({}, 'https://code-rc.kimi.ai')).toBe(
       'https://code-rc.kimi.ai',
@@ -94,7 +94,7 @@ describe('Remote Control URLs', () => {
   });
 
   it('builds device URLs from the relay origin env override', () => {
-    vi.stubEnv('KIMI_CODE_REMOTE_CONTROL_RELAY_URL', 'https://rc.example.test/coding-relay/');
+    vi.stubEnv('KIKO_REMOTE_CONTROL_RELAY_URL', 'https://rc.example.test/coding-relay/');
     expect(resolveRemoteControlRelayOrigin()).toBe('https://rc.example.test/coding-relay/');
     expect(
       buildRemoteControlUrl('device-1', undefined, resolveRemoteControlRelayOrigin(), 'kimi_code_cli'),

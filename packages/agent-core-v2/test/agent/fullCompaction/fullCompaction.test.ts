@@ -578,8 +578,8 @@ describe('FullCompaction', () => {
     await ctx.expectResumeMatches();
   });
 
-  it('retries any compaction request error indefinitely when KIMI_CODE_INFINITE_RETRY is set', async () => {
-    vi.stubEnv('KIMI_CODE_INFINITE_RETRY', '1');
+  it('retries any compaction request error indefinitely when KIKO_INFINITE_RETRY is set', async () => {
+    vi.stubEnv('KIKO_INFINITE_RETRY', '1');
     let attempts = 0;
     const generate: GenerateFn = createMockProvider(async () => {
       attempts += 1;
@@ -605,8 +605,8 @@ describe('FullCompaction', () => {
     await ctx.expectResumeMatches();
   });
 
-  it('lets context overflow reach compaction shrink instead of retrying when KIMI_CODE_INFINITE_RETRY is set', async () => {
-    vi.stubEnv('KIMI_CODE_INFINITE_RETRY', '1');
+  it('lets context overflow reach compaction shrink instead of retrying when KIKO_INFINITE_RETRY is set', async () => {
+    vi.stubEnv('KIKO_INFINITE_RETRY', '1');
     let attempts = 0;
     const generate: GenerateFn = createMockProvider(async () => {
       attempts += 1;

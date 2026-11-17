@@ -12,7 +12,7 @@ import {
   maybeRelaunchWithStagedNativeUpdate,
   type NativeSwapDeps,
 } from '#/cli/update/native-swap';
-import { KIMI_CODE_UPDATE_REEXEC_ENV } from '#/constant/app';
+import { KIKO_UPDATE_REEXEC_ENV } from '#/constant/app';
 import { getNativeStagedStateFile, getNativeStagingDir } from '#/utils/paths';
 import type { UpdateChannel } from '#/cli/update/types';
 
@@ -199,14 +199,14 @@ describe('maybeRelaunchWithStagedNativeUpdate', () => {
   it('does nothing when the re-exec guard env is set', async () => {
     await seedStagedUpdate(exePath, STAGED_VERSION);
     const { calls, spawnImpl } = createSpawnMock({});
-    const env = { [KIMI_CODE_UPDATE_REEXEC_ENV]: '1' };
+    const env = { [KIKO_UPDATE_REEXEC_ENV]: '1' };
     const relaunched = await maybeRelaunchWithStagedNativeUpdate(
       makeDeps(exePath, { spawnImpl, env }),
     );
     expect(relaunched).toBe(false);
     expect(calls).toHaveLength(0);
     // Read-once: the guard is dropped so children of this session do not inherit it.
-    expect(env[KIMI_CODE_UPDATE_REEXEC_ENV]).toBeUndefined();
+    expect(env[KIKO_UPDATE_REEXEC_ENV]).toBeUndefined();
     // Staged files untouched for the "real" next launch.
     await expect(stat(getNativeStagedStateFile(exePath))).resolves.toBeDefined();
     expect(await readFile(exePath, 'utf-8')).toBe('old-binary');
@@ -343,7 +343,7 @@ describe('maybeRelaunchWithStagedNativeUpdate', () => {
     expect(calls[0]?.args).toEqual(['--version']);
     expect(calls[1]?.cmd).toBe(exePath);
     expect(calls[1]?.args).toEqual(['--flag', 'value']);
-    expect((calls[1]?.options['env'] as Record<string, string>)[KIMI_CODE_UPDATE_REEXEC_ENV]).toBe('1');
+    expect((calls[1]?.options['env'] as Record<string, string>)[KIKO_UPDATE_REEXEC_ENV]).toBe('1');
     expect(calls[1]?.options['stdio']).toBe('inherit');
     expect(exitImpl).toHaveBeenCalledWith(3);
 
@@ -747,7 +747,7 @@ describe('maybeRelaunchWithStagedNativeUpdate', () => {
     const relaunched = await maybeRelaunchWithStagedNativeUpdate(
       makeDeps(exePath, {
         spawnImpl,
-        env: { PATH: '/usr/bin', KIMI_CODE_NO_AUTO_UPDATE: '1' },
+        env: { PATH: '/usr/bin', KIKO_NO_AUTO_UPDATE: '1' },
       }),
     );
 
@@ -767,7 +767,7 @@ describe('maybeRelaunchWithStagedNativeUpdate', () => {
     const relaunched = await maybeRelaunchWithStagedNativeUpdate(
       makeDeps(exePath, {
         spawnImpl,
-        env: { PATH: '/usr/bin', KIMI_CODE_NO_AUTO_UPDATE: '1' },
+        env: { PATH: '/usr/bin', KIKO_NO_AUTO_UPDATE: '1' },
       }),
     );
 

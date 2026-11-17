@@ -66,24 +66,24 @@ describe('resolveSwarmMaxConcurrency', () => {
 
   it('returns undefined for empty or whitespace-only values', () => {
     expect(
-      resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '' }),
+      resolveSwarmMaxConcurrency({ KIKO_AGENT_SWARM_MAX_CONCURRENCY: '' }),
     ).toBeUndefined();
     expect(
-      resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '   ' }),
+      resolveSwarmMaxConcurrency({ KIKO_AGENT_SWARM_MAX_CONCURRENCY: '   ' }),
     ).toBeUndefined();
   });
 
   it('throws for non-positive, non-integer, or non-numeric values', () => {
     for (const raw of ['0', '-1', '2.5', 'abc']) {
       expect(() =>
-        resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: raw }),
-      ).toThrow(/KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY.*positive integer/);
+        resolveSwarmMaxConcurrency({ KIKO_AGENT_SWARM_MAX_CONCURRENCY: raw }),
+      ).toThrow(/KIKO_AGENT_SWARM_MAX_CONCURRENCY.*positive integer/);
     }
   });
 
   it('returns the integer for a positive integer value', () => {
-    expect(resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: '3' })).toBe(3);
-    expect(resolveSwarmMaxConcurrency({ KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY: ' 8 ' })).toBe(8);
+    expect(resolveSwarmMaxConcurrency({ KIKO_AGENT_SWARM_MAX_CONCURRENCY: '3' })).toBe(3);
+    expect(resolveSwarmMaxConcurrency({ KIKO_AGENT_SWARM_MAX_CONCURRENCY: ' 8 ' })).toBe(8);
   });
 });
 
@@ -1587,7 +1587,7 @@ describe('SessionSwarmService metadata compatibility', () => {
   });
 
   it('settles a stopped member that is still queued without waiting for a free slot', async () => {
-    vi.stubEnv('KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY', '1');
+    vi.stubEnv('KIKO_AGENT_SWARM_MAX_CONCURRENCY', '1');
     try {
       agents['agent-run'] = { labels: { parentAgentId: 'main' } };
       agents['agent-queued'] = { labels: { parentAgentId: 'main' } };
@@ -1631,14 +1631,14 @@ describe('SessionSwarmService metadata compatibility', () => {
   });
 
   it('rejects an invalid concurrency setting before starting any member', async () => {
-    vi.stubEnv('KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY', 'many');
+    vi.stubEnv('KIKO_AGENT_SWARM_MAX_CONCURRENCY', 'many');
     try {
       expect(() =>
         ix.get(ISessionSwarmService).run({
           callerAgentId: 'main',
           tasks: [resumeSessionTask('agent-one')],
         }),
-      ).toThrow(/KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY/);
+      ).toThrow(/KIKO_AGENT_SWARM_MAX_CONCURRENCY/);
       expect(runAgent).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllEnvs();

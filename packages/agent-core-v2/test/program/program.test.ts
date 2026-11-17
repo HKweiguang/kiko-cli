@@ -37,7 +37,7 @@ import type { IUserAgentProfileLoader } from '#/workspace/workspaceAgentProfileL
 import type { IWorkspaceAgentProfileLoader } from '#/workspace/workspaceAgentProfileLoader/workspaceAgentProfileLoader';
 import type { IWorkspaceSkillCatalog } from '#/features/skill/workspace/workspaceSkillCatalog';
 
-beforeEach(() => { vi.stubEnv('KIMI_CODE_WATCH', 'false'); });
+beforeEach(() => { vi.stubEnv('KIKO_WATCH', 'false'); });
 afterEach(() => { vi.unstubAllEnvs(); });
 
 function deferred(): { readonly promise: Promise<void>; resolve(): void; reject(error: Error): void } {

@@ -169,10 +169,10 @@ describe('runShell', () => {
   beforeEach(() => {
     // Pin region to cn: the telemetry endpoint assertion below must not
     // follow the dev machine's own login/marker state.
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '');
-    vi.stubEnv('KIMI_CODE_TUI_FULL_SCREEN', '');
-    vi.stubEnv('KIMI_CODE_TUI_ANIMATION_FPS', '');
+    vi.stubEnv('KIKO_OAUTH_HOST', 'https://auth.kimi.com');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '');
+    vi.stubEnv('KIKO_TUI_FULL_SCREEN', '');
+    vi.stubEnv('KIKO_TUI_ANIMATION_FPS', '');
     vi.stubEnv('TERM', 'xterm-256color');
     vi.stubEnv('TERMUX_VERSION', '');
     vi.stubEnv('TMUX', '');
@@ -699,8 +699,8 @@ describe('runShell', () => {
     });
   });
 
-  it('passes the KIMI_CODE_TUI_ANIMATION_FPS frame rate to the TUI', async () => {
-    vi.stubEnv('KIMI_CODE_TUI_ANIMATION_FPS', '25');
+  it('passes the KIKO_TUI_ANIMATION_FPS frame rate to the TUI', async () => {
+    vi.stubEnv('KIKO_TUI_ANIMATION_FPS', '25');
     mocks.loadTuiConfig.mockResolvedValue({
       theme: 'dark',
       editorCommand: null,
@@ -730,8 +730,8 @@ describe('runShell', () => {
     expect(startupInput).toMatchObject({ animationFrameRate: 25, startupNotice: undefined });
   });
 
-  it('adds an ignored KIMI_CODE_TUI_ANIMATION_FPS to the startup notice after a tui.toml warning', async () => {
-    vi.stubEnv('KIMI_CODE_TUI_ANIMATION_FPS', 'fast');
+  it('adds an ignored KIKO_TUI_ANIMATION_FPS to the startup notice after a tui.toml warning', async () => {
+    vi.stubEnv('KIKO_TUI_ANIMATION_FPS', 'fast');
     mocks.loadTuiConfig.mockRejectedValue(
       new mocks.TuiConfigParseError({
         theme: 'dark',
@@ -763,7 +763,7 @@ describe('runShell', () => {
     expect(startupInput).toMatchObject({
       animationFrameRate: undefined,
       startupNotice: 'Invalid TUI config in ~/.kimi-code/tui.toml; using defaults.\n' +
-        'Ignored KIMI_CODE_TUI_ANIMATION_FPS="fast": expected a whole number from 1 to 60.',
+        'Ignored KIKO_TUI_ANIMATION_FPS="fast": expected a whole number from 1 to 60.',
     });
   });
 
@@ -1106,9 +1106,9 @@ describe('runShell', () => {
     }
   });
 
-  it('resolves fullscreen by default when KIMI_CODE_EXPERIMENTAL_FLAG is enabled and tui_mode is unset', async () => {
+  it('resolves fullscreen by default when KIKO_EXPERIMENTAL_FLAG is enabled and tui_mode is unset', async () => {
     stubTuiStartup();
-    await withEnv({ KIMI_CODE_EXPERIMENTAL_FLAG: '1' }, async () => {
+    await withEnv({ KIKO_EXPERIMENTAL_FLAG: '1' }, async () => {
       await runShell(minimalCliOptions, '1.2.3-test');
     });
 
@@ -1123,7 +1123,7 @@ describe('runShell', () => {
     );
   });
 
-  it('keeps explicit regular in tui.toml even when KIMI_CODE_EXPERIMENTAL_FLAG is enabled', async () => {
+  it('keeps explicit regular in tui.toml even when KIKO_EXPERIMENTAL_FLAG is enabled', async () => {
     mocks.loadTuiConfig.mockResolvedValue({
       theme: 'dark',
       tuiMode: 'regular',
@@ -1132,7 +1132,7 @@ describe('runShell', () => {
     });
     mocks.tuiStart.mockResolvedValue(undefined);
 
-    await withEnv({ KIMI_CODE_EXPERIMENTAL_FLAG: '1' }, async () => {
+    await withEnv({ KIKO_EXPERIMENTAL_FLAG: '1' }, async () => {
       await runShell(minimalCliOptions, '1.2.3-test');
     });
 

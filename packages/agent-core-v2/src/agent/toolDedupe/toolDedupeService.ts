@@ -31,7 +31,7 @@ import {
   type ToolDedupeResult,
 } from './toolDedupe';
 
-export const REPEAT_BREAKER_ENV = 'KIMI_CODE_REPEAT_BREAKER';
+export const REPEAT_BREAKER_ENV = 'KIKO_REPEAT_BREAKER';
 
 const REMINDER_TEXT_1 =
   '\n\n' +

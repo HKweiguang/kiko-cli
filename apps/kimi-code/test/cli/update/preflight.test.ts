@@ -269,11 +269,11 @@ describe('runUpdatePreflight', () => {
     // Pin the experimental flag off so rollout gating is deterministic
     // regardless of the host environment (the flag bypasses batch holds).
     // Tests that exercise the bypass opt back in with `vi.stubEnv(..., '1')`.
-    vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '');
-    vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', '');
+    vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '');
+    vi.stubEnv('KIKO_UPDATE_CHANNEL', '');
     // Pin the region to cn so address assertions don't follow the dev
     // machine's own login/marker state; global tests override below.
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.kimi.com');
+    vi.stubEnv('KIKO_OAUTH_HOST', 'https://auth.kimi.com');
     resetKimiRegionCache();
     mocks.readUpdateInstallState.mockResolvedValue(emptyUpdateInstallState());
     mocks.writeUpdateInstallState.mockResolvedValue(undefined);
@@ -290,8 +290,8 @@ describe('runUpdatePreflight', () => {
 
   afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); resetKimiRegionCache(); });
 
-  it('skips all update work when KIMI_CODE_NO_AUTO_UPDATE is set', async () => {
-    vi.stubEnv('KIMI_CODE_NO_AUTO_UPDATE', '1');
+  it('skips all update work when KIKO_NO_AUTO_UPDATE is set', async () => {
+    vi.stubEnv('KIKO_NO_AUTO_UPDATE', '1');
     mocks.readUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
     mocks.refreshUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
     const { options } = captureOutput();
@@ -304,15 +304,15 @@ describe('runUpdatePreflight', () => {
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
 
-  it('also honors the legacy KIMI_CLI_NO_AUTO_UPDATE alias', async () => {
+  it('ignores the removed KIMI_CLI_NO_AUTO_UPDATE alias', async () => {
     vi.stubEnv('KIMI_CLI_NO_AUTO_UPDATE', 'true');
     mocks.readUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
+    mocks.refreshUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
     const { options } = captureOutput();
 
     await expect(runUpdatePreflight('0.4.0', options)).resolves.toBe('continue');
 
-    expect(readUpdateCache).not.toHaveBeenCalled();
-    expect(detectInstallSource).not.toHaveBeenCalled();
+    expect(readUpdateCache).toHaveBeenCalledTimes(1);
   });
 
   it('starts an automatic update from the first fresh check when the cache is empty', async () => {
@@ -588,7 +588,7 @@ describe('runUpdatePreflight', () => {
   });
 
   it('global region: derives install commands and site links from the .ai profile', async () => {
-    vi.stubEnv('KIMI_CODE_OAUTH_HOST', 'https://auth.kimi.ai');
+    vi.stubEnv('KIKO_OAUTH_HOST', 'https://auth.kimi.ai');
     resetKimiRegionCache();
     mocks.readUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
     mocks.refreshUpdateCache.mockResolvedValue(cacheWith('0.5.0'));
@@ -1247,8 +1247,8 @@ describe('runUpdatePreflight', () => {
       expect(mocks.spawn).not.toHaveBeenCalled();
     });
 
-    it('KIMI_CODE_EXPERIMENTAL_FLAG bypasses the rollout: held devices still update', async () => {
-      vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '1');
+    it('KIKO_EXPERIMENTAL_FLAG bypasses the rollout: held devices still update', async () => {
+      vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '1');
       const held = cacheWithManifest(heldForEveryone('0.5.0'));
       mocks.readUpdateCache.mockResolvedValue(held);
       mocks.refreshUpdateCache.mockResolvedValue(held);
@@ -1276,9 +1276,9 @@ describe('runUpdatePreflight', () => {
       }));
     });
 
-    it('KIMI_CODE_NO_AUTO_UPDATE still wins over the experimental flag', async () => {
-      vi.stubEnv('KIMI_CODE_EXPERIMENTAL_FLAG', '1');
-      vi.stubEnv('KIMI_CODE_NO_AUTO_UPDATE', '1');
+    it('KIKO_NO_AUTO_UPDATE still wins over the experimental flag', async () => {
+      vi.stubEnv('KIKO_EXPERIMENTAL_FLAG', '1');
+      vi.stubEnv('KIKO_NO_AUTO_UPDATE', '1');
       mocks.readUpdateCache.mockResolvedValue(cacheWithManifest(releasedForEveryone('0.5.0')));
       const { options } = captureOutput();
 
@@ -1362,7 +1362,7 @@ describe('runUpdatePreflight', () => {
     });
 
     it('requires confirmation for a cached channel switch even when automatic install is enabled', async () => {
-      vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', 'canary');
+      vi.stubEnv('KIKO_UPDATE_CHANNEL', 'canary');
       const cached = canaryCache(manifestFor(CANARY));
       mocks.readUpdateCache.mockResolvedValue(cached);
       mocks.refreshUpdateCache.mockResolvedValue(cached);
@@ -1380,7 +1380,7 @@ describe('runUpdatePreflight', () => {
     });
 
     it('refreshes and prompts during the same interactive startup when a cold cache selects another channel', async () => {
-      vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', 'canary');
+      vi.stubEnv('KIKO_UPDATE_CHANNEL', 'canary');
       mocks.readUpdateCache.mockResolvedValue(emptyUpdateCache());
       mocks.refreshUpdateCache.mockResolvedValue(canaryCache(manifestFor(CANARY)));
       mocks.detectInstallSource.mockResolvedValue('npm-global');
@@ -1397,7 +1397,7 @@ describe('runUpdatePreflight', () => {
     });
 
     it('does not switch channels in a non-interactive startup', async () => {
-      vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', 'canary');
+      vi.stubEnv('KIKO_UPDATE_CHANNEL', 'canary');
       const cached = canaryCache(manifestFor(CANARY));
       mocks.readUpdateCache.mockResolvedValue(cached);
       mocks.refreshUpdateCache.mockResolvedValue(cached);
@@ -1412,7 +1412,7 @@ describe('runUpdatePreflight', () => {
     });
 
     it('ignores a cache written for the other channel', async () => {
-      vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', 'canary');
+      vi.stubEnv('KIKO_UPDATE_CHANNEL', 'canary');
       mocks.readUpdateCache.mockResolvedValue(cacheWithManifest(releasedForEveryone('0.6.0')));
       mocks.refreshUpdateCache.mockResolvedValue(canaryCache(releasedForEveryone('0.5.0')));
       const { options } = captureOutput();
@@ -1428,7 +1428,7 @@ describe('runUpdatePreflight', () => {
     });
 
     it('warns about an invalid channel value and follows the installed canary channel', async () => {
-      vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', 'nightly');
+      vi.stubEnv('KIKO_UPDATE_CHANNEL', 'nightly');
       mocks.readUpdateCache.mockResolvedValue(emptyUpdateCache());
       mocks.refreshUpdateCache.mockResolvedValue(canaryCache(manifestFor(CANARY)));
       const { stderr, options } = captureOutput();
@@ -1444,7 +1444,7 @@ describe('runUpdatePreflight', () => {
     });
 
     it('keeps Homebrew on stable when canary is explicitly selected', async () => {
-      vi.stubEnv('KIMI_CODE_UPDATE_CHANNEL', 'canary');
+      vi.stubEnv('KIKO_UPDATE_CHANNEL', 'canary');
       mocks.readUpdateCache.mockResolvedValue(cacheWith('0.6.0'));
       mocks.refreshUpdateCache.mockResolvedValue(cacheWith('0.6.0'));
       mocks.detectInstallSource.mockResolvedValue('homebrew');
@@ -1461,10 +1461,10 @@ describe('runUpdatePreflight', () => {
       mockSpawnExit(0);
       const plan = switchPlan('stable', 'canary', CANARY);
       expect(installCommandFor('native', CANARY, 'darwin', 'canary')).toBe(
-        'KIMI_CODE_UPDATE_CHANNEL=canary kiko update --yes',
+        'KIKO_UPDATE_CHANNEL=canary kiko update --yes',
       );
       expect(installCommandFor('native', CANARY, 'win32', 'canary')).toBe(
-        "$env:KIMI_CODE_UPDATE_CHANNEL='canary'; kiko update --yes",
+        "$env:KIKO_UPDATE_CHANNEL='canary'; kiko update --yes",
       );
 
       await installUpdate('native', plan, 'darwin');

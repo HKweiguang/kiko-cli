@@ -42,11 +42,11 @@ export function resolvePrintBackgroundMode(config: IConfigService): PrintBackgro
   return section?.keepAliveOnExit === true ? 'drain' : 'steer';
 }
 
-export const KEEP_ALIVE_ON_EXIT_ENV = 'KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT';
-export const BASH_TASK_TIMEOUT_S_ENV = 'KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S';
-export const PRINT_WAIT_CEILING_S_ENV = 'KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S';
-export const PRINT_BACKGROUND_MODE_ENV = 'KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE';
-export const PRINT_MAX_TURNS_ENV = 'KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS';
+export const KEEP_ALIVE_ON_EXIT_ENV = 'KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT';
+export const BASH_TASK_TIMEOUT_S_ENV = 'KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S';
+export const PRINT_WAIT_CEILING_S_ENV = 'KIKO_BACKGROUND_PRINT_WAIT_CEILING_S';
+export const PRINT_BACKGROUND_MODE_ENV = 'KIKO_BACKGROUND_PRINT_BACKGROUND_MODE';
+export const PRINT_MAX_TURNS_ENV = 'KIKO_BACKGROUND_PRINT_MAX_TURNS';
 
 function parsePositiveInt(raw: string): number | undefined {
   const value = raw.trim();

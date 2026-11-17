@@ -8,7 +8,7 @@ import {
   type UpdatePointer,
 } from './types';
 
-export const UPDATE_CHANNEL_ENV = 'KIMI_CODE_UPDATE_CHANNEL';
+export const UPDATE_CHANNEL_ENV = 'KIKO_UPDATE_CHANNEL';
 
 export function updateChannelForVersion(version: string): UpdateChannel {
   if (valid(version) !== null && prerelease(version)?.[0] === 'canary') return 'canary';

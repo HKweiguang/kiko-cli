@@ -214,7 +214,7 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
           ? opts.env
           : {
               ...(opts.env ?? process.env),
-              KIMI_CODE_PLUGIN_MARKETPLACE_URL: opts.pluginMarketplaceUrl,
+              KIKO_PLUGIN_MARKETPLACE_URL: opts.pluginMarketplaceUrl,
             },
       clientIdentity: opts.hostIdentity,
       args: {
@@ -288,7 +288,7 @@ export async function startServer(opts: ServerStartOptions): Promise<RunningServ
     if (!passwordConfigured) {
       logger.warn(
         { host, exposureClass },
-        'binding non-loopback host with token-only auth (no KIMI_CODE_PASSWORD) — the bearer token printed in the startup banner is the only credential protecting this server',
+        'binding non-loopback host with token-only auth (no KIKO_PASSWORD) — the bearer token printed in the startup banner is the only credential protecting this server',
       );
     }
   }

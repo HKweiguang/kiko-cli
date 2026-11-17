@@ -319,17 +319,17 @@ describe('SurveyController UI veto', () => {
 describe('SurveyController model route', () => {
   const MANAGED_BASE_URL = 'https://api.kimi.com/coding/v1';
   const GATEWAY_BASE_URL = 'https://gateway.example.com/coding/v1';
-  const savedBaseUrl = process.env['KIMI_CODE_BASE_URL'];
+  const savedBaseUrl = process.env['KIKO_BASE_URL'];
 
   beforeEach(() => {
-    delete process.env['KIMI_CODE_BASE_URL'];
+    delete process.env['KIKO_BASE_URL'];
   });
 
   afterEach(() => {
     if (savedBaseUrl === undefined) {
-      delete process.env['KIMI_CODE_BASE_URL'];
+      delete process.env['KIKO_BASE_URL'];
     } else {
-      process.env['KIMI_CODE_BASE_URL'] = savedBaseUrl;
+      process.env['KIKO_BASE_URL'] = savedBaseUrl;
     }
   });
 

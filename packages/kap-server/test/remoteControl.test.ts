@@ -128,7 +128,7 @@ describe('server-v2 /api/v1/remote-control', () => {
 
   it('starts and stops the tunnel at runtime, dedupes concurrent enables, and tracks relay-initiated shutdown', async () => {
     const relay = await startRegisterAckRelay();
-    vi.stubEnv('KIMI_CODE_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
+    vi.stubEnv('KIKO_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
 
     const initial = await authedFetch(server as RunningServer, base, '/api/v1/remote-control');
     const initialBody = (await initial.json()) as Envelope<RemoteControlStatusWire>;
@@ -288,7 +288,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('proxies device list and management operations through the Node-side cloud session', async () => {
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -348,7 +348,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud({ tunnel: true });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -387,7 +387,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud({ tunnel: true });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -429,7 +429,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -472,7 +472,7 @@ describe('server-v2 /api/v1/remote-control', () => {
     await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -732,7 +732,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('cancels an in-flight start when the current device is deactivated', async () => {await rm(remoteControlLockPath(home as string), { force: true });
     const cloud = await startDeviceCloud({ tunnel: true, registerDelayMs: 1000 });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -770,7 +770,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('rejects blank and overlong device aliases before reaching the cloud', async () => {
     const cloud = await startDeviceCloud();
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -795,7 +795,7 @@ describe('server-v2 /api/v1/remote-control', () => {
   it('maps cloud session failures to an internal API error instead of local auth', async () => {
     const cloud = await startDeviceCloud({ exchangeStatus: 401 });
     vi.stubEnv(
-      'KIMI_CODE_REMOTE_CONTROL_RELAY_URL',
+      'KIKO_REMOTE_CONTROL_RELAY_URL',
       `http://127.0.0.1:${cloud.port}/coding-relay/`,
     );
 
@@ -835,7 +835,7 @@ describe('remote-control registration identity', () => {
         homeDir: cliHome,
         logLevel: 'silent',
       });
-      vi.stubEnv('KIMI_CODE_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
+      vi.stubEnv('KIKO_REMOTE_CONTROL_RELAY_URL', `http://127.0.0.1:${relay.port}`);
       const res = await authedFetch(
         cliServer,
         `http://127.0.0.1:${cliServer.port}`,

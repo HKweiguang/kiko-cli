@@ -15,7 +15,7 @@ function feature(overrides: Partial<ExperimentalFeatureState> = {}): Experimenta
     title: 'Micro compaction',
     description: 'Trim older tool results.',
     surface: 'core',
-    env: 'KIMI_CODE_EXPERIMENTAL_MICRO_COMPACTION',
+    env: 'KIKO_EXPERIMENTAL_MICRO_COMPACTION',
     defaultEnabled: true,
     enabled: true,
     source: 'default',
