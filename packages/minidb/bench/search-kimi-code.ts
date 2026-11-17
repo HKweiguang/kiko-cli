@@ -11,6 +11,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { MiniDb } from '../src/index.js';
 import { readWorkspaceEntries } from './read-workspaces.js';
+import { readSessionIndexEntries } from './session-index.js';
 
 const argv = process.argv.slice(2);
 const FULL = argv.includes('--full');
@@ -72,20 +73,14 @@ async function main() {
   await fs.rm(OUT, { recursive: true, force: true });
 
   const workspaces = readWorkspaceEntries(DATA);
-  const lines = readFileSync(path.join(DATA, 'session_index.jsonl'), 'utf8').trim().split('\n');
+  const sessions = readSessionIndexEntries(DATA);
 
   const db = await MiniDb.open({ dir: OUT, valueCodec: 'json', fsyncPolicy: 'no', autoCompact: false });
   await db.createTextIndex('body', { fields: ['text'] });
 
   const t0 = performance.now();
   let n = 0;
-  for (const line of lines) {
-    let meta;
-    try {
-      meta = JSON.parse(line);
-    } catch {
-      continue;
-    }
+  for (const meta of sessions) {
     const wirePath = path.join(meta.sessionDir, 'agents', 'main', 'wire.jsonl');
     if (!existsSync(wirePath)) continue;
     let state = {};
