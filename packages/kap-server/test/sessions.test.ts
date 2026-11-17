@@ -2101,16 +2101,16 @@ describe('server-v2 /api/v1/sessions', () => {
     expect(rating.body.code).toBe(40930);
     const turns = await getJson<unknown>(`/api/v1/sessions/${parentId}/agents/${MAIN_AGENT_ID}/turns`);
     expect(turns.body.code).toBe(40930);
-    expect(turns.body.msg).toContain('Upgrade Kimi Code');
+    expect(turns.body.msg).toContain('Upgrade Kiko');
     const sliced = await postJson<SessionWire>(`/api/v1/sessions/${parentId}:fork`, {
       turn_index: 999,
     });
     expect(sliced.body.code).toBe(40930);
-    expect(sliced.body.msg).toContain('Upgrade Kimi Code');
+    expect(sliced.body.msg).toContain('Upgrade Kiko');
     const incompatible = await postJson<SessionWire>(`/api/v1/sessions/${parentId}:fork`, {});
     expect(incompatible.body.code).toBe(40930);
     expect(incompatible.body.msg).toBe(
-      'This session requires a newer version of Kimi Code. Upgrade Kimi Code to the latest version to read this session.',
+      'This session requires a newer version of Kiko. Upgrade Kiko to the latest version to read this session.',
     );
     expect(incompatible.body.details).toEqual({ minReaderVersion: '9.9', readerVersion: '1.5' });
   });

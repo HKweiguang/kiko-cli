@@ -5,6 +5,7 @@ import { IConfigService } from '#/app/config/config';
 import { IFlagService } from '#/app/flag/flag';
 import {
   BUILTIN_SKILLS,
+  CHECK_KIMI_CODE_DOCS_SKILL,
   IMPORT_FROM_CC_CODEX_SKILL,
   visibleBuiltinSkills,
 } from '#/features/skill/catalog/builtin/builtin';
@@ -128,6 +129,33 @@ describe('import-from-cc-codex prompt rendering', () => {
     );
     expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('KIMI_SKILL_DIR');
     expect(IMPORT_FROM_CC_CODEX_SKILL.content).toContain('KIMI_SESSION_ID');
+  });
+});
+
+describe('builtin skill product-name copy', () => {
+  it('names Kiko for this CLI while keeping upstream Kimi Code service references', () => {
+    expect(IMPORT_FROM_CC_CODEX_SKILL.description).toBe(
+      'Import Claude Code and Codex instructions, skills, and MCP settings into Kiko.',
+    );
+    const importContent = IMPORT_FROM_CC_CODEX_SKILL.content;
+    expect(importContent).toContain('assets into Kiko');
+    expect(importContent).toContain('Kiko already reads');
+    expect(importContent).toContain('Only write under Kiko targets');
+    expect(importContent).toContain('restart Kiko for newly imported skills');
+    expect(importContent).not.toContain('Kimi Code');
+
+    expect(CHECK_KIMI_CODE_DOCS_SKILL.description).toContain(
+      'Answer questions about the Kiko product',
+    );
+    expect(CHECK_KIMI_CODE_DOCS_SKILL.description).toContain('how Kiko works');
+    expect(CHECK_KIMI_CODE_DOCS_SKILL.description).toContain('what a Kiko error message means');
+    expect(CHECK_KIMI_CODE_DOCS_SKILL.description).not.toContain('Kimi Code');
+    const docsContent = CHECK_KIMI_CODE_DOCS_SKILL.content;
+    expect(docsContent).toContain('# Check Kiko docs (check-kimi-code-docs)');
+    expect(docsContent).toContain('Answer Kiko **product** questions');
+    expect(docsContent).toContain('developing the Kiko repository itself');
+    expect(docsContent).toContain('| What Kimi Code is;');
+    expect(docsContent).toContain('Using Kimi Code in Claude Code and other third-party agents');
   });
 });
 

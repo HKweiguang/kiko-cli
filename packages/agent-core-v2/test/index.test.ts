@@ -6,6 +6,7 @@ import {
   EVENT2_REGISTRY,
   IAgentLoopService,
   IAgentGoalService,
+  pluginMarketplaceUrl,
   type ContextMessage,
   type WireRecord,
 } from '#/index';
@@ -34,6 +35,7 @@ import { TurnStepRetrying } from '#/agent/loop/turnEvents';
 import { ToolsUpdateStore } from '#/features/todo/todoOps';
 import { IEventDispatcher } from '#/state/eventDispatcher';
 import type { Event2Class } from '#/app/event/event2';
+import { WireErrors } from '#/wire/errors';
 import { AGENT_WIRE_RECORD_KEY } from '#/wire/record';
 import { attachTodoService, registerTestAgentWire, registerTestEventDispatcher, restoreTestEventDispatcher } from './wire/stubs';
 import { BUILTIN_REPLAYABLE_STATE_KEYS } from './state/builtinReplayableKeys';
@@ -450,7 +452,7 @@ describe('AgentRecords persistence metadata', () => {
     expect(failure).toMatchObject({
       code: 'wire.version_too_low',
       message:
-        'This session requires a newer version of Kimi Code. Upgrade Kimi Code to the latest version to read this session.',
+        'This session requires a newer version of Kiko. Upgrade Kiko to the latest version to read this session.',
       details: {
         minReaderVersion: '9.9',
         readerVersion: WIRE_PROTOCOL_VERSION,
@@ -609,6 +611,16 @@ describe('AgentRecords persistence metadata', () => {
       measured: 42,
       estimated: 0,
     });
+  });
+});
+
+describe('user-visible product copy', () => {
+  it('names Kiko in wire upgrade errors and the plugin marketplace base URL error', () => {
+    expect(WireErrors.info['wire.version_too_low'].title).toBe('Kiko upgrade required');
+    expect(WireErrors.info['wire.version_too_low'].action).toBe(
+      'Upgrade Kiko to the latest version to read this session.',
+    );
+    expect(() => pluginMarketplaceUrl('   ')).toThrow('Kiko base URL cannot be empty.');
   });
 });
 

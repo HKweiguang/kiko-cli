@@ -1645,7 +1645,7 @@ key = "${titleOAuthRef.key}"
       expect(mainFailure).toMatchObject({ code: ErrorCodes.WIRE_VERSION_TOO_LOW });
       expect(toKimiErrorPayload(mainFailure)).toMatchObject({
         code: ErrorCodes.WIRE_VERSION_TOO_LOW,
-        message: expect.stringContaining('Upgrade Kimi Code'),
+        message: expect.stringContaining('Upgrade Kiko'),
       });
       await expect(client.reloadSession({ sessionId: 'ses_resume_fail' })).rejects.toMatchObject({
         code: ErrorCodes.WIRE_VERSION_TOO_LOW,

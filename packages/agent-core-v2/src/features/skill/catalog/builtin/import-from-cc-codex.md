@@ -1,20 +1,20 @@
 ---
 name: import-from-cc-codex
-description: Import Claude Code and Codex instructions, skills, and MCP settings into Kimi Code.
+description: Import Claude Code and Codex instructions, skills, and MCP settings into Kiko.
 disable-model-invocation: true
 ---
 
 # Import from Claude Code and Codex
 
 The user invoked `/import-from-cc-codex` (or `/skill:import-from-cc-codex`).
-Help them migrate selected local Claude Code and Codex assets into Kimi Code.
+Help them migrate selected local Claude Code and Codex assets into Kiko.
 This skill is intentionally conservative: it imports only instructions, skills,
 and MCP server declarations, with a user preview before any write.
 
 ## Non-negotiable rules
 
 - Do **not** migrate `.agents` content (`~/.agents/**`, `<project>/.agents/**`).
-  Kimi Code already reads `~/.agents/skills`, `~/.agents/AGENTS.md`, and
+  Kiko already reads `~/.agents/skills`, `~/.agents/AGENTS.md`, and
   `<project root>/.agents/skills`; Codex now stores its own skills and plugins
   there too.
 - Do **not** migrate Claude custom commands (`.claude/commands/**`), custom
@@ -26,7 +26,7 @@ and MCP server declarations, with a user preview before any write.
 - Do **not** run or install anything from the source directories.
 - Do **not** write anything until the user has chosen what to migrate, reviewed
   the final preview, and explicitly confirmed applying it.
-- Only write under Kimi Code targets:
+- Only write under Kiko targets:
   - User-global: the resolved Kimi home (see Source locations).
   - Project instructions: `<dir>/.kiko/AGENTS.md`, where `<dir>` is the
     project root or one of the directories between the project root and the
@@ -488,7 +488,7 @@ removed block with the path of the retained copy.
 
 Report exactly what changed, what was skipped and why, and the duplication
 check results. Tell the user to start a new session (for example `/new`) or
-restart Kimi Code for newly imported skills and instructions to be picked up;
+restart Kiko for newly imported skills and instructions to be picked up;
 MCP import remains pending the manual `/mcp-config` follow-up.
 
 ## Output style

@@ -124,7 +124,7 @@ export interface ReadPluginMarketplaceOptions {
 
 export function pluginMarketplaceUrl(baseUrl: string): string {
   const normalized = baseUrl.trim().replace(/\/+$/, '');
-  if (normalized.length === 0) throw new Error('Kimi Code base URL cannot be empty.');
+  if (normalized.length === 0) throw new Error('Kiko base URL cannot be empty.');
   return `${normalized}/plugins/marketplace`;
 }
 
