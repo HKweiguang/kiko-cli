@@ -90,7 +90,7 @@ Kiko CLI 按作用域分四档扫描，越具体的作用域优先级越高：**
 - `$KIKO_HOME/skills/`（默认：`~/.kiko/skills/`）
 - `~/.agents/skills/`
 
-Kimi 专属用户级 Skill 目录会随 `KIKO_HOME` 移动，隔离数据根时也会隔离 Kimi 专属 Skills。通用 `~/.agents/skills/` 目录仍放在真实 OS home 下，以便跨工具共享。
+Kiko 专属用户级 Skill 目录会随 `KIKO_HOME` 移动，隔离数据根时也会隔离 Kiko 专属 Skills。通用 `~/.agents/skills/` 目录仍放在真实 OS home 下，以便跨工具共享。
 
 **项目级**（项目根 = 工作目录向上最近的含 `.git` 的目录）：
 - `.kiko/skills/`

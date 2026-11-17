@@ -373,7 +373,7 @@ After installing and enabling the plugin, type this in the chat:
 /kimi-finance:report TSLA
 ```
 
-Kimi replaces `$ARGUMENTS` in the body with `TSLA`, then runs the prompt. The three details below cover each step.
+Kiko replaces `$ARGUMENTS` in the body with `TSLA`, then runs the prompt. The three details below cover each step.
 
 ### Declaring Commands (the `commands` field)
 

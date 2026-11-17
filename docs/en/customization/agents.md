@@ -61,7 +61,7 @@ Kiko CLI discovers agent files by scope; more specific scopes take higher priori
 - `$KIKO_HOME/agents/` (default: `~/.kiko/agents/`)
 - `~/.agents/agents/`
 
-The Kimi-specific user agent directory moves with `KIKO_HOME`, while the generic `~/.agents/agents/` directory stays under the real OS home so it can be shared across tools.
+The Kiko-specific user agent directory moves with `KIKO_HOME`, while the generic `~/.agents/agents/` directory stays under the real OS home so it can be shared across tools.
 
 **Project level** (project root = the nearest directory containing `.git`, searching upward from the working directory):
 - `.kiko/agents/`
@@ -185,7 +185,7 @@ Like the body of a regular agent file, SYSTEM.md is rendered as a template each 
 Unknown variables stay verbatim, a bare `$` is never special, and a variable with no context value renders as an empty string. Four pre-composed blocks (`${windows_notes}`, `${additional_dirs_section}`, `${skills_section}`, and `${plugin_sections}`) render the matching built-in prompt section, or an empty string when it does not apply. The built-in default prompt already includes `${plugin_sections}`, so do not add it again when `${base_prompt}` already expands to that prompt. The variables are enough to rebuild the skeleton of the built-in prompt, for example:
 
 ```markdown
-You are Kimi, running at ${cwd} on ${os}.
+You are Kiko CLI, running at ${cwd} on ${os}.
 
 ${agents_md}
 
@@ -196,7 +196,7 @@ ${plugin_sections}
 
 ## Instruction Files
 
-Global Kimi-specific instructions can live at `$KIKO_HOME/AGENTS.md` (default: `~/.kiko/AGENTS.md`). When you relocate the data root with `KIKO_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.kiko/AGENTS.md` or `AGENTS.md`.
+Global Kiko-specific instructions can live at `$KIKO_HOME/AGENTS.md` (default: `~/.kiko/AGENTS.md`). When you relocate the data root with `KIKO_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.kiko/AGENTS.md` or `AGENTS.md`.
 
 ## Storage Location in the Session Directory
 

@@ -64,7 +64,7 @@ Kiko CLI 按作用域发现 Agent 文件，作用域越具体，优先级越高�
 - `$KIKO_HOME/agents/`（默认：`~/.kiko/agents/`）
 - `~/.agents/agents/`
 
-Kimi 专属的用户 Agent 目录随 `KIKO_HOME` 移动，通用的 `~/.agents/agents/` 目录留在真实用户目录下，便于跨工具共享。
+Kiko 专属的用户 Agent 目录随 `KIKO_HOME` 移动，通用的 `~/.agents/agents/` 目录留在真实用户目录下，便于跨工具共享。
 
 **项目级**：项目根目录指从工作目录向上查找、最近的包含 `.git` 的目录。可用位置：
 
@@ -191,7 +191,7 @@ SYSTEM.md 是纯 Markdown 正文，不需要也不读取 Frontmatter。文件缺
 内置默认提示词已经包含 `${plugin_sections}`；当 `${base_prompt}` 已展开为该提示词时，不要再重复加入此变量。利用这些变量可以重建内置提示词的骨架，例如：
 
 ```markdown
-You are Kimi, running at ${cwd} on ${os}.
+You are Kiko CLI, running at ${cwd} on ${os}.
 
 ${agents_md}
 
@@ -202,7 +202,7 @@ ${plugin_sections}
 
 ## 指令文件
 
-全局 Kimi 专属指令可放在 `$KIKO_HOME/AGENTS.md`（默认：`~/.kiko/AGENTS.md`）。当你用 `KIKO_HOME` 移动数据根时，这份全局指令文件也会一起移动。跨工具通用指令仍可放在真实 OS home 下的 `~/.agents/AGENTS.md`，项目级指令仍放在项目目录中，例如 `.kiko/AGENTS.md` 或 `AGENTS.md`。
+全局 Kiko 专属指令可放在 `$KIKO_HOME/AGENTS.md`（默认：`~/.kiko/AGENTS.md`）。当你用 `KIKO_HOME` 移动数据根时，这份全局指令文件也会一起移动。跨工具通用指令仍可放在真实 OS home 下的 `~/.agents/AGENTS.md`，项目级指令仍放在项目目录中，例如 `.kiko/AGENTS.md` 或 `AGENTS.md`。
 
 ## 会话目录中的存储位置
 

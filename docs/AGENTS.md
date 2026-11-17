@@ -302,7 +302,7 @@ Run through this before marking any doc change ready for review.
 | Changed zh without changing en (or vice versa) | Update both locales |
 | Code block has no language tag | Add language (e.g., `sh`, `toml`, `json`); exception: natural-language prompt examples may omit the tag |
 
-### Kimi-specific consistency
+### Kiko-specific consistency
 
 Before shipping, verify these values match the rest of the docs:
 

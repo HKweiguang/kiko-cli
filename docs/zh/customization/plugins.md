@@ -372,7 +372,7 @@ description: 拉取指定股票的财报并总结
 /kimi-finance:report TSLA
 ```
 
-Kimi 会把正文里的 `$ARGUMENTS` 替换成 `TSLA`，再执行这段提示词。三处细节分述如下。
+Kiko 会把正文里的 `$ARGUMENTS` 替换成 `TSLA`，再执行这段提示词。三处细节分述如下。
 
 ### 声明命令（`commands` 字段）
 

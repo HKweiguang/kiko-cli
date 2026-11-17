@@ -90,7 +90,7 @@ Kiko CLI scans four tiers by scope; more specific scopes take higher priority: *
 - `$KIKO_HOME/skills/` (default: `~/.kiko/skills/`)
 - `~/.agents/skills/`
 
-The Kimi-specific user Skill directory moves with `KIKO_HOME`, so isolated data roots also get isolated Kimi-specific Skills. The generic `~/.agents/skills/` directory stays under the real OS home so it can be shared across tools.
+The Kiko-specific user Skill directory moves with `KIKO_HOME`, so isolated data roots also get isolated Kiko-specific Skills. The generic `~/.agents/skills/` directory stays under the real OS home so it can be shared across tools.
 
 **Project level** (project root = the nearest directory containing `.git`, searching upward from the working directory):
 - `.kiko/skills/`
