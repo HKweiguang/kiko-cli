@@ -1060,6 +1060,20 @@ describe('AgentToolSelectService view shaping (gate open)', () => {
     expect(shaped.find((tool) => tool.name === SELECT_TOOLS_TOOL_NAME)).toBeDefined();
   });
 
+  it('adds tools that become active after the baseline snapshot', () => {
+    activeToolNames = new Set(['Echo']);
+    const h = createHarness();
+    registerBuiltin(h, new EchoTool());
+    registerBuiltin(h, new EchoTool('Late'));
+
+    const baseline = h.sut.initialTools();
+    expect(baseline.map((tool) => tool.name)).toEqual(['Echo']);
+
+    activeToolNames = new Set(['Echo', 'Late']);
+    const tools = h.sut.requestTools(baseline, false, true, h.contextMemory.history());
+    expect(tools.map((tool) => tool.name)).toEqual(['Echo', 'Late']);
+  });
+
   it('keeps inline-disclosed MCP tools visible and out of the loadable manifest', async () => {
     const h = createHarness();
     registerMcp(h, new StubMcpTool(MCP_ALPHA), 'inline');

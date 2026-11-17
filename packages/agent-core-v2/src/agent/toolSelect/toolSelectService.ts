@@ -161,6 +161,16 @@ export class AgentToolSelectService extends Service implements IAgentToolSelectS
     const loaded = collectLoadedDynamicTools(messages);
     const tools = (base ?? []).filter((tool) => tool.name !== SELECT_TOOLS_TOOL_NAME && tool.deferred !== true);
     const names = new Set(tools.map((tool) => tool.name));
+    for (const tool of this.activeEntries(this.currentTools(), false)) {
+      if (tool.disclosure === 'deferred' || names.has(tool.name)) continue;
+      tools.push({
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters,
+        deferred: undefined,
+      });
+      names.add(tool.name);
+    }
     for (const tool of loaded.values()) {
       if (names.has(tool.name)) continue;
       tools.push({ ...tool, deferred: undefined });
