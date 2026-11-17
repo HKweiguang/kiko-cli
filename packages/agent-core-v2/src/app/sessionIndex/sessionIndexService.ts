@@ -426,6 +426,7 @@ export class FileSessionIndex extends Disposable implements ISessionIndex {
 
   async remove(id: string): Promise<void> {
     await this.mirror.evict(id);
+    this.projector.invalidateScan();
     await this.withReadModel(
       async (generation) => {
         await this.queryStore.delete(sessionCollection(generation), id);

@@ -91,6 +91,10 @@ export class SessionIndexProjector {
     return this.startScan();
   }
 
+  invalidateScan(): void {
+    this.scanSlot = undefined;
+  }
+
   private startScan(): Promise<AuthoritativeScan> {
     const slot: ScanSlot = {
       promise: this.scanAuthoritative(),
