@@ -983,6 +983,31 @@ describe('GlobalSearchService', () => {
     }
   });
 
+  it('names Kiko when a session wire needs a newer reader', async () => {
+    const s1 = summary('s1', 'incompatible reader', T1);
+    await writeWire(home!, 's1', 'main', [
+      rawRecord({ type: 'metadata', protocol_version: '9.9', created_at: 1, min_protocol_version: '9.9' }),
+      userLine('苹果 future', T1),
+    ]);
+    const { log, warnings } = recordingLog();
+    const core = new SearchIndexCore({
+      indexDir: join(home!, 'search-index-copy'),
+      log,
+      bootSalt: 'copy-test',
+    });
+    try {
+      const result = await core.sync([syncInput(home!, s1)]);
+      expect(result.failures).toBe(1);
+      expect(warnings.join('\n')).toContain(
+        'current Kiko supports 1.5. Upgrade Kiko to read this session.',
+      );
+      expect(warnings.join('\n')).not.toContain('Kimi Code');
+    } finally {
+      core.beginClose();
+      await core.close();
+    }
+  });
+
   it('indexes legacy root and v2 agents layouts of one session without key collisions', async () => {
     const s1 = summary('s1', 'dual layout', T1);
     await writeWire(home!, 's1', 'main', [userLine('苹果 from agents', T2)]);
