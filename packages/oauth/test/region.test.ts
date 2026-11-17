@@ -316,9 +316,9 @@ describe('resolveKimiRegion', () => {
     ).toBe('mainland-cn');
   });
 
-  it('honors KIMI_CODE_HOME when homeDir is not passed explicitly', async () => {
+  it('ignores the legacy KIMI_CODE_HOME when homeDir is not passed explicitly', async () => {
     const dir = await markerDir('global');
-    expect(resolveKimiRegion({ env: { KIMI_CODE_HOME: dir } })).toBe('global');
+    expect(resolveKimiRegion({ env: { KIMI_CODE_HOME: dir } })).toBe('mainland-cn');
   });
 
   it('honors the canonical KIKO_HOME when homeDir is not passed explicitly', async () => {
@@ -326,7 +326,7 @@ describe('resolveKimiRegion', () => {
     expect(resolveKimiRegion({ env: { KIKO_HOME: dir } })).toBe('global');
   });
 
-  it('prefers KIKO_HOME over the legacy KIMI_CODE_HOME', async () => {
+  it('uses KIKO_HOME and ignores KIMI_CODE_HOME when both are set', async () => {
     const dir = await markerDir('global');
     expect(
       resolveKimiRegion({
@@ -453,20 +453,19 @@ describe('default home resolution (os home)', () => {
     }
   }
 
-  it('treats an empty ~/.kiko as not migrated and keeps reading the legacy marker', async () => {
+  it('does not read a legacy ~/.kimi-code marker', async () => {
     if (process.platform === 'win32') return;
     const resolution = await withOsHome(
       async (home) => {
-        await mkdir(join(home, '.kiko'));
         await mkdir(join(home, '.kimi-code'));
         await writeFile(join(home, '.kimi-code', KIMI_REGION_MARKER_FILENAME), 'global');
       },
       () => resolveKimiRegionDetailed({ env: {} }),
     );
-    expect(resolution).toEqual({ region: 'global', source: 'marker' });
+    expect(resolution).toEqual({ region: 'mainland-cn', source: 'default' });
   });
 
-  it('uses a populated ~/.kiko over the legacy marker', async () => {
+  it('reads the marker from ~/.kiko and ignores the legacy marker', async () => {
     if (process.platform === 'win32') return;
     const resolution = await withOsHome(
       async (home) => {

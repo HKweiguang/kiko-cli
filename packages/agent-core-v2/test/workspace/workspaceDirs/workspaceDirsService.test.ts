@@ -185,9 +185,9 @@ describe('WorkspaceDirsService (registry source)', () => {
 
   it('merges registry dirs with local.toml dirs for implicit scopes', async () => {
     await workspaces.create({ root: dirA, additionalDirs: [dirB], name: 'proj' });
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.kiko'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -205,9 +205,9 @@ describe('WorkspaceDirsService (registry source)', () => {
     await workspaces.update(project.id, { additionalDirs: [dirB] });
     const dirD = mkdtempSync(join(tmpdir(), 'ws-dirs-d-'));
     const writeLocalConfig = async (root: string, additionalDirs: readonly string[]) => {
-      await mkdir(join(root, '.kimi-code'), { recursive: true });
+      await mkdir(join(root, '.kiko'), { recursive: true });
       const entries = additionalDirs.map((dir) => `"${dir.replaceAll('\\', '\\\\')}"`).join(', ');
-      await writeFile(join(root, '.kimi-code', 'local.toml'), `[workspace]\nadditional_dir = [${entries}]\n`, 'utf8');
+      await writeFile(join(root, '.kiko', 'local.toml'), `[workspace]\nadditional_dir = [${entries}]\n`, 'utf8');
     };
     try {
       await writeLocalConfig(dirA, [dirC]);
@@ -239,9 +239,9 @@ describe('WorkspaceDirsService (registry source)', () => {
 
   it('ignores local.toml entirely for managed workspaces', async () => {
     const project = await workspaces.create({ root: dirA, additionalDirs: [dirB], name: 'proj' });
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.kiko'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -255,7 +255,7 @@ describe('WorkspaceDirsService (registry source)', () => {
       fired += 1;
     });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirA.replaceAll('\\', '\\\\')}", "${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -499,9 +499,9 @@ describe('WorkspaceDirsService (registry source)', () => {
     const project = await workspaces.create({ root: dirA, name: 'proj' });
     const dirs = createDirs(dirA, encodeWorkDirKey(dirA));
     await dirs.ready;
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.kiko'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = ["${dirC.replaceAll('\\', '\\\\')}"]\n`,
       'utf8',
     );
@@ -578,9 +578,9 @@ describe('WorkspaceDirsService (registry source)', () => {
   });
 
   it('keeps an initial local config failure on ready without an unhandled watcher rejection', async () => {
-    await mkdir(join(dirA, '.kimi-code'), { recursive: true });
+    await mkdir(join(dirA, '.kiko'), { recursive: true });
     await writeFile(
-      join(dirA, '.kimi-code', 'local.toml'),
+      join(dirA, '.kiko', 'local.toml'),
       '[workspace]\nadditional_dir = ["missing"]\n',
       'utf8',
     );

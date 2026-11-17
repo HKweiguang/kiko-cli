@@ -13,23 +13,9 @@ import { IFileSystemStorageService } from '#/persistence/interface/storage';
 import { FileSkillDiscovery } from '#/features/skill/catalog/fileSkillDiscovery';
 import { ISkillDiscovery } from '#/features/skill/catalog/skillDiscovery';
 
-import { resolveKimiHome } from './homeMigration';
+import { resolveKimiHome } from './home';
 
-export {
-  KIKO_DATA_DIR_NAME,
-  KIKO_HOME_ENV,
-  KIKO_HOME_MIGRATION_DISABLE_ENV,
-  KIKO_HOME_MIGRATION_MARKER_FILE,
-  KimiHomeMigrationLockedError,
-  LEGACY_KIMI_CODE_DATA_DIR_NAME,
-  LEGACY_KIMI_CODE_HOME_ENV,
-  migrateKimiCodeHome,
-  resolveKimiHome,
-  type KimiHomeMigrationOptions,
-  type KimiHomeMigrationOutcome,
-  type KimiHomeMigrationResult,
-  type ResolveKimiHomeOptions,
-} from './homeMigration';
+export { KIKO_DATA_DIR_NAME, KIKO_HOME_ENV, resolveKimiHome } from './home';
 
 export type HostUiCapability = 'update_panel';
 

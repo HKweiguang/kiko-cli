@@ -60,7 +60,7 @@ function makeMcpStub(): McpStub {
         name,
         config,
         source: 'global',
-        origin: '/home/user/.kimi-code/mcp.json',
+        origin: '/home/user/.kiko/mcp.json',
         mutable: true,
       };
     });
@@ -237,7 +237,7 @@ describe('server /api/v1/mcp', () => {
             env: { TOKEN: 'secret' },
           },
           source: 'global',
-          origin: '/home/user/.kimi-code/mcp.json',
+          origin: '/home/user/.kiko/mcp.json',
           mutable: true,
         },
       ]);
@@ -316,7 +316,7 @@ describe('server /api/v1/mcp', () => {
       stub.service.addServer = async () => {
         throw new Error2(
           ErrorCodes.CONFIG_INVALID,
-          'Invalid JSON in /home/user/.kimi-code/mcp.json: Unexpected token',
+          'Invalid JSON in /home/user/.kiko/mcp.json: Unexpected token',
         );
       };
       await boot(stub);

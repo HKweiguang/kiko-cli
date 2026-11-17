@@ -103,30 +103,18 @@ export function splitAgentsMdFiles(
 export const AGENTS_MD_PLAIN_NAMES = ['AGENTS.md', 'agents.md'] as const;
 
 const KIKO_CONFIG_DIR_NAME = '.kiko';
-const LEGACY_KIMI_CODE_CONFIG_DIR_NAME = '.kimi-code';
 
 export function dotKimiAgentsMdPath(dir: string): string {
   return join(dir, KIKO_CONFIG_DIR_NAME, 'AGENTS.md');
 }
 
-export function legacyDotKimiAgentsMdPath(dir: string): string {
-  return join(dir, LEGACY_KIMI_CODE_CONFIG_DIR_NAME, 'AGENTS.md');
-}
-
 export function agentsMdCandidatePaths(dir: string): string[] {
-  return [
-    dotKimiAgentsMdPath(dir),
-    legacyDotKimiAgentsMdPath(dir),
-    ...AGENTS_MD_PLAIN_NAMES.map((name) => join(dir, name)),
-  ];
+  return [dotKimiAgentsMdPath(dir), ...AGENTS_MD_PLAIN_NAMES.map((name) => join(dir, name))];
 }
 
 function userBrandAgentsMdPaths(realHome: string, brandHome: string | undefined): string[] {
   if (brandHome !== undefined) return [join(brandHome, 'AGENTS.md')];
-  return [
-    join(realHome, KIKO_CONFIG_DIR_NAME, 'AGENTS.md'),
-    join(realHome, LEGACY_KIMI_CODE_CONFIG_DIR_NAME, 'AGENTS.md'),
-  ];
+  return [join(realHome, KIKO_CONFIG_DIR_NAME, 'AGENTS.md')];
 }
 
 export function extractAgentsMdPathsFromSystemPrompt(systemPrompt: string): string[] {
@@ -153,12 +141,8 @@ export async function findAgentsMdInDir(
   dir: string,
 ): Promise<string[]> {
   const found: string[] = [];
-  for (const branded of [dotKimiAgentsMdPath(dir), legacyDotKimiAgentsMdPath(dir)]) {
-    if (await isNonEmptyFile(deps, branded)) {
-      found.push(branded);
-      break;
-    }
-  }
+  const branded = dotKimiAgentsMdPath(dir);
+  if (await isNonEmptyFile(deps, branded)) found.push(branded);
   for (const fileName of AGENTS_MD_PLAIN_NAMES) {
     const candidate = join(dir, fileName);
     if (await isNonEmptyFile(deps, candidate)) {
@@ -225,9 +209,7 @@ export async function loadAgentsMdForRoots(
     const dirs = dirsRootToLeaf(rootWorkDir, projectRoot);
 
     for (const dir of dirs) {
-      if (!(await collect(deps.fs, dotKimiAgentsMdPath(dir)))) {
-        await collect(deps.fs, legacyDotKimiAgentsMdPath(dir));
-      }
+      await collect(deps.fs, dotKimiAgentsMdPath(dir));
       for (const fileName of AGENTS_MD_PLAIN_NAMES) {
         if (await collect(deps.fs, join(dir, fileName))) break;
       }
@@ -274,7 +256,6 @@ export async function agentsMdWatchRoots(
   for (const dir of dirsRootToLeaf(rootWorkDir, projectRoot)) {
     projectCandidates.push(
       dotKimiAgentsMdPath(dir),
-      legacyDotKimiAgentsMdPath(dir),
       join(dir, 'AGENTS.md'),
       join(dir, 'agents.md'),
     );

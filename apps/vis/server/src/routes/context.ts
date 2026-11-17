@@ -1,13 +1,13 @@
 import { Hono } from 'hono';
 import { join } from 'node:path';
 
-import { KIMI_CODE_HOME } from '../config';
+import { KIKO_HOME } from '../config';
 import { isSafeAgentId, readSessionDetail } from '../lib/session-store';
 import { rehydrateWireEntries } from '../lib/blob-resolver';
 import { readAgentWire } from '../lib/wire-reader';
 import { projectContext } from '../lib/context-projector';
 
-export function contextRoute(home: string = KIMI_CODE_HOME): Hono {
+export function contextRoute(home: string = KIKO_HOME): Hono {
   const r = new Hono();
   r.get('/:id/context', async (c) => {
     const id = c.req.param('id');
@@ -45,8 +45,8 @@ export function contextRoute(home: string = KIMI_CODE_HOME): Hono {
         goal: proj.goal,
         swarm: proj.swarm,
       });
-    } catch (err) {
-      const msg = (err as Error).message;
+    } catch (error) {
+      const msg = (error as Error).message;
       return c.json({ error: msg, code: 'READ_ERROR' }, 500);
     }
   });

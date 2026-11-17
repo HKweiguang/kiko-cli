@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { rm } from 'node:fs/promises';
-import { KIMI_CODE_HOME } from '../config';
+import { KIKO_HOME } from '../config';
 import { revealInOs } from '../lib/reveal';
 import { listSessions, readSessionDetail } from '../lib/session-store';
 
-export function sessionsRoute(home: string = KIMI_CODE_HOME): Hono {
+export function sessionsRoute(home: string = KIKO_HOME): Hono {
   const r = new Hono();
   r.get('/', async (c) => {
     const sessions = await listSessions(home);
@@ -27,9 +27,9 @@ export function sessionsRoute(home: string = KIMI_CODE_HOME): Hono {
     try {
       await revealInOs(detail.sessionDir);
       return c.json({ sessionId: id, opened: detail.sessionDir });
-    } catch (err) {
+    } catch (error) {
       return c.json(
-        { error: `failed to open: ${(err as Error).message}`, code: 'READ_ERROR' },
+        { error: `failed to open: ${(error as Error).message}`, code: 'READ_ERROR' },
         500,
       );
     }

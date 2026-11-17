@@ -623,7 +623,7 @@ describe('ToolManager SkillTool workspace refresh', () => {
   beforeEach(async () => {
     tmp = await mkdtemp(join(tmpdir(), 'kimi-core-skill-tool-refresh-'));
     const workDir = join(tmp, 'work');
-    const skillDir = join(workDir, '.kimi-code', 'skills', 'review');
+    const skillDir = join(workDir, '.kiko', 'skills', 'review');
     await mkdir(skillDir, { recursive: true });
     await writeFile(
       join(skillDir, 'SKILL.md'),

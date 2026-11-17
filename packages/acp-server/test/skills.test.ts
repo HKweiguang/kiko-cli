@@ -110,16 +110,16 @@ describe('acp-server skills / available commands', () => {
 
   /**
    * Boot with the scripted LLM and a project skill fixture at
-   * `<cwd>/.kimi-code/skills/acp-fixture/SKILL.md` (the engine's project
+   * `<cwd>/.kiko/skills/acp-fixture/SKILL.md` (the engine's project
    * skill discovery root; the temp cwd has no `.git`, so it IS the project
    * root).
    */
   async function bootWithFixtureSkill(): Promise<TestClient> {
     homeDir = await mkdtemp(join(tmpdir(), 'acp-skills-turn-'));
     await writeFakeModelConfig(homeDir);
-    await mkdir(join(homeDir, '.kimi-code', 'skills', 'acp-fixture'), { recursive: true });
+    await mkdir(join(homeDir, '.kiko', 'skills', 'acp-fixture'), { recursive: true });
     await writeFile(
-      join(homeDir, '.kimi-code', 'skills', 'acp-fixture', 'SKILL.md'),
+      join(homeDir, '.kiko', 'skills', 'acp-fixture', 'SKILL.md'),
       '---\nname: acp-fixture\ndescription: ACP fixture skill\n---\n\n' +
         '# ACP Fixture\n\nAlways answer with the word FIXTURE.\n',
     );

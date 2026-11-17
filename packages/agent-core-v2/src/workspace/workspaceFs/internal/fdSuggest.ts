@@ -1,7 +1,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-import { resolveKimiHome } from '#/app/bootstrap/homeMigration';
+import { resolveKimiHome } from '#/app/bootstrap/home';
 import type { Environment, EnvironmentPath } from '#/environment/environment';
 import { isRemoteEnvironment } from '#/environment/shareBinRg';
 import type { IHostFileSystem } from '#/os/interface/hostFileSystem';
@@ -98,20 +98,18 @@ function binaryName(): string {
   return process.platform === 'win32' ? 'fd.exe' : 'fd';
 }
 
-function cachedBinaryPaths(environment: Environment | undefined): readonly string[] {
+function cachedBinaryPath(environment: Environment | undefined): string {
   if (isRemoteEnvironment(environment)) {
     const homeDir = environment.host?.homeDir;
     if (homeDir !== undefined) {
       const binary = environment.host?.pathClass === 'win32' ? 'fd.exe' : 'fd';
-      const path = environment.path;
-      return [
-        path?.join(homeDir, '.kiko', 'bin', binary) ?? `${homeDir}/.kiko/bin/${binary}`,
-        path?.join(homeDir, '.kimi-code', 'bin', binary) ??
-          `${homeDir}/.kimi-code/bin/${binary}`,
-      ];
+      return (
+        environment.path?.join(homeDir, '.kiko', 'bin', binary) ??
+        `${homeDir}/.kiko/bin/${binary}`
+      );
     }
   }
-  return [join(resolveKimiHome(), 'bin', binaryName())];
+  return join(resolveKimiHome(), 'bin', binaryName());
 }
 
 export async function ensureFdPath(
@@ -124,10 +122,9 @@ export async function ensureFdPath(
     if (result.exitCode === 0) return { path: binary, source: 'system-path' };
   }
   if (options.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  for (const cached of cachedBinaryPaths(options.environment)) {
-    const result = await probe.exec([cached, '--version']).catch(() => ({ exitCode: -1 }));
-    if (result.exitCode === 0) return { path: cached, source: 'share-bin-cached' };
-  }
+  const cached = cachedBinaryPath(options.environment);
+  const result = await probe.exec([cached, '--version']).catch(() => ({ exitCode: -1 }));
+  if (result.exitCode === 0) return { path: cached, source: 'share-bin-cached' };
   throw new Error('fd is not available');
 }
 

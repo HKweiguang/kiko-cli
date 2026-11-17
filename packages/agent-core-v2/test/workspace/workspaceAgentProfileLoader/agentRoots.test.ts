@@ -41,7 +41,7 @@ describe('agentRoots', () => {
       );
     });
 
-    it('prefers .kiko/agents over the legacy .kimi-code/agents directory', async () => {
+    it('ignores the legacy .kimi-code/agents directory when .kiko/agents exists', async () => {
       await markGitRoot();
       await mkdir(join(root, '.kiko/agents'), { recursive: true });
       await mkdir(join(root, '.kimi-code/agents'), { recursive: true });
@@ -52,15 +52,13 @@ describe('agentRoots', () => {
       expect(roots.some((r) => r.path.endsWith('.kimi-code/agents'))).toBe(false);
     });
 
-    it('resolves the brand .kimi-code/agents directory at the .git root', async () => {
+    it('ignores the legacy .kimi-code/agents directory at the .git root', async () => {
       await markGitRoot();
       await mkdir(join(root, '.kimi-code/agents'), { recursive: true });
 
       const roots = await projectAgentRoots(hostFs, root);
 
-      expect(
-        roots.some((r) => r.path.endsWith('.kimi-code/agents') && r.source === 'project'),
-      ).toBe(true);
+      expect(roots.some((r) => r.path.endsWith('.kimi-code/agents'))).toBe(false);
     });
 
     it('falls back to the generic .agents/agents directory', async () => {
@@ -72,27 +70,27 @@ describe('agentRoots', () => {
       expect(roots.some((r) => r.path.endsWith('.agents/agents') && r.source === 'project')).toBe(
         true,
       );
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/agents'))).toBe(false);
+      expect(roots.some((r) => r.path.endsWith('.kiko/agents'))).toBe(false);
     });
 
     it('walks up from a child directory to the .git root', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/agents'), { recursive: true });
+      await mkdir(join(root, '.kiko/agents'), { recursive: true });
       const child = join(root, 'src/pkg');
       await mkdir(child, { recursive: true });
 
       const roots = await projectAgentRoots(hostFs, child);
 
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/agents'))).toBe(true);
+      expect(roots.some((r) => r.path.endsWith('.kiko/agents'))).toBe(true);
     });
 
     it('orders the brand directory before the generic directory', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/agents'), { recursive: true });
+      await mkdir(join(root, '.kiko/agents'), { recursive: true });
       await mkdir(join(root, '.agents/agents'), { recursive: true });
 
       const roots = await projectAgentRoots(hostFs, root);
-      const brandIdx = roots.findIndex((r) => r.path.endsWith('.kimi-code/agents'));
+      const brandIdx = roots.findIndex((r) => r.path.endsWith('.kiko/agents'));
       const genericIdx = roots.findIndex((r) => r.path.endsWith('.agents/agents'));
 
       expect(brandIdx).toBeGreaterThanOrEqual(0);

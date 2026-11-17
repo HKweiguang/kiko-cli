@@ -64,7 +64,6 @@ const mocks = vi.hoisted(() => ({
     user: '/tmp/kimi-code-test-home/mcp.json',
     projectRoot: '/tmp/project/.mcp.json',
     project: '/tmp/project/.kiko/mcp.json',
-    legacyProject: '/tmp/project/.kimi-code/mcp.json',
   })),
   createKimiDefaultHeaders: vi.fn(() => ({})),
   resolveKimiHome: vi.fn((homeDir?: string) => homeDir ?? '/tmp/kimi-code-test-home'),
@@ -1254,7 +1253,7 @@ describe('runV2Print', () => {
       },
       origins: {
         fs: '/tmp/project/.mcp.json',
-        api: '/tmp/project/.kimi-code/mcp.json',
+        api: '/tmp/project/.kiko/mcp.json',
       },
     });
 
@@ -1313,7 +1312,7 @@ describe('runV2Print', () => {
       },
       origins: {
         github: '/tmp/project/.mcp.json',
-        toString: '/tmp/project/.kimi-code/mcp.json',
+        toString: '/tmp/project/.kiko/mcp.json',
       },
     });
 
@@ -1324,6 +1323,29 @@ describe('runV2Print', () => {
 
     expect(stderr.text()).toContain('github (stdio: ./project-github)');
     expect(stderr.text()).toContain('toString (http: https://example.com/mcp)');
+  });
+
+  it('does not treat a legacy .kimi-code origin as project-level', async () => {
+    const stdout = writer();
+    const stderr = writer();
+    const { app, trustState } = makeFakeHarness();
+    trustState.trusted = false;
+    mocks.loadMcpServersDetailed.mockResolvedValue({
+      servers: {
+        legacy: { transport: 'stdio', command: 'node', args: ['legacy.js'] },
+      },
+      origins: {
+        legacy: '/tmp/project/.kimi-code/mcp.json',
+      },
+    });
+
+    mocks.bootstrap.mockReturnValue({ app });
+    mocks.ensureMainAgent.mockResolvedValue({ agentId: 'main', generation: 1 });
+
+    await runV2Print(opts() as never, '1.2.3-test', { stdout, stderr });
+
+    expect(stderr.text()).not.toContain('legacy');
+    expect(stderr.text()).not.toContain('not trusted');
   });
 
   it('still runs when the trust-gated MCP probe fails', async () => {

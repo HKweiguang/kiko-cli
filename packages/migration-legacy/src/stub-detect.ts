@@ -1,18 +1,18 @@
 import { readFile } from 'node:fs/promises';
 import { parse as parseToml } from 'smol-toml';
 
-// Verbatim from packages/kimi-core/src/harness/configs/toml.ts:42
+// Verbatim from packages/node-sdk/src/config/toml.ts
 export const DEFAULT_CONFIG_FILE_TEXT =
-  '# ~/.kimi-code/config.toml\n' +
-  '# Runtime settings for Kimi Code.\n' +
+  '# ~/.kiko/config.toml\n' +
+  '# Environment settings for Kiko.\n' +
   '# This file starts empty so built-in defaults can apply.\n' +
   '# Login will populate managed Kimi provider and model entries.\n';
 
 // Verbatim from apps/kimi-code/src/tui/config.ts:renderTuiConfig(DEFAULT_TUI_CONFIG)
 export const DEFAULT_TUI_RENDER =
-  '# ~/.kimi-code/tui.toml\n' +
-  '# Terminal UI preferences for kimi-code.\n' +
-  '# Agent/runtime settings stay in ~/.kimi-code/config.toml.\n' +
+  '# ~/.kiko/tui.toml\n' +
+  '# Terminal UI preferences for Kiko.\n' +
+  '# Agent/runtime settings stay in ~/.kiko/config.toml.\n' +
   '\n' +
   'theme = "auto" # "auto" | "dark" | "light"\n' +
   '\n' +

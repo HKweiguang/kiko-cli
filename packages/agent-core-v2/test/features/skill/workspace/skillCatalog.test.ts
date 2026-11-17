@@ -265,7 +265,7 @@ async function withSkillCatalogWorkspace(
   run: (fixture: { readonly workDir: string; readonly skillRoot: string }) => Promise<void>,
 ): Promise<void> {
   const workDir = await mkdtemp(join(tmpdir(), 'skill-catalog-'));
-  const skillRoot = join(workDir, '.kimi-code', 'skills');
+  const skillRoot = join(workDir, '.kiko', 'skills');
   await mkdir(skillRoot, { recursive: true });
   try {
     await run({ workDir, skillRoot: await realpath(skillRoot) });
@@ -301,7 +301,7 @@ describe('WorkspaceSkillCatalogService', () => {
     name: string,
     description: string,
   ): Promise<void> {
-    const dir = join(workDir, '.kimi-code', 'skills', name);
+    const dir = join(workDir, '.kiko', 'skills', name);
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'SKILL.md'),
@@ -365,13 +365,13 @@ describe('WorkspaceSkillCatalogService', () => {
       expect(
         catalog.catalog.getSkill(
           'shared',
-          await realpath(join(secondary, '.kimi-code', 'skills', 'shared', 'SKILL.md')),
+          await realpath(join(secondary, '.kiko', 'skills', 'shared', 'SKILL.md')),
         )?.description,
       ).toBe('from secondary');
       expect(
         catalog.catalog.getSkill(
           'shared',
-          join(third, '.kimi-code', 'skills', 'shared', 'SKILL.md'),
+          join(third, '.kiko', 'skills', 'shared', 'SKILL.md'),
         ),
       ).toBeUndefined();
       const watchedPaths = watchMockState.calls.map((call) => call.path);
@@ -999,7 +999,7 @@ describe('WorkspaceSkillCatalogService', () => {
   it('feeds skipped skills from file sources into the merged catalog', async () => {
     await withSkillCatalogWorkspace(async ({ workDir }) => {
       const skippedEntry = {
-        path: join(workDir, '.kimi-code', 'skills', 'bad', 'SKILL.md'),
+        path: join(workDir, '.kiko', 'skills', 'bad', 'SKILL.md'),
         type: 'nope',
         reason: 'unsupported skill type "nope"',
       };

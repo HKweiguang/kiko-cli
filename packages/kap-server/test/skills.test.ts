@@ -115,7 +115,7 @@ describe('server-v2 /api/v1 skills', () => {
   }
 
   async function seedProjectSkill(root: string, name: string, type?: string): Promise<void> {
-    const dir = join(root, '.kimi-code', 'skills', name);
+    const dir = join(root, '.kiko', 'skills', name);
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'SKILL.md'),
@@ -532,6 +532,21 @@ describe('server-v2 /api/v1 skills', () => {
       expect(seeded).toBeDefined();
       expect(seeded?.source).toBe('project');
       expect(seeded?.description).toBe('e2e test skill e2e-greeting');
+    });
+
+    it('ignores the legacy .kimi-code/skills directory', async () => {
+      const workspaceDir = await makeWorkspaceDir();
+      await mkdir(join(workspaceDir, '.kimi-code', 'skills', 'e2e-legacy'), { recursive: true });
+      await writeFile(
+        join(workspaceDir, '.kimi-code', 'skills', 'e2e-legacy', 'SKILL.md'),
+        '---\nname: e2e-legacy\ndescription: legacy skill\n---\n\nLegacy.\n',
+      );
+      const wid = await registerWorkspace(workspaceDir);
+
+      const { body } = await getJson<{ skills: SkillWire[] }>(`/api/v1/workspaces/${wid}/skills`);
+      expect(body.code).toBe(0);
+      const skills = listSkillsResponseSchema.parse(body.data).skills;
+      expect(skills.some((s) => s.name === 'e2e-legacy')).toBe(false);
     });
 
     it('matches the session listing for the same cwd', async () => {

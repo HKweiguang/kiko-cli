@@ -33,8 +33,8 @@ import {
 /**
  * Return the root data directory for the CLI.
  *
- * Priority: `KIKO_HOME` > legacy `KIMI_CODE_HOME` > `~/.kiko`, migrating an
- * existing `~/.kimi-code` home on first use.
+ * Priority: `KIKO_HOME` > `~/.kiko`. Legacy `KIMI_CODE_HOME` and
+ * `~/.kimi-code` are not consulted.
  */
 export function getDataDir(
   env: NodeJS.ProcessEnv = process.env,

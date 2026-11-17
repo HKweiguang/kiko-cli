@@ -681,11 +681,7 @@ function planCandidateWatches(
 
 function isKimiCodeDir(path: string): boolean {
   const name = basename(path);
-  if (process.platform === 'win32') {
-    const lower = name.toLowerCase();
-    return lower === '.kimi-code' || lower === '.kiko';
-  }
-  return name === '.kimi-code' || name === '.kiko';
+  return process.platform === 'win32' ? name.toLowerCase() === '.kiko' : name === '.kiko';
 }
 
 function isCandidateRelated(root: string, candidates: readonly string[], path: string): boolean {

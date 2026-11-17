@@ -14,7 +14,7 @@ import {
 } from '#/utils/plugin-marketplace';
 
 beforeEach(async () => {
-  vi.stubEnv('KIMI_CODE_HOME', await mkdtemp(join(tmpdir(), 'kimi-plugin-marketplace-home-')));
+  vi.stubEnv('KIKO_HOME', await mkdtemp(join(tmpdir(), 'kimi-plugin-marketplace-home-')));
 });
 
 afterEach(() => {
@@ -407,7 +407,7 @@ describe('loadPluginMarketplace', () => {
 
   it('allows anonymous default marketplace browsing without credentials', async () => {
     const emptyHome = await mkdtemp(join(tmpdir(), 'kimi-empty-home-'));
-    vi.stubEnv('KIMI_CODE_HOME', emptyHome);
+    vi.stubEnv('KIKO_HOME', emptyHome);
     vi.stubEnv('KIMI_CODE_BASE_URL', 'https://api.example.test/coding/v1');
     const fetchImpl = catalogFetch([catalogEntry()]);
 

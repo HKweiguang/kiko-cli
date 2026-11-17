@@ -577,7 +577,7 @@ describe('WorkspaceTrustService', () => {
 
   it('discloses skills and source paths from additional workspace dirs', async () => {
     const secondary = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-secondary-'));
-    const skillRoot = join(secondary, '.kimi-code', 'skills');
+    const skillRoot = join(secondary, '.kiko', 'skills');
     const skillDir = join(skillRoot, 'trust-secondary');
     await mkdir(skillDir, { recursive: true });
     await writeFile(
@@ -599,7 +599,7 @@ describe('WorkspaceTrustService', () => {
       {
         readAdditionalDirs: async () => ({
           projectRoot: cwd,
-          configPath: join(cwd, '.kimi-code', 'local.toml'),
+          configPath: join(cwd, '.kiko', 'local.toml'),
           additionalDirs: [],
         }),
         resolveAdditionalDirs: async (_baseDir: string, dirs: readonly string[]) => [...dirs],
@@ -636,8 +636,8 @@ describe('WorkspaceTrustService', () => {
       name: 'reload-secondary',
       description: 'Reload secondary',
       source: 'project' as const,
-      path: '/secondary/.kimi-code/skills/reload-secondary/SKILL.md',
-      dir: '/secondary/.kimi-code/skills/reload-secondary',
+      path: '/secondary/.kiko/skills/reload-secondary/SKILL.md',
+      dir: '/secondary/.kiko/skills/reload-secondary',
       metadata: { type: 'prompt' as const },
       content: 'Reload secondary',
     };
@@ -654,7 +654,7 @@ describe('WorkspaceTrustService', () => {
       {
         readAdditionalDirs: async () => ({
           projectRoot: cwd,
-          configPath: join(cwd, '.kimi-code', 'local.toml'),
+          configPath: join(cwd, '.kiko', 'local.toml'),
           additionalDirs: [],
         }),
         resolveAdditionalDirs: async (_baseDir: string, dirs: readonly string[]) => [...dirs],
@@ -683,7 +683,7 @@ describe('WorkspaceTrustService', () => {
 
   it('expands home-relative pending dirs without discovering their skills', async () => {
     const secondary = mkdtempSync(join(tmpdir(), 'kimi-workspace-trust-home-'));
-    const skillRoot = join(secondary, '.kimi-code', 'skills');
+    const skillRoot = join(secondary, '.kiko', 'skills');
     await mkdir(join(skillRoot, 'home-only'), { recursive: true });
     await writeFile(
       join(skillRoot, 'home-only', 'SKILL.md'),

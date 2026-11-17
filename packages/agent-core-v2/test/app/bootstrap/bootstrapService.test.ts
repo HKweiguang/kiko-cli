@@ -58,7 +58,7 @@ describe('BootstrapService (scoped)', () => {
 });
 
 describe('resolveBootstrapOptions', () => {
-  it('prefers explicit homeDir over KIKO_HOME over KIMI_CODE_HOME over osHomeDir', () => {
+  it('prefers explicit homeDir over KIKO_HOME over osHomeDir and ignores KIMI_CODE_HOME', () => {
     expect(
       resolveBootstrapOptions({ homeDir: '/a', osHomeDir: '/b', env: {}, clientIdentity: stubClientIdentity })
         .homeDir,
@@ -76,7 +76,7 @@ describe('resolveBootstrapOptions', () => {
         env: { KIMI_CODE_HOME: '/c' },
         clientIdentity: stubClientIdentity,
       }).homeDir,
-    ).toBe('/c');
+    ).toBe('/b/.kiko');
     expect(
       resolveBootstrapOptions({ osHomeDir: '/b', env: {}, clientIdentity: stubClientIdentity }).homeDir,
     ).toBe('/b/.kiko');

@@ -1,15 +1,13 @@
 import { createHash } from 'node:crypto';
 import {
-  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { tmpdir, homedir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -32,14 +30,12 @@ function fixtureHome(): string {
   return dir;
 }
 
-function withoutVitest<T>(run: () => T): T {
-  const previous = process.env['VITEST'];
-  delete process.env['VITEST'];
-  try {
-    return run();
-  } finally {
-    if (previous !== undefined) process.env['VITEST'] = previous;
-  }
+function seedLegacyHome(fixture: string): string {
+  const legacy = join(fixture, '.kimi-code');
+  mkdirSync(join(legacy, 'sessions'), { recursive: true });
+  writeFileSync(join(legacy, 'config.toml'), 'default_model = "kimi/kimi-for-coding"\n');
+  writeFileSync(join(legacy, 'sessions', 'session.jsonl'), '{"type":"user"}\n');
+  return legacy;
 }
 
 beforeEach(() => {
@@ -59,15 +55,15 @@ describe('getDataDir', () => {
     expect(getDataDir({}, fixture)).toBe(join(fixture, '.kiko'));
   });
 
-  it('prefers KIKO_HOME over the legacy KIMI_CODE_HOME', () => {
+  it('prefers KIKO_HOME and ignores the legacy KIMI_CODE_HOME', () => {
     expect(
       getDataDir({ KIKO_HOME: '/tmp/kiko-home', KIMI_CODE_HOME: '/tmp/kimi-legacy' }, '/home/user'),
     ).toBe('/tmp/kiko-home');
   });
 
-  it('keeps recognizing KIMI_CODE_HOME', () => {
+  it('ignores KIMI_CODE_HOME', () => {
     expect(getDataDir({ KIMI_CODE_HOME: '/tmp/kimi-test-data' }, '/home/user')).toBe(
-      '/tmp/kimi-test-data',
+      join('/home/user', '.kiko'),
     );
   });
 
@@ -75,55 +71,36 @@ describe('getDataDir', () => {
     expect(getDataDir({ KIKO_HOME: 'relative/path' }, '/home/user')).toBe('relative/path');
   });
 
-  it('migrates an existing ~/.kimi-code home instead of ignoring it', () => {
+  it('does not read, create, migrate, or delete a legacy ~/.kimi-code home', () => {
     const fixture = fixtureHome();
-    const legacy = join(fixture, '.kimi-code');
-    mkdirSync(legacy, { recursive: true });
-    writeFileSync(join(legacy, 'config.toml'), 'default_model = "kimi/kimi-for-coding"\n');
-
-    const home = withoutVitest(() => getDataDir({}, fixture));
-
-    expect(home).toBe(join(fixture, '.kiko'));
-    expect(readFileSync(join(home, 'config.toml'), 'utf-8')).toContain('kimi-for-coding');
-    expect(readFileSync(join(legacy, 'config.toml'), 'utf-8')).toContain('kimi-for-coding');
-  });
-
-  it('does not touch a legacy home addressed by KIMI_CODE_HOME', () => {
-    const fixture = fixtureHome();
-    mkdirSync(join(fixture, '.kimi-code'), { recursive: true });
-    withoutVitest(() => {
-      expect(getDataDir({ KIMI_CODE_HOME: join(fixture, 'legacy-env') }, fixture)).toBe(
-        join(fixture, 'legacy-env'),
-      );
-    });
-    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
-  });
-
-  it('re-resolves after a failed migration instead of caching the legacy home', () => {
-    if (process.getuid?.() === 0) return;
-    const fixture = fixtureHome();
-    const legacy = join(fixture, '.kimi-code');
-    mkdirSync(legacy, { recursive: true });
-    writeFileSync(join(legacy, 'config.toml'), 'default_model = "kimi/kimi-for-coding"\n');
-
-    chmodSync(fixture, 0o500);
+    const legacy = seedLegacyHome(fixture);
     const writes: string[] = [];
     const spy = vi.spyOn(process.stderr, 'write').mockImplementation((chunk: unknown) => {
       writes.push(String(chunk));
       return true;
     });
-    let first: string;
     try {
-      first = withoutVitest(() => getDataDir({}, fixture));
+      expect(getDataDir({}, fixture)).toBe(join(fixture, '.kiko'));
     } finally {
       spy.mockRestore();
-      chmodSync(fixture, 0o700);
     }
-    expect(first).toBe(legacy);
-    expect(writes.join('')).toContain('continuing with');
 
-    renameSync(legacy, join(fixture, '.kiko'));
-    expect(withoutVitest(() => getDataDir({}, fixture))).toBe(join(fixture, '.kiko'));
+    expect(writes.join('')).toBe('');
+    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+    expect(existsSync(join(fixture, '.kiko-migration.json'))).toBe(false);
+    expect(existsSync(join(fixture, '.kiko-migration.lock'))).toBe(false);
+    expect(readFileSync(join(legacy, 'config.toml'), 'utf-8')).toContain('kimi-for-coding');
+    expect(readFileSync(join(legacy, 'sessions', 'session.jsonl'), 'utf-8')).toContain('user');
+  });
+
+  it('ignores KIKO_HOME_MIGRATION and never turns ~/.kimi-code into the data dir', () => {
+    const fixture = fixtureHome();
+    const legacy = seedLegacyHome(fixture);
+
+    expect(getDataDir({ KIKO_HOME_MIGRATION: 'off' }, fixture)).toBe(join(fixture, '.kiko'));
+    expect(getDataDir({ KIKO_HOME_MIGRATION: 'on' }, fixture)).toBe(join(fixture, '.kiko'));
+    expect(existsSync(join(fixture, '.kiko'))).toBe(false);
+    expect(existsSync(legacy)).toBe(true);
   });
 });
 
@@ -133,9 +110,9 @@ describe('getLogDir', () => {
     expect(getLogDir()).toBe(join('/z', 'logs'));
   });
 
-  it('respects the legacy KIMI_CODE_HOME', () => {
+  it('ignores the legacy KIMI_CODE_HOME', () => {
     process.env['KIMI_CODE_HOME'] = '/legacy-z';
-    expect(getLogDir()).toBe(join('/legacy-z', 'logs'));
+    expect(getLogDir()).toBe(join(homedir(), '.kiko', 'logs'));
   });
 });
 

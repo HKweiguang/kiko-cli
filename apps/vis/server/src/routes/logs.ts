@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { join } from 'node:path';
 
-import { KIMI_CODE_HOME } from '../config';
+import { KIKO_HOME } from '../config';
 import { discoverLogFiles, readLogs } from '../lib/log-reader';
 import { readSessionDetail } from '../lib/session-store';
 
@@ -9,7 +9,7 @@ const SESSION_LOG_REL = ['logs', 'kimi-code.log'] as const;
 const GLOBAL_LOG_REL = ['logs', 'global', 'kimi-code.log'] as const;
 const HOME_GLOBAL_LOG_REL = ['logs', 'kimi-code.log'] as const;
 
-export function logsRoute(home: string = KIMI_CODE_HOME): Hono {
+export function logsRoute(home: string = KIKO_HOME): Hono {
   const r = new Hono();
   r.get('/:id/logs', async (c) => {
     const id = c.req.param('id');
@@ -21,7 +21,7 @@ export function logsRoute(home: string = KIMI_CODE_HOME): Hono {
     const sessionLog = join(detail.sessionDir, ...SESSION_LOG_REL);
     // The global diagnostic log is a single shared file. In an exported bundle
     // it is captured under the session dir (logs/global/kimi-code.log); for a
-    // live local session it lives at <KIMI_CODE_HOME>/logs/kimi-code.log
+    // live local session it lives at <KIKO_HOME>/logs/kimi-code.log
     // (the engine's global log path), NOT under the session dir.
     const globalLog = detail.imported
       ? join(detail.sessionDir, ...GLOBAL_LOG_REL)
