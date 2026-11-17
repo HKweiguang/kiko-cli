@@ -1,0 +1,10 @@
+name: CI
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Kimi Code CLI"
+      - run: echo "kimi-code-linux-x64.tar.gz"

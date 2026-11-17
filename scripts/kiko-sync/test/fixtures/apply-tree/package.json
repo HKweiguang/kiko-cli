@@ -1,0 +1,7 @@
+{
+  "name": "@moonshot-ai/kimi-code",
+  "description": "Kimi Code server",
+  "bin": {
+    "kimi": "dist/main.mjs"
+  }
+}
