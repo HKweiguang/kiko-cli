@@ -28,7 +28,7 @@ These pages are a curated, human-readable reference. The precise machine-readabl
 
 The default address is `http://127.0.0.1:58627`. When the port is taken, the server tries the next port, up to 100 times. Use `--port` and `--host` to change the bind address.
 
-Multiple instances can run under the same home directory at once. Running instances register under `~/.kimi-code/server/instances/`.
+Multiple instances can run under the same home directory at once. Running instances register under `~/.kiko/server/instances/`.
 
 ## Authentication
 

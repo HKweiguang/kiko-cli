@@ -72,7 +72,7 @@ When `subscribe` is sent again for a session that is already subscribed, only th
 
 ### When the server closes and reopens a session
 
-The server closes a session that has been inactive for a while: 30 minutes by default, configurable with the environment variable `KIMI_CODE_SESSION_IDLE_RECLAIM_MS`. Sessions that are busy, have pending interactions, or have scheduled tasks are not closed, and whether the session has subscribers does not affect this. `:reload` also closes the session and then reopens it.
+The server closes a session that has been inactive for a while: 30 minutes by default, configurable with the environment variable `KIKO_SESSION_IDLE_RECLAIM_MS`. Sessions that are busy, have pending interactions, or have scheduled tasks are not closed, and whether the session has subscribers does not affect this. `:reload` also closes the session and then reopens it.
 
 While the session is closed, no session frames are sent, but subscriptions stay valid. When the session reopens, the server resends `task.list`, `agent`, `usage`, `goal`, `todo`, and `turns` for every subscribed agent to these connections. So `turns` does not only follow a subscription: whenever the client receives it, the client must replace that agent's conversation with it.
 
@@ -134,7 +134,7 @@ Every item has these fields:
 | `status` | `running` or `ended` |
 | `outcome` | `completed` for ended items unless noted otherwise below |
 | `created_at` | Creation time |
-| `debug` | When the server runs with `KIMI_CODE_DEBUG=1`, the last item of each ended step carries it to describe that step's model request: `{ finish_reason?, usage?, timing? }`. When measured, `timing` holds `first_token_ms`, `stream_ms`, `request_build_ms`, `server_first_token_ms`, `server_decode_ms`, `client_consume_ms`, and `client_blocked_ms`. When the step ends, the item is sent again as `item.ended` |
+| `debug` | When the server runs with `KIKO_DEBUG=1`, the last item of each ended step carries it to describe that step's model request: `{ finish_reason?, usage?, timing? }`. When measured, `timing` holds `first_token_ms`, `stream_ms`, `request_build_ms`, `server_first_token_ms`, `server_decode_ms`, `client_consume_ms`, and `client_blocked_ms`. When the step ends, the item is sent again as `item.ended` |
 
 Items are listed in the order they appeared. The remaining fields of each item type follow.
 

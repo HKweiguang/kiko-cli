@@ -28,7 +28,7 @@ Hooks（钩子）是一种自动触发机制：你预先告诉 Kimi Code CLI"每
 下面这条 hook 会在每次后台任务完成时，在终端标题栏闪一下通知（macOS 需要安装 `terminal-notifier`）：
 
 ```toml
-# 写在 ~/.kimi-code/config.toml 里
+# 写在 ~/.kiko/config.toml 里
 [[hooks]]
 event = "Notification"           # 触发时机：后台任务状态变化时
 matcher = "task\\.completed"     # 只关心"已完成"的通知
@@ -39,7 +39,7 @@ command = "terminal-notifier -title Kimi -message 'Task done'"
 
 ## 配置
 
-所有 hook 规则写在 `~/.kimi-code/config.toml` 的 `[[hooks]]` 数组里：
+所有 hook 规则写在 `~/.kiko/config.toml` 的 `[[hooks]]` 数组里：
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -140,7 +140,7 @@ Hook 命令始终在运行 Kimi Code 的机器上执行，工作目录是当前�
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash"
-command = "node ~/.kimi-code/hooks/block-dangerous-bash.mjs"
+command = "node ~/.kiko/hooks/block-dangerous-bash.mjs"
 timeout = 5
 ```
 

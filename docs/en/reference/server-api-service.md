@@ -183,7 +183,7 @@ Resolves which Kimi region the client belongs to. The result is derived locally,
 
 When the client is logged out and none of those inputs decides the region, the server infers it from the device time zone and locale. When the inference gives a definite result, the server caches it in `<home>/region.json` and uses the cache from then on; the cache is cleared after the client logs in. Raw time zone and locale values are not uploaded.
 
-When signals are missing or conflicting, the current process falls back to `mainland-cn` without persisting that result, and the next start decides again. Set `KIMI_CODE_REGION_MARKER=off` to disable both the install-channel marker and local inference. Local inference is also skipped when `KIMI_CODE_BASE_URL` is set.
+When signals are missing or conflicting, the current process falls back to `mainland-cn` without persisting that result, and the next start decides again. Set `KIKO_REGION_MARKER=off` to disable both the install-channel marker and local inference. Local inference is also skipped when `KIKO_BASE_URL` is set.
 
 On success, `data` is `{ region }`, where `region` is `mainland-cn` / `global`.
 
@@ -351,7 +351,7 @@ Every config change broadcasts the global event `event.config.changed` (see [Glo
 
 ### `POST /api/v1/client_configs`
 
-Reads a named client configuration that the Kimi Code service controls remotely, including which model or thinking-effort switches ask the user to confirm, and the client upgrade policy. The server reads it from the Kimi Code service of the account's region (or from `KIMI_CODE_BASE_URL` when that is set) and normalizes the result to the shape that name expects.
+Reads a named client configuration that the Kimi Code service controls remotely, including which model or thinking-effort switches ask the user to confirm, and the client upgrade policy. The server reads it from the Kimi Code service of the account's region (or from `KIKO_BASE_URL` when that is set) and normalizes the result to the shape that name expects.
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
@@ -1049,7 +1049,7 @@ On success, `data` is a [workspace object](#workspace-object).
 
 Returns `workspace.additional_dir` from the given project's `local.toml`, read-only. The result is resolved to absolute paths, deduplicated, and excludes `root` itself. The endpoint modifies neither the registry nor `local.toml`. Clients can use it to merge a project's legacy config into the create or edit workspace form, taking effect on save.
 
-The server walks up from `root` to the first directory that contains `.git` and uses it as the project root (or `root` itself when none is found), then reads `.kimi-code/local.toml` there. A missing `local.toml` returns an empty array. Malformed TOML or a configured directory that no longer exists fails the request instead of returning an empty config.
+The server walks up from `root` to the first directory that contains `.git` and uses it as the project root (or `root` itself when none is found), then reads `.kiko/local.toml` there. A missing `local.toml` returns an empty array. Malformed TOML or a configured directory that no longer exists fails the request instead of returning an empty config.
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
@@ -1104,7 +1104,7 @@ Revokes the persisted trust records associated with the current directory set. U
 | --- | --- | --- | --- |
 | `workspace_id` | path | string | Required. Workspace id |
 
-On success, `data` is `{ trusted }`, the effective trust state after revocation. It is normally `false`, but stays `true` when `KIMI_CODE_TRUST_WORKSPACE` or [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) applies.
+On success, `data` is `{ trusted }`, the effective trust state after revocation. It is normally `false`, but stays `true` when `KIKO_TRUST_WORKSPACE` or [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) applies.
 
 - `40410`: workspace not found
 

@@ -190,7 +190,7 @@
 | `permission_mode` | string | `manual` / `yolo` / `auto`。同步到会话中的所有 Agent，固定了权限模式的 Agent（例如 Tower worker）除外 |
 | `plan_mode` | boolean | 进入或退出 Plan 模式 |
 | `swarm_mode` | boolean | 进入或退出 swarm 模式 |
-| `tower_mode` | boolean | 进入或退出 Tower 模式。需要开启 Tower 实验开关（`KIMI_CODE_EXPERIMENTAL_TOWER=1`，或 `config.toml` 中 `[experimental] tower = true`） |
+| `tower_mode` | boolean | 进入或退出 Tower 模式。需要开启 Tower 实验开关（`KIKO_EXPERIMENTAL_TOWER=1`，或 `config.toml` 中 `[experimental] tower = true`） |
 | `tower_base` | string | 进入 Tower 模式时使用的基础分支，只在同时设置 `tower_mode: true` 时使用。分支不存在时，服务端在仓库中创建并切换到该分支，并把未提交的改动提交到这个分支上 |
 | `goal_objective` | string | 以该文本为内容创建一个目标 |
 | `goal_control` | string | 控制当前目标：`pause` / `resume` / `cancel` |

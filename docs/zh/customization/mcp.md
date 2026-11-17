@@ -22,8 +22,8 @@ Kimi Code CLI 支持三种 MCP server 接入方式：
 
 MCP server 配置写在 `mcp.json` 中，分两层：
 
-- **用户级**：`~/.kimi-code/mcp.json`（或 `$KIMI_CODE_HOME/mcp.json`），跨项目共享
-- **项目级**：工作目录下的 `.kimi-code/mcp.json`，只对当前仓库生效
+- **用户级**：`~/.kiko/mcp.json`（或 `$KIKO_HOME/mcp.json`），跨项目共享
+- **项目级**：工作目录下的 `.kiko/mcp.json`，只对当前仓库生效
 
 同名条目以项目级为准，覆盖用户级。
 
@@ -33,7 +33,7 @@ MCP server 配置写在 `mcp.json` 中，分两层：
 
 当 Kimi Code 在不受信任的文件夹中发现项目级 MCP server 时，工作区信任提示会显示每个 server 的传输方式和启动目标。提示默认选中 `Trust this folder`；核对列出的命令与参数或远程 URL 后确认即可，选择 `Don't trust` 则该工作区的项目级 MCP server 不会启用。
 
-无头运行（例如在 CI 中执行 `kiko -p`）无法显示信任提示，因此在工作区尚未受信任时，项目级 MCP server 会保持禁用。将 [`KIMI_CODE_TRUST_WORKSPACE`](../configuration/env-vars.md#运行时开关) 设为 `1` 即可在该进程中信任当前工作区。如需全局关闭工作区信任机制并不经确认加载项目级 MCP server，可在 `config.toml` 中设置 [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust)；仅应在所有工作区均已可信时使用该配置。
+无头运行（例如在 CI 中执行 `kiko -p`）无法显示信任提示，因此在工作区尚未受信任时，项目级 MCP server 会保持禁用。将 [`KIKO_TRUST_WORKSPACE`](../configuration/env-vars.md#运行时开关) 设为 `1` 即可在该进程中信任当前工作区。如需全局关闭工作区信任机制并不经确认加载项目级 MCP server，可在 `config.toml` 中设置 [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust)；仅应在所有工作区均已可信时使用该配置。
 
 `mcp.json` 的结构：
 
@@ -82,7 +82,7 @@ HTTP 与 SSE server 支持通过 `headers` 或 `bearerTokenEnvVar` 提供静态�
 Plugins 也可以在 manifest 中声明 MCP servers。Plugin 声明的 servers 默认启用，可以在 `/plugins` 中禁用或重新启用：禁用或移除后，已打开会话中的工具调用会失败并返回移除提示；新增或启用 server 会立即连接到已打开的会话。详见 [Plugins](./plugins.md#plugin-中的-mcp-servers)。
 
 ::: warning 注意
-项目级 `.kimi-code/mcp.json` 中的 stdio 条目会在会话启动时执行命令，只在你信任的仓库里启用。
+项目级 `.kiko/mcp.json` 中的 stdio 条目会在会话启动时执行命令，只在你信任的仓库里启用。
 :::
 
 ## 在远程环境中运行 stdio server
@@ -135,7 +135,7 @@ defaultCwd = "/srv/work"
 
 按需加载是实验功能，同时满足两个前提才会生效：
 
-- 启用 `tool-select` 实验标志：设置环境变量 `KIMI_CODE_EXPERIMENTAL_TOOL_SELECT=1`，或在 `config.toml` 的 `[experimental]` 下写 `tool-select = true`；总开关 `KIMI_CODE_EXPERIMENTAL_FLAG=1` 会一并启用。
+- 启用 `tool-select` 实验标志：设置环境变量 `KIKO_EXPERIMENTAL_TOOL_SELECT=1`，或在 `config.toml` 的 `[experimental]` 下写 `tool-select = true`；总开关 `KIKO_EXPERIMENTAL_FLAG=1` 会一并启用。
 - 当前模型声明了 `dynamically_loaded_tools` 能力：官方模型自动声明；其他模型可在 `config.toml` 的 `capabilities` 中追加，见 [配置文件](../configuration/config-files.md#models)。
 
 满足前提后，在 `mcp.json` 的 server 条目里设 `deferred: true`：

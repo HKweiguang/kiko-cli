@@ -26,7 +26,7 @@ Tower 是一种实验性多 Agent 协作模式。它把较大的开发任务拆�
 
 Tower 默认关闭，可以通过以下方式启用实验功能。
 
-如需长期启用，在 `config.toml`（默认位于 `~/.kimi-code/config.toml`，详见 [配置文件](../configuration/config-files.md)）中加入：
+如需长期启用，在 `config.toml`（默认位于 `~/.kiko/config.toml`，详见 [配置文件](../configuration/config-files.md)）中加入：
 
 ```toml
 [experimental]
@@ -36,7 +36,7 @@ tower = true
 也可以在 `/experiments` 中启用 **Tower mode** 并应用修改，效果相同。若只想在当前进程中启用，可在启动前设置环境变量：
 
 ```sh
-KIMI_CODE_EXPERIMENTAL_TOWER=1 kiko
+KIKO_EXPERIMENTAL_TOWER=1 kiko
 ```
 
 环境变量必须在启动前设置。运行过程中修改 `/experiments` 或 `config.toml` 后，需要重启 Kimi Code，因为 Tower 的工具和 worker profile 只在进程启动时加载。启用实验功能后，`/tower` 才会出现在命令列表中。
@@ -135,5 +135,5 @@ worker 和 reviewer 都有独立的模型上下文，也会分别消耗 token。
 ## 下一步
 
 - [斜杠命令](../reference/slash-commands.md#模式与运行控制) — `/tower` 的各种用法
-- [环境变量](../configuration/env-vars.md#运行时开关) — `KIMI_CODE_EXPERIMENTAL_TOWER` 及相关运行时开关
+- [环境变量](../configuration/env-vars.md#运行时开关) — `KIKO_EXPERIMENTAL_TOWER` 及相关运行时开关
 - [Agent 与 subagent](../customization/agents.md) — 适合聚焦子任务的简单委派方式

@@ -22,8 +22,8 @@ Kimi Code CLI supports three MCP server connection methods:
 
 MCP server configuration is written in `mcp.json`, at two levels:
 
-- **User level**: `~/.kimi-code/mcp.json` (or `$KIMI_CODE_HOME/mcp.json`), shared across projects
-- **Project level**: `.kimi-code/mcp.json` in the working directory, effective only for the current repository
+- **User level**: `~/.kiko/mcp.json` (or `$KIKO_HOME/mcp.json`), shared across projects
+- **Project level**: `.kiko/mcp.json` in the working directory, effective only for the current repository
 
 Entries with the same name: the project-level entry takes precedence and overrides the user-level entry.
 
@@ -33,7 +33,7 @@ Deleting a server from the configuration does not interrupt open sessions: the s
 
 When Kimi Code finds project-level MCP servers in an untrusted folder, it shows each server's transport and launch target in the workspace trust prompt. The prompt defaults to `Trust this folder`; review the listed command and arguments or remote URL before confirming. Trusting the folder enables the project-level MCP servers for that workspace.
 
-Headless runs (for example `kiko -p` in CI) cannot show the trust prompt, so project-level MCP servers stay disabled there unless the workspace is already trusted. Set [`KIMI_CODE_TRUST_WORKSPACE`](../configuration/env-vars.md#runtime-switches) to `1` to trust the workspace for that process. To disable workspace trust globally and load project-level MCP servers without confirmation, set [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) in `config.toml`; use that setting only when every workspace is already trusted.
+Headless runs (for example `kiko -p` in CI) cannot show the trust prompt, so project-level MCP servers stay disabled there unless the workspace is already trusted. Set [`KIKO_TRUST_WORKSPACE`](../configuration/env-vars.md#runtime-switches) to `1` to trust the workspace for that process. To disable workspace trust globally and load project-level MCP servers without confirmation, set [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) in `config.toml`; use that setting only when every workspace is already trusted.
 
 Structure of `mcp.json`:
 
@@ -82,7 +82,7 @@ HTTP and SSE servers support providing static credentials via `headers` or `bear
 Plugins can also declare MCP servers in their manifest. Servers declared by a plugin are enabled by default and can be disabled or re-enabled in `/plugins`: disabling or removing one makes calls from open sessions fail with a removal notice, and adding or enabling a server connects it in open sessions right away. See [Plugins](./plugins.md#mcp-servers-in-plugins) for details.
 
 ::: warning Note
-stdio entries in a project-level `.kimi-code/mcp.json` execute commands when a session starts. Only enable these in repositories you trust.
+stdio entries in a project-level `.kiko/mcp.json` execute commands when a session starts. Only enable these in repositories you trust.
 :::
 
 ## Running stdio servers in a remote environment
@@ -135,7 +135,7 @@ By default, every tool of a server goes straight into the model's top-level tool
 
 Loading tools on demand is experimental and takes effect only when both prerequisites are met:
 
-- The `tool-select` experimental flag is on: set `KIMI_CODE_EXPERIMENTAL_TOOL_SELECT=1`, or write `tool-select = true` under `[experimental]` in `config.toml`; the master switch `KIMI_CODE_EXPERIMENTAL_FLAG=1` enables it too.
+- The `tool-select` experimental flag is on: set `KIKO_EXPERIMENTAL_TOOL_SELECT=1`, or write `tool-select = true` under `[experimental]` in `config.toml`; the master switch `KIKO_EXPERIMENTAL_FLAG=1` enables it too.
 - The current model declares the `dynamically_loaded_tools` capability: official models declare it automatically; for other models, add it to `capabilities` in `config.toml` — see [Configuration files](../configuration/config-files.md#models).
 
 With both prerequisites met, set `deferred: true` on the server entry in `mcp.json`:

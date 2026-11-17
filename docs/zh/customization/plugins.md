@@ -54,13 +54,13 @@ Plugins 把可复用的 Kimi Code CLI 能力打包成可安装单元：可以添
 ### 注意事项
 
 - 安装、启用/禁用、移除 plugin 后，当前会话不会更新，运行 `/reload` 或 `/new` 后生效。
-- 本地安装会被拷贝到 `$KIMI_CODE_HOME/plugins/managed/<id>/`，CLI 始终从这份托管副本运行。安装后编辑原始源目录不会生效，需重新安装。
+- 本地安装会被拷贝到 `$KIKO_HOME/plugins/managed/<id>/`，CLI 始终从这份托管副本运行。安装后编辑原始源目录不会生效，需重新安装。
 - 移除 plugin 只会删除安装记录，托管副本和原始源文件仍保留在磁盘上。
 - Plugin 目前按用户安装，对所有项目生效，暂不支持项目级安装范围。
 
 ### 自定义 marketplace JSON
 
-浏览自定义目录时，把 JSON 路径或 URL 传给 `/plugins marketplace <source>`，或通过 [`KIMI_CODE_PLUGIN_MARKETPLACE_URL`](../configuration/env-vars.md) 覆盖默认 marketplace。`plugins` 数组中每个条目需要 `id` 和 `source` 两个字段，`source` 支持本地路径、zip URL 和 GitHub URL：
+浏览自定义目录时，把 JSON 路径或 URL 传给 `/plugins marketplace <source>`，或通过 [`KIKO_PLUGIN_MARKETPLACE_URL`](../configuration/env-vars.md) 覆盖默认 marketplace。`plugins` 数组中每个条目需要 `id` 和 `source` 两个字段，`source` 支持本地路径、zip URL 和 GitHub URL：
 
 ```json
 {
@@ -77,7 +77,7 @@ Plugins 把可复用的 Kimi Code CLI 能力打包成可安装单元：可以添
 
 Marketplace 条目还可以通过 `clients`（`desktop`、`cli` 或两者）和 `platforms`（`macos`、`windows`、`linux` 或 `cloud`）限制可用范围。`clients` 选择产品宿主，`platforms` 选择 server 操作系统，两个条件必须同时满足。未声明 `clients` 时，条目对两种宿主均可用。Web 和 Remote Control 跟随所连接 server 的宿主，不使用浏览器所在设备的操作系统判断。
 
-安装记录仍共享在 `$KIMI_CODE_HOME` 下。某个宿主不可见的条目也不会出现在该宿主的已安装列表和运行能力中。最近一次成功获取的可用性配置缓存在 `$KIMI_CODE_HOME/plugins/availability.json`；目录配置变化后，成功刷新即可隐藏或恢复已有安装，无需重新安装，也不会删除插件文件。
+安装记录仍共享在 `$KIKO_HOME` 下。某个宿主不可见的条目也不会出现在该宿主的已安装列表和运行能力中。最近一次成功获取的可用性配置缓存在 `$KIKO_HOME/plugins/availability.json`；目录配置变化后，成功刷新即可隐藏或恢复已有安装，无需重新安装，也不会删除插件文件。
 
 ## 官方插件
 
@@ -490,7 +490,7 @@ plugin hooks 复用与全局 hooks 相同的机制。事件列表、stdin JSON �
 
 - plugin 的 hooks 仅在 plugin **启用**期间生效；禁用 plugin 后其 hooks 停止运行。
 - 每条 hook 的工作目录为 plugin 根目录，`command` 可以使用 plugin 内的 `./` 路径。
-- hook 进程会额外收到两个环境变量：`KIMI_CODE_HOME` 和 `KIMI_PLUGIN_ROOT`（plugin 根目录）。
+- hook 进程会额外收到两个环境变量：`KIKO_HOME` 和 `KIMI_PLUGIN_ROOT`（plugin 根目录）。
 
 仅安装 plugin 本身不会运行其 hooks；它们只在 plugin 启用期间、匹配的事件触发时运行。
 

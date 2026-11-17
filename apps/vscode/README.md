@@ -22,8 +22,8 @@ Kiko requires VS Code 1.100.0 or later.
 
 The extension runs the Node SDK in the VS Code Extension Host. When
 the extension and the Kiko terminal app resolve to the same
-`KIMI_CODE_HOME`, they share `config.toml`, MCP configuration, login state, and
-sessions. The system-level `KIMI_CODE_HOME` environment variable is supported;
+`KIKO_HOME`, they share `config.toml`, MCP configuration, login state, and
+sessions. The system-level `KIKO_HOME` environment variable is supported;
 there is no separate VS Code setting for it. Do not run the same session from
 both applications at the same time, because cross-process session locking is
 not guaranteed.

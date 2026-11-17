@@ -4,10 +4,10 @@ Kimi Code CLI persists every conversation as a "session" — storing message his
 
 ## Session storage
 
-All sessions are saved under `$KIMI_CODE_HOME/sessions/` (default: `~/.kimi-code/sessions/`), grouped by working directory:
+All sessions are saved under `$KIKO_HOME/sessions/` (default: `~/.kiko/sessions/`), grouped by working directory:
 
 ```text
-~/.kimi-code/
+~/.kiko/
 ├── config.toml
 ├── session_index.jsonl
 └── sessions/
@@ -107,7 +107,7 @@ Omitting `sessionId` exports the most recent session in the current directory (w
 kiko export <sessionId> -o ~/Desktop/my-session.zip
 ```
 
-The export includes all files in the session directory, including diagnostic logs. The global diagnostic log (`~/.kimi-code/logs/kimi-code.log`) is also bundled by default; add `--no-include-global-log` to exclude it.
+The export includes all files in the session directory, including diagnostic logs. The global diagnostic log (`~/.kiko/logs/kimi-code.log`) is also bundled by default; add `--no-include-global-log` to exclude it.
 
 You can also export from inside the TUI without leaving the interactive session:
 

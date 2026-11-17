@@ -1,16 +1,16 @@
 # 配置文件
 
-Kimi Code CLI 的长期偏好都写在 `~/.kimi-code/` 下的 TOML 文件里：运行时设置放 `config.toml`，终端界面偏好放配套的 `tui.toml`。
+Kimi Code CLI 的长期偏好都写在 `~/.kiko/` 下的 TOML 文件里：运行时设置放 `config.toml`，终端界面偏好放配套的 `tui.toml`。
 
 ## 配置文件位置
 
-CLI 从 `~/.kimi-code/config.toml` 读取配置，首次运行时自动创建。如需把数据目录迁移到别处，可用 `KIMI_CODE_HOME` 环境变量覆盖：
+CLI 从 `~/.kiko/config.toml` 读取配置，首次运行时自动创建。如需把数据目录迁移到别处，可用 `KIKO_HOME` 环境变量覆盖：
 
 ```sh
-export KIMI_CODE_HOME=/path/to/kimi-home
+export KIKO_HOME=/path/to/kiko-home
 ```
 
-此时配置文件路径变为 `$KIMI_CODE_HOME/config.toml`。无论目录在哪里，文件名固定是 `config.toml`。
+此时配置文件路径变为 `$KIKO_HOME/config.toml`。无论目录在哪里，文件名固定是 `config.toml`。
 
 ::: tip
 TOML 字段名一律用下划线（snake_case），如 `default_model`、`max_context_size`。字段名里若含 `.`，需用引号包住，例如 `[models."gpt-4.1"]`；否则 TOML 会把 `.` 解释为嵌套表分隔符。
@@ -84,7 +84,7 @@ pattern = "Bash(rm -rf*)"
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash"
-command = "node ~/.kimi-code/hooks/check-bash.mjs"
+command = "node ~/.kiko/hooks/check-bash.mjs"
 timeout = 5
 ```
 
@@ -350,7 +350,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | `print_wait_ceiling_s` | `integer` | `2147483` | 等待/steer 循环的墙钟上限（秒），非 print 模式或 `"exit"` 时无效 |
 | `print_max_turns` | `integer` | `100000` | steer 模式下后台任务触发新 turn 的数量上限，防止 steer 循环失控 |
 
-`keep_alive_on_exit` 可被环境变量 `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` 覆盖，`bash_task_timeout_s` 可被 `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` 覆盖，`print_background_mode`、`print_wait_ceiling_s`、`print_max_turns` 可分别被 `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE`、`KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S`、`KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` 覆盖，优先级均高于两个配置节。
+`keep_alive_on_exit` 可被环境变量 `KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT` 覆盖，`bash_task_timeout_s` 可被 `KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S` 覆盖，`print_background_mode`、`print_wait_ceiling_s`、`print_max_turns` 可分别被 `KIKO_BACKGROUND_PRINT_BACKGROUND_MODE`、`KIKO_BACKGROUND_PRINT_WAIT_CEILING_S`、`KIKO_BACKGROUND_PRINT_MAX_TURNS` 覆盖，优先级均高于两个配置节。
 
 在 print 模式（`kiko -p "<prompt>"`）下，只要还有未决的后台任务，Kimi Code 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
 
@@ -372,7 +372,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 | --- | --- | --- | --- |
 | `timeout_ms` | `integer` | `7200000`（2 小时） | `AgentSwarm` 单个 subagent 允许运行的最长时间（毫秒）；超时后中止，聚合报告标记 `Subagent timed out.`；0 为无超时 |
 
-`timeout_ms` 可被环境变量 `KIMI_CODE_SWARM_TIMEOUT_MS` 覆盖，优先级高于配置文件。
+`timeout_ms` 可被环境变量 `KIKO_SWARM_TIMEOUT_MS` 覆盖，优先级高于配置文件。
 
 ## `mcp`
 
@@ -403,7 +403,7 @@ name = "Acme Dev Agent"
 slug = "acme-dev"        # 可选
 ```
 
-两个字段都可以通过 `KIMI_CODE_IDENTITY_NAME` 和 `KIMI_CODE_IDENTITY_SLUG` 环境变量设置，优先级高于 `config.toml`，且不会被写回配置文件，适合不便写配置文件的容器和 CI 场景。
+两个字段都可以通过 `KIKO_IDENTITY_NAME` 和 `KIKO_IDENTITY_SLUG` 环境变量设置，优先级高于 `config.toml`，且不会被写回配置文件，适合不便写配置文件的容器和 CI 场景。
 
 如果名称中不含任何 ASCII 字母或数字（例如纯中文名称），就无法派生出 slug，此时回退为 `agent`；需要特定协议标识请显式填写 `slug`。
 
@@ -469,7 +469,7 @@ max_chars = 100000
 | `global_search` | `boolean` | `false` | 是否构建全局全文搜索索引并提供 `POST /api/v1/search`；关闭时不扫描会话、不启动搜索 worker，搜索接口返回索引不可用 |
 | `search` | `boolean` | `true` | 全局搜索开启时，在独立 worker 线程中运行索引；`false` 在服务器进程内运行 |
 
-`base` 可被环境变量 `KIMI_CODE_PERSISTENCE_MINIDB_READMODEL` 覆盖，`global_search` 可被 `KIMI_CODE_GLOBAL_SEARCH` 覆盖，`search` 可被 `KIMI_CODE_SEARCH_WORKER` 覆盖，优先级均高于配置文件。
+`base` 可被环境变量 `KIKO_PERSISTENCE_MINIDB_READMODEL` 覆盖，`global_search` 可被 `KIKO_GLOBAL_SEARCH` 覆盖，`search` 可被 `KIKO_SEARCH_WORKER` 覆盖，优先级均高于配置文件。
 
 ## `watch`
 
@@ -479,7 +479,7 @@ max_chars = 100000
 | --- | --- | --- | --- |
 | `enabled` | `boolean` | `true` | 是否挂文件系统 watch；`false` 关闭进程内全部 `watch()` |
 
-`enabled` 可被环境变量 `KIMI_CODE_WATCH` 覆盖，优先级高于配置文件。
+`enabled` 可被环境变量 `KIKO_WATCH` 覆盖，优先级高于配置文件。
 
 ## `workspace trust`
 
@@ -495,10 +495,10 @@ require_trust = false
 ```
 
 ::: warning 注意
-关闭首次打开的信任确认后，项目级 MCP server 和其他受信任机制控制的项目配置都会不经确认直接加载。仅应在所有工作区均已可信时使用该配置。权限模式和 `dangerous_command_guard` 配置本身不变，但从 `.kimi-code/local.toml` 加载的[项目 `allow` 规则](#permission)可能跳过工具审批提示，包括敏感文件和 git 控制路径保护。
+关闭首次打开的信任确认后，项目级 MCP server 和其他受信任机制控制的项目配置都会不经确认直接加载。仅应在所有工作区均已可信时使用该配置。权限模式和 `dangerous_command_guard` 配置本身不变，但从 `.kiko/local.toml` 加载的[项目 `allow` 规则](#permission)可能跳过工具审批提示，包括敏感文件和 git 控制路径保护。
 :::
 
-配置变更在 `/reload` 后生效；已经运行的 TUI 不会补弹启动信任提示。`KIMI_CODE_TRUST_WORKSPACE=1` 仍是独立的进程级信任覆盖，假值不会在 `require_trust` 为 `false` 时恢复首次打开的信任确认。已有信任记录会保留，恢复该要求后继续使用。
+配置变更在 `/reload` 后生效；已经运行的 TUI 不会补弹启动信任提示。`KIKO_TRUST_WORKSPACE=1` 仍是独立的进程级信任覆盖，假值不会在 `require_trust` 为 `false` 时恢复首次打开的信任确认。已有信任记录会保留，恢复该要求后继续使用。
 
 <!--
 ## `experimental`
@@ -539,9 +539,9 @@ api_key = "sk-xxx"
 
 用户规则在会话启动时从用户 `config.toml` 加载。为兼容旧配置，用户 `config.toml` 中的 `turn-override` 和 `session-runtime` 规则会静默忽略，不产生警告。
 
-项目规则仅在本地环境且 workspace 已信任时从 `.kimi-code/local.toml` 读取，省略 `scope` 时默认为 `project`。远程环境不支持项目规则。项目规则修改后需要新建会话生效，不会热重载。
+项目规则仅在本地环境且 workspace 已信任时从 `.kiko/local.toml` 读取，省略 `scope` 时默认为 `project`。远程环境不支持项目规则。项目规则修改后需要新建会话生效，不会热重载。
 
-也可以在 `[permission]` 下设置 `dangerous_command_guard = false` 完全关闭所有内置 guard 确认策略：危险命令、敏感文件（如 `.env`、`id_rsa`）访问、git 控制路径访问在 "Always Ask" 和 "Ask When Needed" 模式下不再触发审批（"Never Ask" 模式本就不启用这些策略），默认 `true`。环境变量 `KIMI_CODE_DANGEROUS_COMMAND_GUARD=false` 会覆盖文件设置。全部内置 guard 关闭后，"Ask When Needed" 模式下只有你自己配置的 `ask` 规则仍会要求确认；"Always Ask" 模式下未被自动放行的工具照旧逐个询问。`Read`/`Write`/`Edit` 对秘密文件的硬阻断保持不变。此开关只适用于已经在 Agent 之外统一命令限权的环境。
+也可以在 `[permission]` 下设置 `dangerous_command_guard = false` 完全关闭所有内置 guard 确认策略：危险命令、敏感文件（如 `.env`、`id_rsa`）访问、git 控制路径访问在 "Always Ask" 和 "Ask When Needed" 模式下不再触发审批（"Never Ask" 模式本就不启用这些策略），默认 `true`。环境变量 `KIKO_DANGEROUS_COMMAND_GUARD=false` 会覆盖文件设置。全部内置 guard 关闭后，"Ask When Needed" 模式下只有你自己配置的 `ask` 规则仍会要求确认；"Always Ask" 模式下未被自动放行的工具照旧逐个询问。`Read`/`Write`/`Edit` 对秘密文件的硬阻断保持不变。此开关只适用于已经在 Agent 之外统一命令限权的环境。
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
@@ -571,7 +571,7 @@ pattern = "Bash"
 ```
 
 ::: tip
-MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-code/mcp.json` 中，不在 `config.toml` 里。交互式配置入口是 `/mcp-config`，详见 [Model Context Protocol](../customization/mcp.md)。
+MCP server 的声明配置写在 `~/.kiko/mcp.json` 或项目内 `.kiko/mcp.json` 中，不在 `config.toml` 里。交互式配置入口是 `/mcp-config`，详见 [Model Context Protocol](../customization/mcp.md)。
 :::
 
 ## `environments`
@@ -590,7 +590,7 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | --- | --- | --- | --- |
 | `type` | `string` | 是 | `"ssh"` |
 | `host` | `string` | 是 | SSH 主机；经系统 `ssh` 启动，`~/.ssh/config`（用户、端口、密钥、`ProxyJump`、`ControlMaster`）照常生效 |
-| `remoteBin` | `string` | 否 | 目标环境上 `kiko` 的路径，POSIX 默认 `~/.kimi-code/bin/kiko`，Windows 默认 `~/.kimi-code/bin/kiko.exe`。支持含空格的绝对路径、目标账户主目录下的 `~/` 路径或目标 `PATH` 中的裸名称（如 `kiko`） |
+| `remoteBin` | `string` | 否 | 目标环境上 `kiko` 的路径，POSIX 默认 `~/.kiko/bin/kiko`，Windows 默认 `~/.kiko/bin/kiko.exe`。支持含空格的绝对路径、目标账户主目录下的 `~/` 路径或目标 `PATH` 中的裸名称（如 `kiko`） |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值，不在本机校验 |
 
 ### Docker 条目
@@ -600,7 +600,7 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | `type` | `string` | 是 | `"docker"` |
 | `container` | `string` | 是 | 运行中的容器名或 id，经 `docker exec` 接入 |
 | `context` | `string` | 否 | Docker context（例如 `orbstack`） |
-| `remoteBin` | `string` | 否 | 容器内 `kiko` 的路径，默认为容器用户 home 下的 `~/.kimi-code/bin/kiko`；启动命令经 `docker exec … sh -c` 执行，`~` 前缀由容器内的 shell 展开 |
+| `remoteBin` | `string` | 否 | 容器内 `kiko` 的路径，默认为容器用户 home 下的 `~/.kiko/bin/kiko`；启动命令经 `docker exec … sh -c` 执行，`~` 前缀由容器内的 shell 展开 |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值 |
 
 ### command 条目
@@ -610,9 +610,9 @@ MCP server 的声明配置写在 `~/.kimi-code/mcp.json` 或项目内 `.kimi-cod
 | 字段 | 类型 | 是否必填 | 说明 |
 | --- | --- | --- | --- |
 | `command` | `string` | 是 | 启动器可执行文件：按 `PATH` 解析的名称，或绝对路径。解析结果落在工作目录内会被拒绝，项目无法用同名二进制冒名顶替启动器 |
-| `args` | `array<string>` | 否 | 进入目标的启动器参数。某个参数已经调用 `exec-server` 时（例如 `--command "~/.kimi-code/bin/kiko exec-server"`），不再追加，按原样执行 |
+| `args` | `array<string>` | 否 | 进入目标的启动器参数。某个参数已经调用 `exec-server` 时（例如 `--command "~/.kiko/bin/kiko exec-server"`），不再追加，按原样执行 |
 | `env` | `table<string, string>` | 否 | 本机启动器进程的环境变量，不会传播到目标环境执行的命令中 |
-| `remoteBin` | `string` | 否 | 目标环境上 `kiko` 的路径，追加在 `args` 之后，默认 `~/.kimi-code/bin/kiko`。应为不含空格和 shell 特殊字符的路径。只有经目标上的 shell 执行参数的启动器（如 ssh）会展开 `~`；`kubectl exec`、`docker exec` 这类原样传递参数的启动器需要绝对路径 |
+| `remoteBin` | `string` | 否 | 目标环境上 `kiko` 的路径，追加在 `args` 之后，默认 `~/.kiko/bin/kiko`。应为不含空格和 shell 特殊字符的路径。只有经目标上的 shell 执行参数的启动器（如 ssh）会展开 `~`；`kubectl exec`、`docker exec` 这类原样传递参数的启动器需要绝对路径 |
 | `defaultCwd` | `string` | 否 | 绑定会话时工作目录的预填值 |
 
 ```toml
@@ -632,18 +632,18 @@ container = "myapp-dev"
 command = "sandbox"
 args = ["ssh", "i-1234567890", "--"]
 env = { SANDBOX_TOKEN = "..." }
-defaultCwd = "/home/me/kimi-code"
+defaultCwd = "/home/me/project"
 
 [environments.k8s]
 command = "kubectl"
 args = ["exec", "-i", "dev-pod", "--"]
-remoteBin = "/root/.kimi-code/bin/kiko"
+remoteBin = "/root/.kiko/bin/kiko"
 defaultCwd = "/workspace"
 ```
 
 ## `tui.toml`
 
-除了 `config.toml`，CLI 还在同一目录下用一份配套的 `tui.toml` 保存终端界面与客户端偏好（`~/.kimi-code/tui.toml`，或覆盖后的 `$KIMI_CODE_HOME/tui.toml`）。它在首次运行时以默认值创建，交互式命令 `/config`、`/theme`、`/editor` 会自动写入，通常无需手动编辑。文件格式有误时，CLI 会回退到默认值并给出提示，而不是启动失败。
+除了 `config.toml`，CLI 还在同一目录下用一份配套的 `tui.toml` 保存终端界面与客户端偏好（`~/.kiko/tui.toml`，或覆盖后的 `$KIKO_HOME/tui.toml`）。它在首次运行时以默认值创建，交互式命令 `/config`、`/theme`、`/editor` 会自动写入，通常无需手动编辑。文件格式有误时，CLI 会回退到默认值并给出提示，而不是启动失败。
 
 | 字段 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -672,7 +672,7 @@ model、cwd、git 分支、permission 模式、plan 模式、上下文用量、s
 </details>
 
 ```toml
-# ~/.kimi-code/tui.toml
+# ~/.kiko/tui.toml
 theme = "auto" # "auto" | "dark" | "light" | 自定义主题名
 # tui_mode = "regular" # "regular" | "fullscreen"（"fullscreen" 为实验性）
 copy_on_select = true # 仅全屏模式：false 表示按 Ctrl-C 才复制
@@ -698,16 +698,16 @@ thinking = "grouped" # "grouped" | "ungrouped"
 
 # [status_line]
 # items = ["mode", "goal", "model", "tasks", "cwd", "git", "tips"]
-# command = "~/.kimi-code/statusline.sh"
+# command = "~/.kiko/statusline.sh"
 ```
 
 修改在下次启动时生效，或用 `/reload-tui` 立即生效（只重载 `tui.toml`）；`/reload` 会同时重载 `config.toml` 和 `tui.toml`。
 
 ## 项目级本地配置
 
-除了 `~/.kimi-code` 下的用户级文件，Kimi Code 还会读取位于 `<项目根目录>/.kimi-code/local.toml` 的项目级本地配置文件。它保存的是与某一个项目检出相关、通常不应与队友共享的设置。
+除了 `~/.kiko` 下的用户级文件，Kimi Code 还会读取位于 `<项目根目录>/.kiko/local.toml` 的项目级本地配置文件。它保存的是与某一个项目检出相关、通常不应与队友共享的设置。
 
-早期版本的 [`/add-dir`](../reference/slash-commands.md) 会把「记住此目录」写入这个文件；现版本改为记入 `~/.kimi-code/projects.json` 中的工作区注册表，`local.toml` 随之成为只读的存量兼容字段，任何组件都不会再写入它。隐式工作区（终端按目录进入）的会话仍把其中的 `additional_dir` 并入额外目录；显式创建（managed）工作区的会话不再读取它。要把旧配置搬进注册表，可在客户端的新建/编辑工作区弹窗中使用导入功能（底层为 [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api-service.md#get-api-v1-workspaces-project-config-dirs)），导入后即由注册表管理，删除即时生效。
+早期版本的 [`/add-dir`](../reference/slash-commands.md) 会把「记住此目录」写入这个文件；现版本改为记入 `~/.kiko/projects.json` 中的工作区注册表，`local.toml` 随之成为只读的存量兼容字段，任何组件都不会再写入它。隐式工作区（终端按目录进入）的会话仍把其中的 `additional_dir` 并入额外目录；显式创建（managed）工作区的会话不再读取它。要把旧配置搬进注册表，可在客户端的新建/编辑工作区弹窗中使用导入功能（底层为 [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api-service.md#get-api-v1-workspaces-project-config-dirs)），导入后即由注册表管理，删除即时生效。
 
 ### `[workspace]`
 
@@ -722,12 +722,12 @@ thinking = "grouped" # "grouped" | "ungrouped"
 additional_dir = ["/absolute/path/to/shared"]
 ```
 
-目录以绝对路径存储，与具体机器相关。因此建议把 `.kimi-code/local.toml` 加入项目的 `.gitignore`，避免被提交。
+目录以绝对路径存储，与具体机器相关。因此建议把 `.kiko/local.toml` 加入项目的 `.gitignore`，避免被提交。
 
-除了 `local.toml`，项目 `.kimi-code/` 目录还可以放 `mcp.json`（项目级 MCP server），受工作区信任门控：在启动提示中选择信任该文件夹后才生效。详见 [Model Context Protocol](../customization/mcp.md)。
+除了 `local.toml`，项目 `.kiko/` 目录还可以放 `mcp.json`（项目级 MCP server），受工作区信任门控：在启动提示中选择信任该文件夹后才生效。详见 [Model Context Protocol](../customization/mcp.md)。
 
 ## 下一步
 
 - [平台与模型](./providers.md) — 各供应商类型（Kimi、Claude、OpenAI、Gemini）的接入示例
 - [配置覆盖](./overrides.md) — CLI 选项、配置文件、环境变量的优先级规则
-- [环境变量](./env-vars.md) — `KIMI_CODE_HOME` 等运行时变量的完整列表
+- [环境变量](./env-vars.md) — `KIKO_HOME` 等运行时变量的完整列表

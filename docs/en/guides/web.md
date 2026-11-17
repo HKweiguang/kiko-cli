@@ -79,7 +79,7 @@ How the two sides compare:
 
 ## Security notes
 
-- **Set a parallel credential**: when binding a LAN address, also set the `KIMI_CODE_PASSWORD` environment variable; the server then rate-limits authentication failures automatically.
+- **Set a parallel credential**: when binding a LAN address, also set the `KIKO_PASSWORD` environment variable; the server then rate-limits authentication failures automatically.
 - **Don't disable authentication entirely**: `--dangerous-bypass-auth` turns off all authentication — anyone who can reach the port can control your sessions, file system, and shell. Only use it on trusted networks or behind your own authenticating proxy. See the [kiko command reference](../reference/kimi-command.md#kiko-web).
 
 ## FAQ

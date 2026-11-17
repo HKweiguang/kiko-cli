@@ -93,7 +93,7 @@ On first launch you need to configure an API source. In the interactive UI, ente
 To sign out, enter `/logout` to clear the current credentials.
 
 ::: tip Using other AI providers
-If you want to connect Anthropic, OpenAI, Google, or other providers, edit `~/.kimi-code/config.toml` directly to configure the API key. See [Providers and models](../configuration/providers.md) for details. For the full reference of all config options, see [Configuration files](../configuration/config-files.md), [Environment variables](../configuration/env-vars.md), and [Configuration overrides](../configuration/overrides.md).
+If you want to connect Anthropic, OpenAI, Google, or other providers, edit `~/.kiko/config.toml` directly to configure the API key. See [Providers and models](../configuration/providers.md) for details. For the full reference of all config options, see [Configuration files](../configuration/config-files.md), [Environment variables](../configuration/env-vars.md), and [Configuration overrides](../configuration/overrides.md).
 :::
 
 ## Your first conversation
@@ -146,7 +146,7 @@ For the full list, type `/help` or visit [Slash commands reference](../reference
 
 ## Where data is stored
 
-Kimi Code CLI stores its local data under `~/.kimi-code/` by default — config files, session records, logs, and the update cache. To move it elsewhere, point to a new path via the `KIMI_CODE_HOME` environment variable. For the full directory layout, see [Data locations](../configuration/data-locations.md) and [Environment variables](../configuration/env-vars.md).
+Kimi Code CLI stores its local data under `~/.kiko/` by default — config files, session records, logs, and the update cache. To move it elsewhere, point to a new path via the `KIKO_HOME` environment variable. For the full directory layout, see [Data locations](../configuration/data-locations.md) and [Environment variables](../configuration/env-vars.md).
 
 ## Upgrade and uninstall
 

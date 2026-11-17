@@ -358,7 +358,7 @@ On success, `data` is:
 
 Opens a session file on the host. `local` environment only.
 
-When the server process has the environment variable `KIMI_CODE_EDITOR`, `VISUAL`, or `EDITOR` set, the server takes the first non-empty value in that order as the editor command and opens the file with it. When none is set, the file opens with the host operating system's default program.
+When the server process has the environment variable `KIKO_EDITOR`, `VISUAL`, or `EDITOR` set, the server takes the first non-empty value in that order as the editor command and opens the file with it. When none is set, the file opens with the host operating system's default program.
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
