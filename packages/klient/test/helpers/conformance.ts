@@ -817,6 +817,7 @@ export function defineKlientConformance(
           main.accessor.get(IEventBus).publish(
             new ToolResultEvent({
               agentId: 'main',
+              origin: 'loop',
               turnId: 1,
               toolCallId: 'call-media',
               output: [
