@@ -21,7 +21,7 @@ RUN_ID="${KIMI_SERVER_E2E_RUN_ID:-${workspace_slug}-${workspace_hash}}"
 BASE_IMAGE="${KIMI_SERVER_E2E_BASE_IMAGE:-kimi-server-e2e-base:${RUN_ID}}"
 IMAGE="${KIMI_SERVER_E2E_IMAGE:-kimi-server-e2e:${RUN_ID}}"
 CONTAINER="${KIMI_SERVER_E2E_CONTAINER:-kimi-server-e2e-${RUN_ID}}"
-STATE_ROOT="${KIMI_SERVER_E2E_STATE_ROOT:-${HOME}/.kimi-code-server-dev}"
+STATE_ROOT="${KIMI_SERVER_E2E_STATE_ROOT:-${HOME}/.kiko-server-dev}"
 PORT="${KIMI_SERVER_E2E_PORT:-58627}"
 
 KIMI_HOME_HOST="${KIMI_SERVER_E2E_KIMI_HOME_HOST:-${STATE_ROOT}/docker-e2e/${RUN_ID}/kimi-code-home}"
@@ -90,8 +90,8 @@ read -r -d '' container_script <<'EOS' || true
 set -euo pipefail
 
 cd /workspace/kimi-code
-mkdir -p "${KIMI_CODE_HOME}/server" "${KIMI_SERVER_E2E_REPORT_DIR}" "${TMPDIR}" /data/server-e2e-reports/docker
-rm -f "${KIMI_CODE_HOME}/server/lock"
+mkdir -p "${KIKO_HOME}/server" "${KIMI_SERVER_E2E_REPORT_DIR}" "${TMPDIR}" /data/server-e2e-reports/docker
+rm -f "${KIKO_HOME}/server/lock"
 
 if [[ ! -e /workspace/kimi-code/node_modules/.modules.yaml || ! -e /workspace/kimi-code/packages/klient/node_modules/ws ]]; then
   echo "[server-e2e:docker] installing pnpm deps"
@@ -154,7 +154,7 @@ docker_args=(
   --init
   --name "${CONTAINER}"
   --workdir /workspace/kimi-code/packages/klient
-  --env "KIMI_CODE_HOME=${KIMI_HOME_CONTAINER}"
+  --env "KIKO_HOME=${KIMI_HOME_CONTAINER}"
   --env "KIMI_SERVER_E2E_PORT=${PORT}"
   --env "KIMI_SERVER_URL=http://127.0.0.1:${PORT}"
   --env "KIMI_SERVER_E2E_REPORT_DIR=${REPORT_DIR_CONTAINER}"

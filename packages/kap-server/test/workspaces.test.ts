@@ -403,9 +403,9 @@ describe('server-v2 /api/v1/workspaces', () => {
     const root = home as string;
     const extra = join(root, 'toml-extra');
     await mkdir(extra, { recursive: true });
-    await mkdir(join(root, '.kimi-code'), { recursive: true });
+    await mkdir(join(root, '.kiko'), { recursive: true });
     await writeFile(
-      join(root, '.kimi-code', 'local.toml'),
+      join(root, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = ["${extra}"]\n`,
       'utf8',
     );
@@ -414,7 +414,7 @@ describe('server-v2 /api/v1/workspaces', () => {
     expect(created.body.code).toBe(0);
     expect(created.body.data.additional_dirs).toEqual([]);
     expect(created.body.data.kind).toBe('managed');
-    const text = await readFile(join(root, '.kimi-code', 'local.toml'), 'utf8');
+    const text = await readFile(join(root, '.kiko', 'local.toml'), 'utf8');
     expect(text).toContain('toml-extra');
   });
 
@@ -422,9 +422,9 @@ describe('server-v2 /api/v1/workspaces', () => {
     const root = home as string;
     const extra = join(root, 'toml-import');
     await mkdir(extra, { recursive: true });
-    await mkdir(join(root, '.kimi-code'), { recursive: true });
+    await mkdir(join(root, '.kiko'), { recursive: true });
     await writeFile(
-      join(root, '.kimi-code', 'local.toml'),
+      join(root, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = ["${extra}"]\n`,
       'utf8',
     );
@@ -437,13 +437,34 @@ describe('server-v2 /api/v1/workspaces', () => {
 
     const created = await postJson<WorkspaceWire>('/api/v1/workspaces', { root });
     expect(created.body.data.additional_dirs).toEqual([]);
-    const text = await readFile(join(root, '.kimi-code', 'local.toml'), 'utf8');
+    const text = await readFile(join(root, '.kiko', 'local.toml'), 'utf8');
     expect(text).toContain('toml-import');
 
     const missing = await getJson<{ additional_dirs: string[] }>(
       '/api/v1/workspaces/project-config-dirs?root=',
     );
     expect(missing.body.code).not.toBe(0);
+  });
+
+  it('project-config-dirs ignores a legacy .kimi-code/local.toml', async () => {
+    const root = join(home as string, 'legacy-local-toml-root');
+    const legacyExtra = join(root, 'legacy-toml-extra');
+    await mkdir(legacyExtra, { recursive: true });
+    await mkdir(join(root, '.kimi-code'), { recursive: true });
+    await writeFile(
+      join(root, '.kimi-code', 'local.toml'),
+      `[workspace]\nadditional_dir = ["${legacyExtra}"]\n`,
+      'utf8',
+    );
+
+    const read = await getJson<{ additional_dirs: string[] }>(
+      `/api/v1/workspaces/project-config-dirs?root=${encodeURIComponent(root)}`,
+    );
+    expect(read.body.code).toBe(0);
+    expect(read.body.data.additional_dirs).toEqual([]);
+    expect(await readFile(join(root, '.kimi-code', 'local.toml'), 'utf8')).toContain(
+      'legacy-toml-extra',
+    );
   });
 
   it('sums session_count across legacy split buckets of one root', async () => {
@@ -597,9 +618,9 @@ describe('server-v2 /api/v1/workspaces', () => {
   it('reloads project config when trust initialization recovers to an existing marker', async () => {
     const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-recovery-'));
     try {
-      await mkdir(join(root, '.kimi-code'), { recursive: true });
+      await mkdir(join(root, '.kiko'), { recursive: true });
       await writeFile(
-        join(root, '.kimi-code', 'mcp.json'),
+        join(root, '.kiko', 'mcp.json'),
         JSON.stringify({ mcpServers: { projectOnly: { command: 'project-only' } } }),
         'utf8',
       );
@@ -652,9 +673,9 @@ describe('server-v2 /api/v1/workspaces', () => {
     vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
     const root = await mkdtemp(join(tmpdir(), 'kimi-server-v2-workspaces-trust-env-recovery-'));
     try {
-      await mkdir(join(root, '.kimi-code'), { recursive: true });
+      await mkdir(join(root, '.kiko'), { recursive: true });
       await writeFile(
-        join(root, '.kimi-code', 'mcp.json'),
+        join(root, '.kiko', 'mcp.json'),
         JSON.stringify({ mcpServers: { projectOnly: { command: 'project-only' } } }),
         'utf8',
       );

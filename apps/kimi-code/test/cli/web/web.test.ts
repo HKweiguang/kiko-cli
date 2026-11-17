@@ -471,7 +471,7 @@ describe('`kiko web` opens the browser', () => {
   it('requests foreground shutdown when the relay takes the device offline', async () => {
     const { handleWebCommand } = await import('#/cli/sub/web/run');
     const home = mkdtempSync(join(tmpdir(), 'kimi-web-rc-'));
-    vi.stubEnv('KIMI_CODE_HOME', home);
+    vi.stubEnv('KIKO_HOME', home);
     const { stdout, stderr, readStdout } = makeIo();
     const requestShutdown = vi.fn();
     const runner: ForegroundRunner = async (_options, hooks) => {
@@ -522,7 +522,7 @@ describe('`kiko web` opens the browser', () => {
   it('does not request shutdown when the tunnel closes locally', async () => {
     const { handleWebCommand } = await import('#/cli/sub/web/run');
     const home = mkdtempSync(join(tmpdir(), 'kimi-web-rc-'));
-    vi.stubEnv('KIMI_CODE_HOME', home);
+    vi.stubEnv('KIKO_HOME', home);
     const { stdout, stderr } = makeIo();
     const requestShutdown = vi.fn();
     const runner: ForegroundRunner = async (_options, hooks) => {
@@ -1160,16 +1160,16 @@ describe('`kiko web rotate-token`', () => {
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), 'kimi-rotate-'));
-    prevHome = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = dir;
+    prevHome = process.env['KIKO_HOME'];
+    process.env['KIKO_HOME'] = dir;
     vi.resetModules();
   });
 
   afterEach(() => {
     if (prevHome === undefined) {
-      delete process.env['KIMI_CODE_HOME'];
+      delete process.env['KIKO_HOME'];
     } else {
-      process.env['KIMI_CODE_HOME'] = prevHome;
+      process.env['KIKO_HOME'] = prevHome;
     }
     rmSync(dir, { recursive: true, force: true });
   });

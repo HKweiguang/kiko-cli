@@ -3,7 +3,7 @@ import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 
-import { appRoot, nativeBinPath, nativeSmokeHome, targetTriple } from './paths.mjs';
+import { appRoot, nativeBinPath, nativeDistRoot, nativeSmokeHome, targetTriple } from './paths.mjs';
 
 const execFileAsync = promisify(execFile);
 const target = targetTriple();
@@ -16,6 +16,22 @@ function fail(message) {
   console.error(message);
   process.exit(1);
 }
+
+// Every env-isolated run below must stay inside dist-native: KIKO_HOME must
+// never resolve to the developer's real ~/.kiko data root.
+function assertIsolatedSmokeHome() {
+  const resolved = resolve(smokeHome);
+  const distRoot = `${resolve(nativeDistRoot())}/`;
+  if (!resolved.startsWith(distRoot)) {
+    fail(`native smoke home must stay under ${distRoot}, got ${resolved}`);
+  }
+  const realHome = process.env['HOME'] ?? process.env['USERPROFILE'];
+  if (realHome !== undefined && resolved === resolve(realHome, '.kiko')) {
+    fail(`native smoke home must not be the real data root, got ${resolved}`);
+  }
+}
+
+assertIsolatedSmokeHome();
 
 async function ensureExecutableExists() {
   try {
@@ -214,7 +230,7 @@ await mkdir(smokeCache, { recursive: true });
 try {
   const nativeAssetOutput = await runKimiWithEnv(['--version'], {
     KIMI_CODE_CACHE_DIR: smokeCache,
-    KIMI_CODE_HOME: smokeHome,
+    KIKO_HOME: smokeHome,
     KIMI_CODE_NATIVE_ASSET_SMOKE: '1',
   });
   assertIncludes(nativeAssetOutput, `Native asset smoke passed: ${target}`, 'native asset smoke');
@@ -238,7 +254,7 @@ try {
     'await Promise.resolve();\nconsole.log(`plugin entry ran ${process.argv.slice(2).join(" ")}`);\n',
   );
   const pluginOutput = await runKimiWithEnv(['__plugin_run_node', pluginEntry, 'alpha', 'beta'], {
-    KIMI_CODE_HOME: smokeHome,
+    KIKO_HOME: smokeHome,
     KIMI_PLUGIN_ROOT: pluginRoot,
   });
   assertIncludes(pluginOutput, 'plugin entry ran alpha beta', 'plugin node entry');

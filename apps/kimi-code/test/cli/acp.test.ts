@@ -97,32 +97,27 @@ describe('kiko acp', () => {
         homeDir: '/tmp/kiko-home',
         terminalAuthEnv: {
           KIKO_HOME: '/tmp/kiko-home',
-          KIMI_CODE_HOME: '/tmp/kiko-home',
         },
       }),
     );
   });
 
-  it('falls back to KIMI_CODE_HOME and forwards it under the canonical name', async () => {
+  it('ignores the legacy KIMI_CODE_HOME instead of forwarding it', async () => {
     setHomeEnv(undefined, '/tmp/kimi-debug');
     const program = new Command('kimi').exitOverride();
     registerAcpCommand(program);
 
     await expect(program.parseAsync(['node', 'kimi', 'acp'])).rejects.toThrow(ExitCalled);
 
-    const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0];
-    expect(optsArg).toEqual(
-      expect.objectContaining({
-        homeDir: '/tmp/kimi-debug',
-        terminalAuthEnv: {
-          KIKO_HOME: '/tmp/kimi-debug',
-          KIMI_CODE_HOME: '/tmp/kimi-debug',
-        },
-      }),
-    );
+    const optsArg = vi.mocked(runAcpServer).mock.calls[0]?.[0] as {
+      homeDir?: string;
+      terminalAuthEnv?: unknown;
+    };
+    expect(optsArg.homeDir).toBe(getDataDir());
+    expect(optsArg.terminalAuthEnv).toBeUndefined();
   });
 
-  it('prefers KIKO_HOME over KIMI_CODE_HOME and advertises one effective home', async () => {
+  it('advertises only the canonical KIKO_HOME when both names are set', async () => {
     setHomeEnv('/tmp/kiko-home', '/tmp/kimi-legacy');
     const program = new Command('kimi').exitOverride();
     registerAcpCommand(program);
@@ -135,7 +130,6 @@ describe('kiko acp', () => {
         homeDir: '/tmp/kiko-home',
         terminalAuthEnv: {
           KIKO_HOME: '/tmp/kiko-home',
-          KIMI_CODE_HOME: '/tmp/kiko-home',
         },
       }),
     );

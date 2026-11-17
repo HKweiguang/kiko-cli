@@ -88,7 +88,7 @@ describe('McpManagementService', () => {
 
   beforeEach(() => {
     home = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-home-'));
-    vi.stubEnv('KIMI_CODE_HOME', home);
+    vi.stubEnv('KIKO_HOME', home);
     disposables = new DisposableStore();
     tempDirs = [home];
     httpServers = [];
@@ -460,16 +460,16 @@ describe('McpManagementService', () => {
     ])('rejects %s when a trusted project-layer entry is read-only', async (_operation, mutate) => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-read-only-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({ mcpServers: { local: { command: process.execPath } } }),
         'utf8',
       );
 
       await expect(mutate(project)).rejects.toMatchObject({
         code: ErrorCodes.REQUEST_INVALID,
-        message: `MCP server "local" is read-only: it is defined in ${join(project, '.kimi-code', 'mcp.json')} — edit that file instead`,
+        message: `MCP server "local" is read-only: it is defined in ${join(project, '.kiko', 'mcp.json')} — edit that file instead`,
       });
       await expect(store.list()).resolves.toEqual([]);
     });
@@ -666,9 +666,9 @@ describe('McpManagementService', () => {
     it('lists project-layer entries as read-only redacted views when a cwd is given', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-proj-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             local: {
@@ -687,7 +687,7 @@ describe('McpManagementService', () => {
       expect(local).toMatchObject({
         source: 'global',
         mutable: false,
-        origin: join(project, '.kimi-code', 'mcp.json'),
+        origin: join(project, '.kiko', 'mcp.json'),
       });
       expect(local?.config).toMatchObject({ headerKeys: ['X-Key'] });
       expect(local?.config).not.toHaveProperty('headers');
@@ -700,9 +700,9 @@ describe('McpManagementService', () => {
     it('hides project-layer entries when the workspace is untrusted', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-untrusted-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({ mcpServers: { local: { command: process.execPath } } }),
         'utf8',
       );
@@ -794,9 +794,9 @@ describe('McpManagementService', () => {
     it('does not execute a project server while the workspace is untrusted', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-untrusted-probe-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             local: { command: process.execPath, args: [stdioFixture] },
@@ -1023,9 +1023,9 @@ describe('McpManagementService', () => {
     it('includes trusted project-layer entries when cwd is provided', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-inspect-project-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             local: {
@@ -1195,9 +1195,9 @@ describe('McpManagementService', () => {
     it('resolves a project-layer-only name when cwd is provided', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-resolve-project-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({ mcpServers: { local: { command: process.execPath } } }),
         'utf8',
       );
@@ -1274,9 +1274,9 @@ describe('McpManagementService', () => {
     it('begins authorization against the project-layer URL when cwd is provided', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-begin-project-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             oauthable: {
@@ -1310,9 +1310,9 @@ describe('McpManagementService', () => {
     it('resets credentials for the project-layer URL when cwd is provided', async () => {
       const project = mkdtempSync(join(tmpdir(), 'kimi-mcp-management-reset-project-'));
       tempDirs.push(project);
-      await mkdir(join(project, '.kimi-code'), { recursive: true });
+      await mkdir(join(project, '.kiko'), { recursive: true });
       await writeFile(
-        join(project, '.kimi-code', 'mcp.json'),
+        join(project, '.kiko', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             oauthable: {

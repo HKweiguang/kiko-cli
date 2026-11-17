@@ -168,22 +168,11 @@ describe('ensureRgPath remote environment branch', () => {
       source: 'share-bin-cached',
     });
     expect(probe.exec).toHaveBeenCalledWith(['C:\\Users\\remote\\.kiko\\bin\\rg.exe', '--version']);
+    expect(probe.exec).not.toHaveBeenCalledWith([
+      'C:\\Users\\remote\\.kimi-code\\bin\\rg.exe',
+      '--version',
+    ]);
     expect(environment.fs!.mkdir).not.toHaveBeenCalled();
-  });
-
-  it('falls back to the legacy Windows .kimi-code share bin', async () => {
-    const legacy = 'C:\\Users\\remote\\.kimi-code\\bin\\rg.exe';
-    const probe = probeWith((args) =>
-      args[0] === 'rg' ? -1 : args[0] === legacy ? 0 : -1,
-    );
-    const environment = remoteEnvironment('remote-windows-legacy', {
-      osKind: 'Windows',
-      pathClass: 'win32',
-    });
-
-    const resolution = await ensureRgPath(probe, { environment, allowCachedFallback: true });
-
-    expect(resolution).toEqual({ path: legacy, source: 'share-bin-cached' });
   });
 
   it.each(['x64', 'arm64'])('downloads the target Windows ZIP on a cache miss (%s)', async (osArch) => {
@@ -479,10 +468,10 @@ describe('ensureRgPath download branch', () => {
   it('downloads from the cn CDN by default (no env override, no install marker)', async () => {
     const savedHost = process.env['KIMI_CODE_OAUTH_HOST'];
     const savedLegacyHost = process.env['KIMI_OAUTH_HOST'];
-    const savedHome = process.env['KIMI_CODE_HOME'];
+    const savedHome = process.env['KIKO_HOME'];
     delete process.env['KIMI_CODE_OAUTH_HOST'];
     delete process.env['KIMI_OAUTH_HOST'];
-    process.env['KIMI_CODE_HOME'] = fakeShare;
+    process.env['KIKO_HOME'] = fakeShare;
     try {
       const body = bodyFromBuffer(Buffer.from('not a real archive', 'utf8'));
       const fetchMock = vi.fn().mockResolvedValue({
@@ -504,8 +493,8 @@ describe('ensureRgPath download branch', () => {
       else process.env['KIMI_CODE_OAUTH_HOST'] = savedHost;
       if (savedLegacyHost === undefined) delete process.env['KIMI_OAUTH_HOST'];
       else process.env['KIMI_OAUTH_HOST'] = savedLegacyHost;
-      if (savedHome === undefined) delete process.env['KIMI_CODE_HOME'];
-      else process.env['KIMI_CODE_HOME'] = savedHome;
+      if (savedHome === undefined) delete process.env['KIKO_HOME'];
+      else process.env['KIKO_HOME'] = savedHome;
     }
   });
 

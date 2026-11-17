@@ -171,7 +171,7 @@ describe('WorkspaceMcpConfigService', () => {
   }
 
   async function writeProjectConfig(servers: Record<string, McpServerConfig>): Promise<string> {
-    const dir = join(cwd, '.kimi-code');
+    const dir = join(cwd, '.kiko');
     await mkdir(dir, { recursive: true });
     const file = join(dir, 'mcp.json');
     await writeFile(file, JSON.stringify({ mcpServers: servers }), 'utf8');
@@ -525,7 +525,7 @@ describe('WorkspaceMcpConfigService', () => {
       await serviceB.ready;
       await writeProjectConfig({});
       watchFires.get(cwd)?.fire({
-        path: join(cwd, '.kimi-code', 'mcp.json'),
+        path: join(cwd, '.kiko', 'mcp.json'),
         action: 'modified',
         kind: 'file',
       });
@@ -734,7 +734,7 @@ describe('WorkspaceMcpConfigService', () => {
 
       changes = [];
       await writeProjectConfig({ second: stdioConfig('updated') });
-      watcher!.fire({ path: join(next, '.kimi-code', 'mcp.json'), action: 'modified', kind: 'file' });
+      watcher!.fire({ path: join(next, '.kiko', 'mcp.json'), action: 'modified', kind: 'file' });
       await vi.waitFor(() => {
         expect(service.servers()).toEqual({ second: stdioConfig('updated') });
       });

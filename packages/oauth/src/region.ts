@@ -20,7 +20,7 @@
  *   5. default 'mainland-cn'
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -136,7 +136,7 @@ export interface ResolveKimiRegionOptions {
    * install-channel marker.
    */
   readonly configuredOAuthKey?: string;
-  /** Kimi home dir; defaults to `KIKO_HOME`, legacy `KIMI_CODE_HOME`, or `~/.kiko` (legacy `~/.kimi-code`). */
+  /** Kimi home dir; defaults to `KIKO_HOME` or `~/.kiko`. */
   readonly homeDir?: string;
   /**
    * Set false to skip the install-channel marker (e.g. the desktop app's
@@ -172,32 +172,9 @@ export function readKimiRegionMarker(homeDir: string): KimiRegion | undefined {
 // Mirrors `defaultKimiHome` in ./toolkit; keep the two in sync so the marker
 // always lands next to the credentials dir it describes.
 function defaultHomeDir(env: NodeJS.ProcessEnv): string {
-  const override = nonEmpty(env['KIKO_HOME']) ?? nonEmpty(env['KIMI_CODE_HOME']);
+  const override = nonEmpty(env['KIKO_HOME']);
   if (override !== undefined) return override;
-  const osHome = homedir();
-  const canonical = join(osHome, '.kiko');
-  if (isCompletedKimiHome(canonical)) return canonical;
-  const legacy = join(osHome, '.kimi-code');
-  if (isDirectory(legacy)) return legacy;
-  return canonical;
-}
-
-function isCompletedKimiHome(homeDir: string): boolean {
-  try {
-    if (!statSync(homeDir).isDirectory()) return false;
-    if (existsSync(join(homeDir, '.kiko-migration.json'))) return true;
-    return readdirSync(homeDir).length > 0;
-  } catch {
-    return false;
-  }
-}
-
-function isDirectory(path: string): boolean {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
-  }
+  return join(homedir(), '.kiko');
 }
 
 function nonEmpty(value: string | undefined): string | undefined {

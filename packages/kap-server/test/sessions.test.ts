@@ -1439,9 +1439,9 @@ describe('server-v2 /api/v1/sessions', () => {
     });
     try {
       vi.stubEnv('KIMI_CODE_TRUST_WORKSPACE', '1');
-      await mkdir(join(cwd, '.kimi-code'), { recursive: true });
+      await mkdir(join(cwd, '.kiko'), { recursive: true });
       await writeFile(
-        join(cwd, '.kimi-code', 'mcp.json'),
+        join(cwd, '.kiko', 'mcp.json'),
         JSON.stringify({
           mcpServers: {
             fixture: {

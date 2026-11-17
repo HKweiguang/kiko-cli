@@ -118,39 +118,76 @@ describe('FileProjectLocalConfigService permissionRules', () => {
 });
 
 describe('FileProjectLocalConfigService project .kiko directory', () => {
-  it('reads a legacy .kimi-code/local.toml and carries its rules into .kiko on write', async () => {
+  function serviceWithHostFs(): FileProjectLocalConfigService {
+    return new FileProjectLocalConfigService(
+      { _serviceBrand: undefined, osHomeDir: '' } as never,
+      new HostFileSystem(),
+    );
+  }
+
+  function permissionToml(rule: { decision: string; scope: string; pattern: string }): string {
+    return `[workspace]\nadditional_dir = []\n\n[[permission.rules]]\ndecision = "${rule.decision}"\nscope = "${rule.scope}"\npattern = "${rule.pattern}"\n`;
+  }
+
+  it('reads .kiko/local.toml rules and reports the canonical config path', async () => {
+    const repo = mkdtempSync(join(tmpdir(), 'kiko-project-local-'));
+    try {
+      mkdirSync(join(repo, '.git'), { recursive: true });
+      mkdirSync(join(repo, '.kiko'), { recursive: true });
+      const rule = { decision: 'deny', scope: 'project', pattern: 'Bash(git push *)' };
+      const canonicalConfig = join(repo, '.kiko', 'local.toml');
+      writeFileSync(canonicalConfig, permissionToml(rule));
+
+      const described = await serviceWithHostFs().readPermissionRules(repo);
+
+      expect(described.configPath).toBe(canonicalConfig);
+      expect(described.rules).toEqual([rule]);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it('ignores a legacy .kimi-code/local.toml', async () => {
     const repo = mkdtempSync(join(tmpdir(), 'kiko-project-local-'));
     try {
       mkdirSync(join(repo, '.git'), { recursive: true });
       mkdirSync(join(repo, '.kimi-code'), { recursive: true });
-      const legacyRule = {
-        decision: 'deny',
-        scope: 'project',
-        pattern: 'Bash(git push *)',
-      };
+      const legacyConfig = join(repo, '.kimi-code', 'local.toml');
+      writeFileSync(
+        legacyConfig,
+        permissionToml({ decision: 'deny', scope: 'project', pattern: 'Bash(git push *)' }),
+      );
+
+      const described = await serviceWithHostFs().readPermissionRules(repo);
+
+      expect(described.configPath).toBe(join(repo, '.kiko', 'local.toml'));
+      expect(described.rules).toEqual([]);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it('writes .kiko/local.toml without carrying legacy .kimi-code rules over', async () => {
+    const repo = mkdtempSync(join(tmpdir(), 'kiko-project-local-'));
+    try {
+      mkdirSync(join(repo, '.git'), { recursive: true });
+      mkdirSync(join(repo, '.kimi-code'), { recursive: true });
       const added = { decision: 'allow', scope: 'project', pattern: 'Read(**)' };
       const legacyConfig = join(repo, '.kimi-code', 'local.toml');
       const canonicalConfig = join(repo, '.kiko', 'local.toml');
       writeFileSync(
         legacyConfig,
-        '[workspace]\nadditional_dir = []\n\n[[permission.rules]]\ndecision = "deny"\nscope = "project"\npattern = "Bash(git push *)"\n',
-      );
-      const service = new FileProjectLocalConfigService(
-        { _serviceBrand: undefined, osHomeDir: '' } as never,
-        new HostFileSystem(),
+        permissionToml({ decision: 'deny', scope: 'project', pattern: 'Bash(git push *)' }),
       );
 
-      const described = await service.readPermissionRules(repo);
-      expect(described.configPath).toBe(legacyConfig);
-      expect(described.rules).toEqual([legacyRule]);
+      const appended = await serviceWithHostFs().appendPermissionRules(repo, [added]);
 
-      const appended = await service.appendPermissionRules(repo, [added]);
       expect(appended.configPath).toBe(canonicalConfig);
-      expect(appended.rules).toEqual([legacyRule, added]);
+      expect(appended.rules).toEqual([added]);
       expect(parseToml(readFileSync(canonicalConfig, 'utf-8'))).toMatchObject({
-        permission: { rules: [legacyRule, added] },
+        permission: { rules: [added] },
       });
-      expect(readFileSync(legacyConfig, 'utf-8')).not.toContain('Read(**)');
+      expect(readFileSync(legacyConfig, 'utf-8')).toContain('Bash(git push *)');
     } finally {
       rmSync(repo, { recursive: true, force: true });
     }

@@ -118,7 +118,7 @@ describe('Session skills', () => {
       'Review with secondary rules.',
     ]);
     await writeFile(
-      join(workDir, '.kimi-code', 'local.toml'),
+      join(workDir, '.kiko', 'local.toml'),
       `[workspace]\nadditional_dir = [${JSON.stringify(additionalDir)}]\n`,
     );
     const harness = createKimiHarness({ homeDir, identity: TEST_IDENTITY });
@@ -215,7 +215,7 @@ describe('Session skills', () => {
         source: 'project',
         disableModelInvocation: true,
       });
-      expect(listed?.path.endsWith('/.kimi-code/skills/review/SKILL.md')).toBe(true);
+      expect(listed?.path.endsWith('/.kiko/skills/review/SKILL.md')).toBe(true);
       expect(JSON.stringify(skills)).not.toContain('Review the requested file.');
     } finally {
       await harness.close();
@@ -286,14 +286,17 @@ describe('Session skills', () => {
     }
   });
 
-  it('resolves user brand skills from KIMI_CODE_HOME, not the OS home', async () => {
+  it('resolves user brand skills from KIKO_HOME, not the OS home or legacy KIMI_CODE_HOME', async () => {
     const homeDir = await makeTempDir(tempDirs, 'kimi-sdk-skills-home-');
     const processHome = await makeTempDir(tempDirs, 'kimi-sdk-skills-process-home-');
+    const legacyEnvHome = await makeTempDir(tempDirs, 'kimi-sdk-skills-legacy-env-');
     const workDir = await makeTempDir(tempDirs, 'kimi-sdk-skills-work-');
     vi.stubEnv('HOME', processHome);
-    vi.stubEnv('KIMI_CODE_HOME', homeDir);
+    vi.stubEnv('KIKO_HOME', homeDir);
+    vi.stubEnv('KIMI_CODE_HOME', legacyEnvHome);
     await writeLegacyUserSkill(processHome, 'sdk-real-home-only', 'SDK real home skill');
     await writeBrandUserSkill(homeDir, 'sdk-sandbox-only', 'SDK sandbox skill');
+    await writeBrandUserSkill(legacyEnvHome, 'sdk-legacy-env-only', 'SDK legacy env skill');
     const harness = createKimiHarness({ identity: TEST_IDENTITY });
 
     try {
@@ -301,6 +304,7 @@ describe('Session skills', () => {
       const names = new Set((await session.listSkills()).map((skill) => skill.name));
 
       expect(names.has('sdk-real-home-only')).toBe(false);
+      expect(names.has('sdk-legacy-env-only')).toBe(false);
       expect(names.has('sdk-sandbox-only')).toBe(true);
     } finally {
       await harness.close();
@@ -480,7 +484,7 @@ describe('KimiHarness workspace skills', () => {
 });
 
 async function writeSkill(workDir: string, name: string, lines: readonly string[]): Promise<void> {
-  const dir = join(workDir, '.kimi-code', 'skills', name);
+  const dir = join(workDir, '.kiko', 'skills', name);
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, 'SKILL.md'), lines.join('\n'));
 }

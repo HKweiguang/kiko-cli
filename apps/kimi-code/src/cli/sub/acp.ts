@@ -9,10 +9,9 @@
  *  - `--login` pivots into the shared device-code login flow (the entry point
  *    ACP clients hit via the first-class `AuthMethodTerminal` path, re-invoking
  *    the agent binary with the advertised `args:['--login']`).
- *  - The effective data home (`KIKO_HOME`, falling back to the legacy
- *    `KIMI_CODE_HOME`) is forwarded into `authMethods[0].env` so the login
- *    subprocess writes its token under the same data root the server reads
- *    from, and `process.argv[1]` is advertised as the legacy
+ *  - `KIKO_HOME` (if set) is forwarded into `authMethods[0].env` so the
+ *    login subprocess writes its token under the same data root the server
+ *    reads from, and `process.argv[1]` is advertised as the legacy
  *    `_meta['terminal-auth'].command` fallback.
  *
  * `@moonshot-ai/acp-server` (and its `agent-core-v2` engine) is loaded via a
@@ -23,7 +22,7 @@
 import type { Command } from 'commander';
 
 import { getVersion } from '#/cli/version';
-import { KIKO_HOME_ENV, KIMI_CODE_HOME_ENV } from '#/constant/app';
+import { KIKO_HOME_ENV } from '#/constant/app';
 import { getDataDir } from '#/utils/paths';
 
 import { parseRegionFlag, runLoginFlow } from './login-flow';
@@ -63,18 +62,14 @@ export function registerAcpCommand(parent: Command): void {
         });
         return;
       }
-      // Forward the effective data home into `authMethods[0].env` so the
-      // login subprocess clients spawn for terminal-auth writes its token
-      // under the same data root the ACP server reads from. `KIKO_HOME` is
-      // canonical; the legacy `KIMI_CODE_HOME` is still honored, and both
-      // names are advertised so older binaries and newer ones agree.
-      const sandboxHome = [process.env[KIKO_HOME_ENV], process.env[KIMI_CODE_HOME_ENV]].find(
-        (value): value is string => value !== undefined && value.length > 0,
-      );
+      // Forward `KIKO_HOME` (if set) into `authMethods[0].env` so the login
+      // subprocess clients spawn for terminal-auth writes its token under the
+      // same data root the ACP server reads from.
+      const sandboxHome = process.env[KIKO_HOME_ENV];
       const terminalAuthEnv =
-        sandboxHome === undefined
-          ? undefined
-          : { [KIKO_HOME_ENV]: sandboxHome, [KIMI_CODE_HOME_ENV]: sandboxHome };
+        sandboxHome !== undefined && sandboxHome.length > 0
+          ? { [KIKO_HOME_ENV]: sandboxHome }
+          : undefined;
       // Legacy `_meta.terminal-auth` fallback for clients that don't yet
       // honor the first-class `type:'terminal'`. `command` is the absolute
       // path to this very binary so the client can spawn it for login.

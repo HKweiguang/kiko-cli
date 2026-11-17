@@ -227,7 +227,7 @@ describe('plugins command capability surface', () => {
         setMarketplaceCatalogVersions: vi.fn(),
         setMarketplaceError: vi.fn(),
       } as never;
-      vi.stubEnv('KIMI_CODE_HOME', home);
+      vi.stubEnv('KIKO_HOME', home);
       vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
         plugins: [{
           id: 'demo',

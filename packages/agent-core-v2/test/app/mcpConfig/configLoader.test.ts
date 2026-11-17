@@ -41,7 +41,6 @@ describe('resolveMcpJsonPaths', () => {
     expect(paths.user).toBe('/home/user/.kiko/mcp.json');
     expect(paths.projectRoot).toBe(join(repoRoot, '.mcp.json'));
     expect(paths.project).toBe(join(cwd, '.kiko', 'mcp.json'));
-    expect(paths.legacyProject).toBe(join(cwd, '.kimi-code', 'mcp.json'));
   });
 });
 
@@ -105,7 +104,7 @@ describe('loadMcpServers', () => {
     });
   });
 
-  it('prefers .kiko/mcp.json over the legacy .kimi-code/mcp.json', async () => {
+  it('ignores the legacy .kimi-code/mcp.json', async () => {
     const home = makeTempDir();
     const cwd = makeTempDir();
 
@@ -121,13 +120,14 @@ describe('loadMcpServers', () => {
       },
     });
 
-    const servers = await loadMcpServers({ fs, cwd, homeDir: home });
+    const loaded = await loadMcpServersDetailed({ fs, cwd, homeDir: home });
 
-    expect(servers['shared']).toEqual({ transport: 'stdio', command: 'canonical' });
-    expect(servers['legacyOnly']).toEqual({ transport: 'stdio', command: 'legacy-only' });
+    expect(loaded.servers['shared']).toEqual({ transport: 'stdio', command: 'canonical' });
+    expect(loaded.servers['legacyOnly']).toBeUndefined();
+    expect(Object.values(loaded.origins)).not.toContain(join(cwd, '.kimi-code', 'mcp.json'));
   });
 
-  it('reports the legacy file as the origin of servers only it declares', async () => {
+  it('does not read servers from a legacy-only .kimi-code/mcp.json', async () => {
     const home = makeTempDir();
     const cwd = makeTempDir();
     await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
@@ -136,7 +136,8 @@ describe('loadMcpServers', () => {
 
     const loaded = await loadMcpServersDetailed({ fs, cwd, homeDir: home });
 
-    expect(loaded.origins['legacyOnly']).toBe(join(cwd, '.kimi-code', 'mcp.json'));
+    expect(loaded.servers).toEqual({});
+    expect(loaded.origins).toEqual({});
   });
 
   it('loads only the user file when includeProject is false (untrusted workspace)', async () => {
@@ -158,7 +159,7 @@ describe('loadMcpServers', () => {
         rootOnly: { command: 'root-only' },
       },
     });
-    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+    await writeJson(join(cwd, '.kiko', 'mcp.json'), {
       mcpServers: {
         shared: { transport: 'stdio', command: 'shared-project' },
         projectOnly: { transport: 'http', url: 'https://mcp.example.com' },
@@ -193,7 +194,7 @@ describe('loadMcpServers', () => {
         rootOnly: { command: 'root-only' },
       },
     });
-    await writeJson(join(cwd, '.kimi-code', 'mcp.json'), {
+    await writeJson(join(cwd, '.kiko', 'mcp.json'), {
       mcpServers: {
         shared: { transport: 'stdio', command: 'shared-project' },
         projectOnly: { transport: 'http', url: 'https://mcp.example.com' },
@@ -410,20 +411,29 @@ describe('loadMcpServers', () => {
     });
   });
 
-  it('honors KIMI_CODE_HOME env var when homeDir is not supplied', async () => {
+  it('honors KIKO_HOME and ignores KIMI_CODE_HOME when homeDir is not supplied', async () => {
     const home = makeTempDir();
+    const legacy = makeTempDir();
     const cwd = makeTempDir();
     await writeJson(join(home, 'mcp.json'), {
       mcpServers: { from_env: { transport: 'stdio', command: 'env-cmd' } },
     });
-    const saved = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = home;
+    await writeJson(join(legacy, 'mcp.json'), {
+      mcpServers: { from_legacy: { transport: 'stdio', command: 'legacy-cmd' } },
+    });
+    const savedKiko = process.env['KIKO_HOME'];
+    const savedLegacy = process.env['KIMI_CODE_HOME'];
+    process.env['KIKO_HOME'] = home;
+    process.env['KIMI_CODE_HOME'] = legacy;
     try {
       const servers = await loadMcpServers({ fs, cwd });
       expect(servers['from_env']).toEqual({ transport: 'stdio', command: 'env-cmd' });
+      expect(servers['from_legacy']).toBeUndefined();
     } finally {
-      if (saved === undefined) delete process.env['KIMI_CODE_HOME'];
-      else process.env['KIMI_CODE_HOME'] = saved;
+      if (savedKiko === undefined) delete process.env['KIKO_HOME'];
+      else process.env['KIKO_HOME'] = savedKiko;
+      if (savedLegacy === undefined) delete process.env['KIMI_CODE_HOME'];
+      else process.env['KIMI_CODE_HOME'] = savedLegacy;
     }
   });
 });

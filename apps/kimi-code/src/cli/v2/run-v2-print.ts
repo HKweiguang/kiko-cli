@@ -546,7 +546,7 @@ export async function listTrustGatedMcpServers(
       resolveMcpJsonPaths({ fs, cwd: workDir, homeDir }),
       loadMcpServersDetailed({ fs, cwd: workDir, homeDir, includeProject: true }),
     ]);
-    const projectPaths = new Set([paths.projectRoot, paths.project, paths.legacyProject]);
+    const projectPaths = new Set([paths.projectRoot, paths.project]);
     return Object.entries(loaded.servers)
       .filter(([name]) => projectPaths.has(loaded.origins[name] ?? ''))
       .map(([name, config]) => ({ name, target: describeMcpTarget(config) }))

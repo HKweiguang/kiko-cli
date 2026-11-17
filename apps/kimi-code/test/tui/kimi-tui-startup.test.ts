@@ -514,8 +514,8 @@ describe('KimiTUI startup', () => {
 
   it('reports the legacy survey setting migration and applies the migrated value', async () => {
     const homeDir = mkdtempSync(join(tmpdir(), 'kimi-tui-survey-home-'));
-    const previousHome = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = homeDir;
+    const previousHome = process.env['KIKO_HOME'];
+    process.env['KIKO_HOME'] = homeDir;
     try {
       writeFileSync(join(homeDir, 'tui.toml'), 'disable_feedback_survey = true\n');
       const setConfig = vi.fn(async () => ({}));
@@ -549,8 +549,8 @@ describe('KimiTUI startup', () => {
         'disable_feedback_survey',
       );
     } finally {
-      if (previousHome === undefined) delete process.env['KIMI_CODE_HOME'];
-      else process.env['KIMI_CODE_HOME'] = previousHome;
+      if (previousHome === undefined) delete process.env['KIKO_HOME'];
+      else process.env['KIKO_HOME'] = previousHome;
       rmSync(homeDir, { recursive: true, force: true });
     }
   });
@@ -562,8 +562,8 @@ describe('KimiTUI startup', () => {
     'reports $action for the legacy survey setting migration',
     async ({ legacy, configured, action, reportedConfigured }) => {
       const homeDir = mkdtempSync(join(tmpdir(), 'kimi-tui-survey-home-'));
-      const previousHome = process.env['KIMI_CODE_HOME'];
-      process.env['KIMI_CODE_HOME'] = homeDir;
+      const previousHome = process.env['KIKO_HOME'];
+      process.env['KIKO_HOME'] = homeDir;
       try {
         writeFileSync(join(homeDir, 'tui.toml'), `disable_feedback_survey = ${String(legacy)}\n`);
         const setConfig = vi.fn(async () => ({}));
@@ -597,8 +597,8 @@ describe('KimiTUI startup', () => {
           'disable_feedback_survey',
         );
       } finally {
-        if (previousHome === undefined) delete process.env['KIMI_CODE_HOME'];
-        else process.env['KIMI_CODE_HOME'] = previousHome;
+        if (previousHome === undefined) delete process.env['KIKO_HOME'];
+        else process.env['KIKO_HOME'] = previousHome;
         rmSync(homeDir, { recursive: true, force: true });
       }
     },
@@ -3819,7 +3819,7 @@ describe('KimiTUI startup', () => {
   it('writes display state after rendering a once banner', async () => {
     const originalEnv = { ...process.env };
     const dir = mkdtempSync(join(tmpdir(), 'kimi-startup-banner-'));
-    process.env['KIMI_CODE_HOME'] = dir;
+    process.env['KIKO_HOME'] = dir;
 
     try {
       const banner = {
@@ -3873,7 +3873,7 @@ describe('KimiTUI startup', () => {
   it('does not write display state for an always banner', async () => {
     const originalEnv = { ...process.env };
     const dir = mkdtempSync(join(tmpdir(), 'kimi-startup-banner-'));
-    process.env['KIMI_CODE_HOME'] = dir;
+    process.env['KIKO_HOME'] = dir;
 
     try {
       const banner = {

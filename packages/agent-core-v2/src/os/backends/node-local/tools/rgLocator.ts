@@ -11,14 +11,13 @@ import { type Entry, fromBuffer as yauzlFromBuffer } from 'yauzl';
 import { basename, dirname, join } from 'pathe';
 
 import { abortable } from '#/_base/utils/abort';
-import { resolveKimiHome } from '#/app/bootstrap/homeMigration';
+import { resolveKimiHome } from '#/app/bootstrap/home';
 import { ErrorCodes, Error2 } from '#/errors';
 import { LOCAL_ENVIRONMENT_ID, type Environment } from '#/environment/environment';
 import {
   getShareBinRgPath,
   isRemoteEnvironment,
   shareBinRgPath,
-  shareBinRgPaths,
 } from '#/environment/shareBinRg';
 
 export { getShareBinRgPath } from '#/environment/shareBinRg';
@@ -142,13 +141,10 @@ async function resolveRemoteRgPath(
     throw new Error2(ErrorCodes.OS_FS_UNAVAILABLE, 'ripgrep (rg) is not available on PATH');
   }
   throwIfAborted(options.signal);
-  const binPaths = shareBinRgPaths(environment);
-  const binPath = binPaths[0]!;
+  const binPath = shareBinRgPath(environment);
   const binDir = environment.path?.dirname(binPath) ?? dirname(binPath);
-  for (const candidate of binPaths) {
-    const cached = await probe.exec([candidate, '--version']).catch(() => ({ exitCode: -1 }));
-    if (cached.exitCode === 0) return { path: candidate, source: 'share-bin-cached' };
-  }
+  const cached = await probe.exec([binPath, '--version']).catch(() => ({ exitCode: -1 }));
+  if (cached.exitCode === 0) return { path: binPath, source: 'share-bin-cached' };
   throwIfAborted(options.signal);
   await installRemoteRg(probe, environment, binDir, binPath, options.resolveRegion);
   const installed = await probe.exec([binPath, '--version']).catch(() => ({ exitCode: -1 }));

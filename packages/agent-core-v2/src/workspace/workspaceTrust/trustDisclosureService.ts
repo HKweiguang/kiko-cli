@@ -112,7 +112,7 @@ export class WorkspaceTrustDisclosureService implements IWorkspaceTrustDisclosur
       resolveMcpJsonPaths({ fs: this.fs, cwd, homeDir }),
       loadMcpServersDetailed({ fs: this.fs, cwd, homeDir, includeProject: true }),
     ]);
-    const projectPaths = new Set([paths.projectRoot, paths.project, paths.legacyProject]);
+    const projectPaths = new Set([paths.projectRoot, paths.project]);
     const servers = Object.entries(loaded.servers)
       .filter(([name]) => projectPaths.has(loaded.origins[name] ?? ''))
       .filter(([, config]) => config.enabled !== false)

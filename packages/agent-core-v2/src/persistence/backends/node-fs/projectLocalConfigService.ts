@@ -5,7 +5,7 @@ import { parse as parseToml, stringify as stringifyToml } from 'smol-toml';
 import { z } from 'zod';
 import { LifecycleScope } from '#/app/scopes';
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
-import { IBootstrapService, KIKO_DATA_DIR_NAME, LEGACY_KIMI_CODE_DATA_DIR_NAME } from '#/app/bootstrap/bootstrap';
+import { IBootstrapService, KIKO_DATA_DIR_NAME } from '#/app/bootstrap/bootstrap';
 import {
   IProjectLocalConfigService,
   type ProjectAdditionalDirsLoadResult,
@@ -39,7 +39,7 @@ export class FileProjectLocalConfigService implements IProjectLocalConfigService
 
   async readAdditionalDirs(workDir: string): Promise<ProjectAdditionalDirsLoadResult> {
     const projectRoot = await this.findProjectRoot(workDir);
-    const configPath = await this.resolveProjectLocalConfigPath(projectRoot);
+    const configPath = this.getProjectLocalConfigPath(projectRoot);
     const file = await this.readProjectLocalToml(configPath);
 
     const additionalDirs = file?.parsed.workspace?.additional_dir;
@@ -60,7 +60,7 @@ export class FileProjectLocalConfigService implements IProjectLocalConfigService
 
   async readPermissionRules(workDir: string): Promise<ProjectPermissionRulesLoadResult> {
     const projectRoot = await this.findProjectRoot(workDir);
-    const configPath = await this.resolveProjectLocalConfigPath(projectRoot);
+    const configPath = this.getProjectLocalConfigPath(projectRoot);
     const file = await this.readProjectLocalToml(configPath);
     return { projectRoot, configPath, rules: readRawPermissionRules(file?.raw) };
   }
@@ -73,12 +73,7 @@ export class FileProjectLocalConfigService implements IProjectLocalConfigService
     const configPath = this.getProjectLocalConfigPath(projectRoot);
     return enqueuePermissionWrite(configPath, async () => {
       await this.assertNoSymlinks(projectRoot, configPath);
-      const file =
-        (await this.readProjectLocalToml(configPath)) ??
-        (await this.readProjectLocalToml(this.getLegacyProjectLocalConfigPath(projectRoot))) ?? {
-          raw: {},
-          parsed: {},
-        };
+      const file = (await this.readProjectLocalToml(configPath)) ?? { raw: {}, parsed: {} };
       const existing = readRawPermissionRules(file.raw);
       const permission = cloneRecord(file.raw['permission']);
       permission['rules'] = [...existing, ...rules];
@@ -127,18 +122,6 @@ export class FileProjectLocalConfigService implements IProjectLocalConfigService
 
   private getProjectLocalConfigPath(projectRoot: string): string {
     return join(projectRoot, KIKO_DATA_DIR_NAME, 'local.toml');
-  }
-
-  private getLegacyProjectLocalConfigPath(projectRoot: string): string {
-    return join(projectRoot, LEGACY_KIMI_CODE_DATA_DIR_NAME, 'local.toml');
-  }
-
-  private async resolveProjectLocalConfigPath(projectRoot: string): Promise<string> {
-    const canonical = this.getProjectLocalConfigPath(projectRoot);
-    if (await this.pathExists(canonical)) return canonical;
-    const legacy = this.getLegacyProjectLocalConfigPath(projectRoot);
-    if (await this.pathExists(legacy)) return legacy;
-    return canonical;
   }
 
   private async findProjectRoot(workDir: string): Promise<string> {

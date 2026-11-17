@@ -165,9 +165,9 @@ async function writeProjectMcpJson(
   cwd: string,
   servers: Record<string, unknown>,
 ): Promise<void> {
-  await mkdir(join(cwd, '.kimi-code'), { recursive: true });
+  await mkdir(join(cwd, '.kiko'), { recursive: true });
   await writeFile(
-    join(cwd, '.kimi-code', 'mcp.json'),
+    join(cwd, '.kiko', 'mcp.json'),
     JSON.stringify({ mcpServers: servers }),
     'utf8',
   );

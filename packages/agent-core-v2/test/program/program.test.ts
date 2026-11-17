@@ -369,7 +369,7 @@ async function localityFixture(options: { readonly remoteCwd?: string } = {}): P
   const remoteCwd = 'remoteCwd' in options ? options.remoteCwd : remoteRoot;
   const homeDir = join(base, 'home');
   const remoteHomeDir = join(base, 'remote-home');
-  const kimiHome = join(homeDir, '.kimi-code');
+  const kimiHome = join(homeDir, '.kiko');
   await mkdir(localRoot, { recursive: true });
   await mkdir(remoteRoot, { recursive: true });
   await mkdir(remoteAltRoot, { recursive: true });
@@ -386,28 +386,28 @@ async function localityFixture(options: { readonly remoteCwd?: string } = {}): P
     await mkdir(join(root, 'skills', name), { recursive: true });
     await writeFile(join(root, 'skills', name, 'SKILL.md'), `---\nname: ${name}\ndescription: ${name}\n---\nbody`);
   };
-  await writeSkill(join(localRoot, '.kimi-code'), 'local-skill');
-  await writeSkill(join(remoteRoot, '.kimi-code'), 'target-skill');
+  await writeSkill(join(localRoot, '.kiko'), 'local-skill');
+  await writeSkill(join(remoteRoot, '.kiko'), 'target-skill');
   await writeSkill(kimiHome, 'user-skill');
 
   const writeAgent = async (dir: string, name: string): Promise<void> => {
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, `${name}.md`), `---\nname: ${name}\ndescription: ${name}\n---\n\nYou are ${name}.\n`);
   };
-  await writeAgent(join(localRoot, '.kimi-code', 'agents'), 'local-agent');
-  await writeAgent(join(remoteRoot, '.kimi-code', 'agents'), 'target-agent');
-  await writeAgent(join(remoteAltRoot, '.kimi-code', 'agents'), 'alt-agent');
+  await writeAgent(join(localRoot, '.kiko', 'agents'), 'local-agent');
+  await writeAgent(join(remoteRoot, '.kiko', 'agents'), 'target-agent');
+  await writeAgent(join(remoteAltRoot, '.kiko', 'agents'), 'alt-agent');
   await writeAgent(join(kimiHome, 'agents'), 'user-agent');
 
   await mkdir(join(localRoot, 'localextra'), { recursive: true });
   await mkdir(join(remoteRoot, 'targetextra'), { recursive: true });
   await mkdir(join(remoteAltRoot, 'altextra'), { recursive: true });
-  await mkdir(join(localRoot, '.kimi-code'), { recursive: true });
-  await mkdir(join(remoteRoot, '.kimi-code'), { recursive: true });
-  await mkdir(join(remoteAltRoot, '.kimi-code'), { recursive: true });
-  await writeFile(join(localRoot, '.kimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["localextra"]\n');
-  await writeFile(join(remoteRoot, '.kimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["targetextra"]\n');
-  await writeFile(join(remoteAltRoot, '.kimi-code', 'local.toml'), '[workspace]\nadditional_dir = ["altextra"]\n');
+  await mkdir(join(localRoot, '.kiko'), { recursive: true });
+  await mkdir(join(remoteRoot, '.kiko'), { recursive: true });
+  await mkdir(join(remoteAltRoot, '.kiko'), { recursive: true });
+  await writeFile(join(localRoot, '.kiko', 'local.toml'), '[workspace]\nadditional_dir = ["localextra"]\n');
+  await writeFile(join(remoteRoot, '.kiko', 'local.toml'), '[workspace]\nadditional_dir = ["targetextra"]\n');
+  await writeFile(join(remoteAltRoot, '.kiko', 'local.toml'), '[workspace]\nadditional_dir = ["altextra"]\n');
 
   const mcpJson = (name: string): string => JSON.stringify({ mcpServers: { [name]: { command: 'echo' } } });
   await writeFile(join(localRoot, '.mcp.json'), mcpJson('local-project-server'));
@@ -686,7 +686,7 @@ describe('Program local generation and remote workdirs', () => {
       await mkdir(join(fixture.remoteHomeDir, 'shared'), { recursive: true });
       await mkdir(join(fixture.homeDir, 'shared'), { recursive: true });
       await writeFile(
-        join(fixture.remoteRoot, '.kimi-code', 'local.toml'),
+        join(fixture.remoteRoot, '.kiko', 'local.toml'),
         '[workspace]\nadditional_dir = ["~/shared"]\n',
       );
       const remote = await fixture.workdir(fixture.remoteRoot);

@@ -17,7 +17,7 @@ coverage/
 plugins/cdn/
 .worktrees/
 .tower/
-.kimi-code/local.toml
+.kimi-code/
 .kiko/local.toml
 .kimi-sandbox/
 .vscode/

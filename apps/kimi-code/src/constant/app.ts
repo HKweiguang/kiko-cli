@@ -50,8 +50,6 @@ export const NPM_PACKAGE_NAME = '@moonshot-ai/kimi-code';
 // App-owned data paths. SDK/core runtime config is intentionally not routed here.
 export const KIKO_HOME_ENV = 'KIKO_HOME';
 export const KIKO_DATA_DIR_NAME = '.kiko';
-export const KIMI_CODE_HOME_ENV = 'KIMI_CODE_HOME';
-export const KIMI_CODE_DATA_DIR_NAME = '.kimi-code';
 export const KIMI_CODE_LOG_DIR_NAME = 'logs';
 export const KIMI_CODE_CACHE_DIR_NAME = 'cache';
 export const KIMI_CODE_UPDATE_DIR_NAME = 'updates';

@@ -119,14 +119,14 @@ describe('rg-unavailable guidance', () => {
   let savedHome: string | undefined;
   beforeEach(() => {
     ensureRgPathMock.mockReset();
-    savedHome = process.env['KIMI_CODE_HOME'];
-    process.env['KIMI_CODE_HOME'] = '/kimi-home-test';
+    savedHome = process.env['KIKO_HOME'];
+    process.env['KIKO_HOME'] = '/kimi-home-test';
   });
   afterEach(() => {
     if (savedHome === undefined) {
-      delete process.env['KIMI_CODE_HOME'];
+      delete process.env['KIKO_HOME'];
     } else {
-      process.env['KIMI_CODE_HOME'] = savedHome;
+      process.env['KIKO_HOME'] = savedHome;
     }
   });
 

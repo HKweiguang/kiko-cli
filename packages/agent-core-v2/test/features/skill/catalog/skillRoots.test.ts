@@ -39,48 +39,22 @@ describe('skillRoots', () => {
       );
     });
 
-    it('dual-reads the legacy .kimi-code/skills directory', async () => {
+    it('ignores the legacy .kimi-code/skills directory', async () => {
       await markGitRoot();
       await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
 
       const roots = await projectRoots(root);
 
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills') && r.source === 'project')).toBe(
-        true,
-      );
+      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills'))).toBe(false);
     });
 
-    it('orders .kiko/skills before the legacy .kimi-code/skills directory', async () => {
-      await markGitRoot();
-      await mkdir(join(root, '.kiko/skills'), { recursive: true });
-      await mkdir(join(root, '.kimi-code/skills'), { recursive: true });
-
-      const roots = await projectRoots(root);
-      const canonicalIdx = roots.findIndex((r) => r.path.endsWith('.kiko/skills'));
-      const legacyIdx = roots.findIndex((r) => r.path.endsWith('.kimi-code/skills'));
-
-      expect(canonicalIdx).toBeGreaterThanOrEqual(0);
-      expect(legacyIdx).toBeGreaterThan(canonicalIdx);
-    });
-
-    it('exposes both project directories as trust-disclosure candidates', async () => {
+    it('exposes only the canonical project directory as a trust-disclosure candidate', async () => {
       await markGitRoot();
 
       const { projectRoot, candidates } = await projectSkillRootCandidates(root);
 
       expect(candidates).toContain(join(projectRoot, '.kiko/skills'));
-      expect(candidates).toContain(join(projectRoot, '.kimi-code/skills'));
-    });
-
-    it('resolves the brand .kimi-code/skills directory at the .git root', async () => {
-      await markGitRoot();
-      await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
-
-      const roots = await projectRoots(root);
-
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills') && r.source === 'project')).toBe(
-        true,
-      );
+      expect(candidates).not.toContain(join(projectRoot, '.kimi-code/skills'));
     });
 
     it('falls back to the generic .agents/skills directory', async () => {
@@ -92,27 +66,27 @@ describe('skillRoots', () => {
       expect(roots.some((r) => r.path.endsWith('.agents/skills') && r.source === 'project')).toBe(
         true,
       );
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills'))).toBe(false);
+      expect(roots.some((r) => r.path.endsWith('.kiko/skills'))).toBe(false);
     });
 
     it('walks up from a child directory to the .git root', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/skills/commit'), { recursive: true });
+      await mkdir(join(root, '.kiko/skills/commit'), { recursive: true });
       const child = join(root, 'src/pkg');
       await mkdir(child, { recursive: true });
 
       const roots = await projectRoots(child);
 
-      expect(roots.some((r) => r.path.endsWith('.kimi-code/skills'))).toBe(true);
+      expect(roots.some((r) => r.path.endsWith('.kiko/skills'))).toBe(true);
     });
 
     it('orders the brand directory before the generic directory', async () => {
       await markGitRoot();
-      await mkdir(join(root, '.kimi-code/skills'), { recursive: true });
+      await mkdir(join(root, '.kiko/skills'), { recursive: true });
       await mkdir(join(root, '.agents/skills'), { recursive: true });
 
       const roots = await projectRoots(root);
-      const brandIdx = roots.findIndex((r) => r.path.endsWith('.kimi-code/skills'));
+      const brandIdx = roots.findIndex((r) => r.path.endsWith('.kiko/skills'));
       const genericIdx = roots.findIndex((r) => r.path.endsWith('.agents/skills'));
 
       expect(brandIdx).toBeGreaterThanOrEqual(0);
@@ -123,7 +97,7 @@ describe('skillRoots', () => {
       const remoteRoot = '/remote/project';
       const fs = {
         stat: async (p: string) => {
-          if (p === `${remoteRoot}/.git` || p === `${remoteRoot}/.kimi-code/skills`) {
+          if (p === `${remoteRoot}/.git` || p === `${remoteRoot}/.kiko/skills`) {
             return { isFile: false, isDirectory: true, size: 0 };
           }
           throw new Error('ENOENT');
@@ -134,7 +108,7 @@ describe('skillRoots', () => {
       const roots = await projectRoots(remoteRoot, {}, fs);
 
       expect(roots).toEqual([
-        { path: '/remote/project/.kimi-code/skills', source: 'project', workspaceDir: remoteRoot },
+        { path: '/remote/project/.kiko/skills', source: 'project', workspaceDir: remoteRoot },
       ]);
     });
   });
@@ -143,8 +117,8 @@ describe('skillRoots', () => {
     it('preserves directory priority and deduplicates resolved skill roots', async () => {
       const primary = join(root, 'primary');
       const secondary = join(root, 'secondary');
-      const primarySkills = join(primary, '.kimi-code/skills');
-      const secondarySkills = join(secondary, '.kimi-code/skills');
+      const primarySkills = join(primary, '.kiko/skills');
+      const secondarySkills = join(secondary, '.kiko/skills');
       await mkdir(primarySkills, { recursive: true });
       await mkdir(secondarySkills, { recursive: true });
 
