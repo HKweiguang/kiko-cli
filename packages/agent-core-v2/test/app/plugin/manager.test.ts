@@ -149,7 +149,7 @@ describe('PluginManager', () => {
         event: 'Stop',
         command: 'echo stop',
         cwd: root,
-        env: { KIMI_CODE_HOME: home, KIMI_PLUGIN_ROOT: root },
+        env: { KIKO_HOME: home, KIMI_PLUGIN_ROOT: root },
       },
     ]);
     await expect(manager.enabledCommands()).resolves.toEqual([

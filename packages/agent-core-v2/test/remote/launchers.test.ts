@@ -7,9 +7,16 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { resolveProgramPath } from '#/environment/programPath';
 
-import { resolveLauncher } from '#/remote/client/launchers';
+import { DEFAULT_REMOTE_BIN, resolveLauncher } from '#/remote/client/launchers';
 
 describe('launcher lowering', () => {
+  it('defaults to the canonical ~/.kiko executor path without a legacy fallback', () => {
+    expect(DEFAULT_REMOTE_BIN).toBe('~/.kiko/bin/kiko');
+    const command = resolveLauncher({ type: 'ssh', host: 'dev-box' }).args.at(-1)!;
+    expect(command).toContain('.kiko/bin/kiko');
+    expect(command).not.toContain('.kimi-code');
+  });
+
   it('lowers ssh to the fixed argv shape', () => {
     expect(resolveLauncher({ type: 'ssh', host: 'dev-box' })).toEqual({
       program: 'ssh',
@@ -26,7 +33,7 @@ describe('launcher lowering', () => {
         '-o',
         'StrictHostKeyChecking=accept-new',
         'dev-box',
-        `"$HOME"'/.kimi-code/bin/kiko' 'exec-server' '--listen' 'stdio'`,
+        `"$HOME"'/.kiko/bin/kiko' 'exec-server' '--listen' 'stdio'`,
       ],
     });
   });
@@ -48,7 +55,7 @@ describe('launcher lowering', () => {
       '-o',
       'StrictHostKeyChecking=accept-new',
       'dev-box',
-      `"$HOME"'/.kimi-code/bin/kiko' 'exec-server' '--listen' 'stdio'`,
+      `"$HOME"'/.kiko/bin/kiko' 'exec-server' '--listen' 'stdio'`,
     ]);
   });
 });
@@ -124,7 +131,7 @@ describe('ssh remote command tilde expansion through a local shell', () => {
 
   it('expands the default remoteBin via $HOME', () => {
     const command = resolveLauncher({ type: 'ssh', host: 'dev-box' }).args.at(-1)!;
-    expect(expandBinWord(command)).toBe(`${process.env['HOME']}/.kimi-code/bin/kiko`);
+    expect(expandBinWord(command)).toBe(`${process.env['HOME']}/.kiko/bin/kiko`);
   });
 
   it('expands a ~user remoteBin via tilde expansion', () => {
@@ -169,7 +176,7 @@ describe('complete SSH executor commands', () => {
   });
 
   it.each([
-    [undefined, "($env:USERPROFILE + '/.kimi-code/bin/kiko.exe')"],
+    [undefined, "($env:USERPROFILE + '/.kiko/bin/kiko.exe')"],
     ['~/bin dir/kimi.exe', "($env:USERPROFILE + '/bin dir/kimi.exe')"],
     [String.raw`C:\Program Files\it's $env:PATH $(whoami) & Kimi\kimi.exe`, String.raw`'C:\Program Files\it''s $env:PATH $(whoami) & Kimi\kimi.exe'`],
   ])('encodes the entire Windows script with a literal executable: %s', (remoteBin, executable) => {
@@ -213,7 +220,7 @@ describe('command launcher environment', () => {
 describe('command launcher executor invocation', () => {
   it('appends the default remoteBin and exec-server after the transport args', () => {
     const resolved = resolveLauncher({ type: 'command', program: process.execPath, args: ['ssh', 'i-1', '--'] });
-    expect(resolved.args).toEqual(['ssh', 'i-1', '--', '~/.kimi-code/bin/kiko', 'exec-server']);
+    expect(resolved.args).toEqual(['ssh', 'i-1', '--', '~/.kiko/bin/kiko', 'exec-server']);
   });
 
   it('appends a configured remoteBin', () => {
@@ -221,14 +228,14 @@ describe('command launcher executor invocation', () => {
       type: 'command',
       program: process.execPath,
       args: ['exec', '-i', 'dev-pod', '--'],
-      remoteBin: '/root/.kimi-code/bin/kiko',
+      remoteBin: '/root/.kiko/bin/kiko',
     });
-    expect(resolved.args).toEqual(['exec', '-i', 'dev-pod', '--', '/root/.kimi-code/bin/kiko', 'exec-server']);
+    expect(resolved.args).toEqual(['exec', '-i', 'dev-pod', '--', '/root/.kiko/bin/kiko', 'exec-server']);
   });
 
   it('appends to an empty argv', () => {
     expect(resolveLauncher({ type: 'command', program: process.execPath }).args).toEqual([
-      '~/.kimi-code/bin/kiko',
+      '~/.kiko/bin/kiko',
       'exec-server',
     ]);
   });
@@ -236,15 +243,15 @@ describe('command launcher executor invocation', () => {
   it.each([
     [['ssh', 'i-1', '--', '/opt/kimi', 'exec-server']],
     [['ssh', 'i-1', '--', '/opt/kimi', 'exec-server', '--listen', 'stdio']],
-    [['compute', 'ssh', 'dev-vm', '--command', '~/.kimi-code/bin/kiko exec-server']],
-    [['compute', 'ssh', 'dev-vm', '--command=~/.kimi-code/bin/kiko exec-server']],
+    [['compute', 'ssh', 'dev-vm', '--command', '~/.kiko/bin/kiko exec-server']],
+    [['compute', 'ssh', 'dev-vm', '--command=~/.kiko/bin/kiko exec-server']],
   ])('leaves argv that already invokes exec-server untouched: %j', (args) => {
     expect(resolveLauncher({ type: 'command', program: process.execPath, args, remoteBin: '/ignored' }).args).toEqual(args);
   });
 
   it('does not mistake an operand that merely contains exec-server for an invocation', () => {
     const resolved = resolveLauncher({ type: 'command', program: process.execPath, args: ['ssh', 'my-exec-server-01', '--'] });
-    expect(resolved.args.slice(-2)).toEqual(['~/.kimi-code/bin/kiko', 'exec-server']);
+    expect(resolved.args.slice(-2)).toEqual(['~/.kiko/bin/kiko', 'exec-server']);
   });
 
   it('rejects a remoteBin that would read as an option', () => {
