@@ -900,7 +900,7 @@ describe('ToolCallComponent', () => {
 
     it('keeps the file name of a long Read path on a narrow terminal', () => {
       const path =
-        '/Users/someone/.kimi-code/sessions/session_5b2c/agents/main/tasks/bash-4g77gs5f/output.log';
+        '/Users/someone/.kiko/sessions/session_5b2c/agents/main/tasks/bash-4g77gs5f/output.log';
       const component = new ToolCallComponent(
         { id: 'call_read_narrow', name: 'Read', args: { path } },
         { tool_call_id: 'call_read_narrow', output: '1\ta\n2\tb', is_error: false },

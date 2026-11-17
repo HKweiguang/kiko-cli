@@ -260,7 +260,7 @@ command = "   "
 
   it('removes the survey setting line without disturbing comments or tables', async () => {
     writeFileSync(filePath, [
-      '# ~/.kimi-code/tui.toml',
+      '# ~/.kiko/tui.toml',
       '# Client preferences for kimi-code.',
       'theme = "dark" # "auto" | "dark" | "light"',
       '# my own note',
@@ -276,7 +276,7 @@ command = "   "
     await removeLegacySurveySetting(filePath);
 
     expect(readFileSync(filePath, 'utf-8')).toBe([
-      '# ~/.kimi-code/tui.toml',
+      '# ~/.kiko/tui.toml',
       '# Client preferences for kimi-code.',
       'theme = "dark" # "auto" | "dark" | "light"',
       '# my own note',
@@ -430,12 +430,12 @@ describe('TUI config status_line', () => {
     const config = parseTuiConfig(`
 [status_line]
 items = ["model", "git", "cwd"]
-command = "~/.kimi-code/statusline.sh"
+command = "~/.kiko/statusline.sh"
 `);
 
     expect(config.statusLine).toEqual({
       items: ['model', 'git', 'cwd'],
-      command: '~/.kimi-code/statusline.sh',
+      command: '~/.kiko/statusline.sh',
     });
   });
 
@@ -486,7 +486,7 @@ describe('TUI config status_line round-trip', () => {
     await saveTuiConfig(
       {
         ...DEFAULT_TUI_CONFIG,
-        statusLine: { items: ['model', 'git'], command: '~/.kimi-code/statusline.sh' },
+        statusLine: { items: ['model', 'git'], command: '~/.kiko/statusline.sh' },
       },
       filePath,
     );
@@ -494,7 +494,7 @@ describe('TUI config status_line round-trip', () => {
     const reloaded = await loadTuiConfig(filePath);
     expect(reloaded.statusLine).toEqual({
       items: ['model', 'git'],
-      command: '~/.kimi-code/statusline.sh',
+      command: '~/.kiko/statusline.sh',
     });
   });
 

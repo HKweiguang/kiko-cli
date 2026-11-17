@@ -444,7 +444,7 @@ async function createRig(options: RigOptions = {}): Promise<{
   const root = await mkdtemp(join(tmpdir(), "vscode-legacy-migration-"));
   temporaryRoots.push(root);
   const sourceHome = join(root, ".kimi");
-  const targetHome = join(root, ".kimi-code");
+  const targetHome = join(root, ".kiko");
   const workspaceRoot = join(root, "workspace");
   await mkdir(options.workspaceRoot === null ? root : workspaceRoot, { recursive: true });
   const manager = new LegacyMigrationManager({

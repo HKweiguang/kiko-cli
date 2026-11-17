@@ -72,8 +72,10 @@ describe('installed VSIX Extension Host smoke', () => {
 
     const options = vscodeTest.runTests.mock.calls[0]?.[0];
     const env = options.extensionTestsEnv;
-    expect(env.KIMI_CODE_HOME).not.toBe(env.KIMI_VSCODE_SMOKE_OS_HOME);
+    expect(env.KIKO_HOME).not.toBe(env.KIMI_VSCODE_SMOKE_OS_HOME);
+    expect(env.KIKO_HOME).toContain('kiko-home');
     expect(env.KIMI_VSCODE_SMOKE_OS_HOME).toContain('os-home');
+    expect(env.KIMI_CODE_HOME).toBeUndefined();
   });
 
   it('rejects a cached host that does not match an exact requested version', async () => {

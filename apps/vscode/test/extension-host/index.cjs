@@ -36,7 +36,13 @@ exports.run = async function run() {
   );
   assert.equal(extension.packageJSON.version, sourceManifest.version);
   assert.equal(extension.packageJSON.main, "./dist/extension.js");
-  assert.ok(process.env.KIMI_CODE_HOME, "KIMI_CODE_HOME must point at the isolated test home");
+  const kikoHome = process.env.KIKO_HOME;
+  assert.ok(kikoHome, "KIKO_HOME must point at the isolated test home");
+  assert.notEqual(
+    path.resolve(kikoHome),
+    path.resolve(isolatedHome),
+    "KIKO_HOME must be a separate directory from the isolated OS home",
+  );
   assert.equal(process.env.HOME, isolatedHome);
   assert.equal(process.env.USERPROFILE, isolatedHome);
   assert.equal(os.homedir(), isolatedHome);

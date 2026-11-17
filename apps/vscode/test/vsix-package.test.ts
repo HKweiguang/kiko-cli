@@ -197,7 +197,9 @@ describe('Extension Development Host setup (isolated local state)', () => {
     );
     await expect(directoryExists(join(baseDir, 'user-data'))).resolves.toBe(true);
     await expect(directoryExists(join(baseDir, 'extensions'))).resolves.toBe(true);
-    await expect(directoryExists(join(baseDir, 'kimi-home'))).resolves.toBe(true);
+    await expect(directoryExists(join(baseDir, 'kiko-home'))).resolves.toBe(true);
+    expect(result.stdout).toContain(`KIKO_HOME=${join(baseDir, 'kiko-home')}`);
+    expect(result.stdout).not.toContain('KIMI_CODE_HOME=');
   });
 
   it('refuses to clear a directory without the dedicated safety suffix', async () => {

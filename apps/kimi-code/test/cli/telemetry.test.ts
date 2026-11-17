@@ -9,8 +9,8 @@ import { resetKimiRegionCache } from '#/utils/region';
 const mocks = vi.hoisted(() => ({
   initializeTelemetry: vi.fn(),
   createKimiDeviceId: vi.fn(() => 'device-123'),
-  resolveKimiHome: vi.fn(() => '/home/.kimi-code'),
-  resolveConfigPath: vi.fn(() => '/home/.kimi-code/config.toml'),
+  resolveKimiHome: vi.fn(() => '/home/.kiko'),
+  resolveConfigPath: vi.fn(() => '/home/.kiko/config.toml'),
   loadRuntimeConfigSafe: vi.fn(
     (): {
       config: { defaultModel?: string; telemetry?: boolean };
@@ -82,7 +82,7 @@ describe('initializeServerTelemetry', () => {
         model: 'kimi-k2',
         enabled: true,
         deviceId: 'device-123',
-        homeDir: '/home/.kimi-code',
+        homeDir: '/home/.kiko',
       }),
     );
     // The returned client wraps the module functions so core + the host share
