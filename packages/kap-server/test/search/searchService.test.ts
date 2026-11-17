@@ -30,6 +30,7 @@ import {
   SearchWorkerError,
   SearchWorkerHost,
 } from '../../src/search/worker/host';
+import { devWorkerExecArgv } from '../../src/search/worker/execArgv';
 import type { SearchWorkerRequest } from '../../src/search/worker/protocol';
 
 const WS = 'ws_test';
@@ -2213,6 +2214,24 @@ describe('search worker host (stage 4)', () => {
       await expect(stat(path)).rejects.toThrow();
     });
   }
+
+  it('passes the transform-types flag only to runtimes that report support', () => {
+    const supporting = devWorkerExecArgv(new Set(['--experimental-transform-types', '--experimental-strip-types']));
+    expect(supporting).toContain('--experimental-transform-types');
+    expect(supporting).toContain('--disable-warning=ExperimentalWarning');
+
+    const stripping = devWorkerExecArgv(new Set(['--experimental-strip-types']));
+    expect(stripping).not.toContain('--experimental-transform-types');
+    expect(stripping).toContain('--disable-warning=ExperimentalWarning');
+
+    const current = devWorkerExecArgv();
+    expect(current.includes('--experimental-transform-types')).toBe(
+      process.allowedNodeEnvironmentFlags.has('--experimental-transform-types'),
+    );
+    for (const flag of current) {
+      expect(process.allowedNodeEnvironmentFlags.has(flag.split('=')[0]!)).toBe(true);
+    }
+  });
 
   it('restarts a killed worker, reaps its lock, and keeps serving', { timeout: 30_000 }, async () => {
     const s1 = summary('s1', 'crash', T1);
