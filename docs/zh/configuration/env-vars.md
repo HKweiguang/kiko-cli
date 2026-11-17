@@ -12,15 +12,15 @@ Kimi Code CLI 通过环境变量控制少数运行时行为：迁移数据目录
 
 ## 核心路径
 
-### `KIMI_CODE_HOME`
+### `KIKO_HOME`
 
-覆盖数据根目录，默认 `~/.kimi-code`。设置后，配置文件、会话、日志、OAuth 凭据等全部数据都落到新路径下：
+覆盖数据根目录，默认 `~/.kiko`。设置后，配置文件、会话、日志、OAuth 凭据等全部数据都落到新路径下：
 
 ```sh
-export KIMI_CODE_HOME="/path/to/custom/kimi-code"
+export KIKO_HOME="/path/to/custom/kiko"
 ```
 
-> 确保目录可写。多个 `kiko` 实例共用同一个 `KIMI_CODE_HOME` 会共享配置和凭证。
+> 确保目录可写。多个 `kiko` 实例共用同一个 `KIKO_HOME` 会共享配置和凭证。
 
 数据目录的完整结构见[数据路径](./data-locations.md)。
 
@@ -36,7 +36,7 @@ export KIMI_DISABLE_TELEMETRY=1
 
 不修改 `config.toml` 临时切换模型：设置 `KIMI_MODEL_NAME` 后，CLI 在内存里合成一个临时供应商，重启后失效。详见[用环境变量定义模型](#用环境变量定义模型kimi_model_)。
 
-### `KIMI_CODE_CUSTOM_HEADERS`
+### `KIKO_CUSTOM_HEADERS`
 
 ::: info 新增
 新增于 0.20.2。
@@ -45,7 +45,7 @@ export KIMI_DISABLE_TELEMETRY=1
 为所有出站的模型请求附加自定义 HTTP 请求头：LLM 聊天请求（所有供应商协议）和 `/models` 模型列表请求都会携带。适合网关按请求头路由的场景，例如指定集群：
 
 ```sh
-export KIMI_CODE_CUSTOM_HEADERS=$'X-Gateway-Cluster: my-cluster\nX-Custom-Tag: debug'
+export KIKO_CUSTOM_HEADERS=$'X-Gateway-Cluster: my-cluster\nX-Custom-Tag: debug'
 ```
 
 格式与 `ANTHROPIC_CUSTOM_HEADERS` 一致：由换行分隔的 `Name: Value` 行，键名和值两端的空白会被去除，不含冒号的行会被忽略。
@@ -103,13 +103,13 @@ KIMI_BASE_URL = "https://api.moonshot.ai/v1"
 
 | 环境变量 | 用途 | 默认值 |
 | --- | --- | --- |
-| `KIMI_CODE_OAUTH_HOST` | OAuth 认证 host，优先级最高 | 未设时回退到 `KIMI_OAUTH_HOST` |
+| `KIKO_OAUTH_HOST` | OAuth 认证 host，优先级最高 | 未设时回退到 `KIMI_OAUTH_HOST` |
 | `KIMI_OAUTH_HOST` | OAuth 认证 host，作为上一个的 fallback | 未设时使用 `https://auth.kimi.com` |
-| `KIMI_CODE_BASE_URL` | OAuth 登录后的托管 API base URL | `https://api.kimi.com/coding/v1` |
-| `KIMI_CODE_REGION_MARKER` | 安装渠道标记和未登录时的本地区域推断 | 默认启用；设为 `off` 同时禁用并使用 `mainland-cn` 默认值 |
+| `KIKO_BASE_URL` | OAuth 登录后的托管 API base URL | `https://api.kimi.com/coding/v1` |
+| `KIKO_REGION_MARKER` | 安装渠道标记和未登录时的本地区域推断 | 默认启用；设为 `off` 同时禁用并使用 `mainland-cn` 默认值 |
 
 ::: warning
-`KIMI_CODE_BASE_URL`（OAuth 托管服务，指向 `kimi.com`）和 `KIMI_BASE_URL`（API 密钥直连，指向 `moonshot.ai`）是两个不同的变量，请按场景区分。
+`KIKO_BASE_URL`（OAuth 托管服务，指向 `kimi.com`）和 `KIMI_BASE_URL`（API 密钥直连，指向 `moonshot.ai`）是两个不同的变量，请按场景区分。
 :::
 
 ## 用环境变量定义模型（`KIMI_MODEL_*`）
@@ -150,61 +150,61 @@ kiko
 | 环境变量 | 用途 | 合法值 |
 | --- | --- | --- |
 | `KIMI_DISABLE_TELEMETRY` | 关闭匿名遥测上报 | `1`、`true`、`yes`、`y`（不区分大小写） |
-| `KIMI_CODE_PASSWORD` | 为 `kiko web` 本地服务设置并列鉴权密码；绑到非本机地址时建议设置，见 [安全注意](../guides/web.md#安全注意) | 任意非空字符串；未设置时仅 token 有效 |
-| `KIMI_CODE_SESSION_IDLE_RECLAIM_MS` | `kiko web` 会话空闲多久（毫秒）后从内存卸载；之后访问会自动恢复（默认 `1800000`；`0` 表示不卸载） | 非负整数；非法值会立即失败 |
-| `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` | 会话关闭时是否保留后台任务，优先级高于 `config.toml`。默认会在退出时停止后台任务 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` | 后台 `Bash` 任务的默认超时（秒），也用于前台命令转入后台后的重新计时，优先级高于 `[task] bash_task_timeout_s`；`0` 表示无超时 | 非负整数；非法值被忽略 |
-| `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE` | `kiko -p` 主轮次结束后仍有后台任务待处理时的行为，优先级高于 `[task] print_background_mode` | `exit`、`drain` 或 `steer`；非法值被忽略 |
-| `KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S` | print 模式 drain/steer 等待的时长上限（秒），优先级高于 `[task] print_wait_ceiling_s` | 正整数；非法值被忽略 |
-| `KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` | print 模式下由后台任务完成触发的新轮次上限，优先级高于 `[task] print_max_turns` | 正整数；非法值被忽略 |
+| `KIKO_PASSWORD` | 为 `kiko web` 本地服务设置并列鉴权密码；绑到非本机地址时建议设置，见 [安全注意](../guides/web.md#安全注意) | 任意非空字符串；未设置时仅 token 有效 |
+| `KIKO_SESSION_IDLE_RECLAIM_MS` | `kiko web` 会话空闲多久（毫秒）后从内存卸载；之后访问会自动恢复（默认 `1800000`；`0` 表示不卸载） | 非负整数；非法值会立即失败 |
+| `KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT` | 会话关闭时是否保留后台任务，优先级高于 `config.toml`。默认会在退出时停止后台任务 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S` | 后台 `Bash` 任务的默认超时（秒），也用于前台命令转入后台后的重新计时，优先级高于 `[task] bash_task_timeout_s`；`0` 表示无超时 | 非负整数；非法值被忽略 |
+| `KIKO_BACKGROUND_PRINT_BACKGROUND_MODE` | `kiko -p` 主轮次结束后仍有后台任务待处理时的行为，优先级高于 `[task] print_background_mode` | `exit`、`drain` 或 `steer`；非法值被忽略 |
+| `KIKO_BACKGROUND_PRINT_WAIT_CEILING_S` | print 模式 drain/steer 等待的时长上限（秒），优先级高于 `[task] print_wait_ceiling_s` | 正整数；非法值被忽略 |
+| `KIKO_BACKGROUND_PRINT_MAX_TURNS` | print 模式下由后台任务完成触发的新轮次上限，优先级高于 `[task] print_max_turns` | 正整数；非法值被忽略 |
 | `KIMI_IMAGE_MAX_EDGE_PX` | 图片压缩的最长边上限（像素），优先级高于 `config.toml` 的 `[image] max_edge_px`（默认 `2000`） | 正整数；非法值被忽略 |
 | `KIMI_IMAGE_READ_BYTE_BUDGET` | 模型自行读图的单图字节预算，优先级高于 `config.toml` 的 `[image] read_byte_budget`（默认 `262144`） | 正整数；非法值被忽略 |
-| `KIMI_CODE_PLUGIN_MARKETPLACE_URL` | 覆盖 `/plugins` 加载的 marketplace JSON；默认根据 managed provider 配置或 `KIMI_CODE_BASE_URL` 派生 `${baseURL}/plugins/marketplace` | 也接受 `http://`、`file://` URL 和本地路径 |
-| `KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY` | 限制 AgentSwarm 初始提升并发阶段可同时运行的 subagent 数量；不设置表示不限制 | 正整数；非法值会立即失败 |
-| `KIMI_CODE_SUBAGENT_SCOPE_CACHE_SIZE` | 保留在内存中的已完成 subagent scope 数量，超出后最旧的会被驱逐，恢复时从持久化状态按需重建（默认 `32`；`0` 或负数 = 不驱逐） | 整数；非法值会立即失败 |
-| `KIMI_CODE_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS` | 单个 subagent scope 驱逐允许的最长时间（毫秒），超时后驱逐队列跳过它继续后续驱逐（默认 `15000`） | 正整数；非法值会立即失败 |
+| `KIKO_PLUGIN_MARKETPLACE_URL` | 覆盖 `/plugins` 加载的 marketplace JSON；默认根据 managed provider 配置或 `KIKO_BASE_URL` 派生 `${baseURL}/plugins/marketplace` | 也接受 `http://`、`file://` URL 和本地路径 |
+| `KIKO_AGENT_SWARM_MAX_CONCURRENCY` | 限制 AgentSwarm 初始提升并发阶段可同时运行的 subagent 数量；不设置表示不限制 | 正整数；非法值会立即失败 |
+| `KIKO_SUBAGENT_SCOPE_CACHE_SIZE` | 保留在内存中的已完成 subagent scope 数量，超出后最旧的会被驱逐，恢复时从持久化状态按需重建（默认 `32`；`0` 或负数 = 不驱逐） | 整数；非法值会立即失败 |
+| `KIKO_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS` | 单个 subagent scope 驱逐允许的最长时间（毫秒），超时后驱逐队列跳过它继续后续驱逐（默认 `15000`） | 正整数；非法值会立即失败 |
 | `KIMI_SUBAGENT_TIMEOUT_MS` | 单个 `Agent` subagent 可运行的最长时间（毫秒），优先级高于 `config.toml` 的 `[subagent] timeout_ms` | 正整数；非法值回退到配置或默认值 |
-| `KIMI_CODE_SWARM_TIMEOUT_MS` | `AgentSwarm` subagent 可运行的最长时间（毫秒），优先级高于 `config.toml` 的 `[swarm] timeout_ms` | 正整数；非法值回退到配置或默认值 |
-| `KIMI_CODE_IDENTITY_NAME` | Agent 在系统提示词中的自称，优先级高于 `config.toml` 的 `[identity] name`，不写回配置文件 | 任意非空字符串；空值视为未设置 |
-| `KIMI_CODE_IDENTITY_SLUG` | 协议标识（`User-Agent` 产品名、MCP 客户端名），优先级高于 `[identity] slug`；未设置时由名称派生 | 任意非空字符串；会转小写并将连续非字母数字字符折叠为 `-` |
-| `KIMI_CODE_BUILTIN_PRODUCT_SKILLS` | 是否向模型提供介绍 Kimi Code 自身的内置 Skills，优先级高于 `config.toml` 的 `builtin_product_skills` | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_REPEAT_BREAKER` | 同一工具调用连续重复多次时，是否注入提醒并最终强制停止该轮。未设置时保持开启 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off`；其他值忽略 |
-| `KIMI_CODE_SESSION_LOCK` | 本进程是否使用跨进程会话锁，防止两个 Kimi Code 进程同时写同一会话。未设置时保持开启；关闭后回到加锁前的行为，多个进程同时写入时会话历史可能交错 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off`；其他值忽略 |
-| `KIMI_CODE_EXPERIMENTAL_SUBAGENT_FORK` | 在 `Agent`/`AgentSwarm` 上启用实验性 `fork` 参数：以调用方对话历史快照而非空上下文启动 subagent | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_EXPERIMENTAL_TOOL_SELECT` | 启用实验性按需加载工具：标记 `deferred: true` 的 MCP server 工具不进入顶层工具列表，由模型经 `select_tools` 按需加载；还需模型声明 `dynamically_loaded_tools` 能力，详见 [MCP](../customization/mcp.md#按需加载工具) | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_EXPERIMENTAL_PROMPT_PREDICTION` | 在交互式 TUI 中启用实验性的下一条提示词预测，在轮次正常完成后显示建议，详见[提示词预测](../guides/interaction.md#提示词预测（实验）) | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_EXPERIMENTAL_TOWER` | 启用实验性 [Tower 多 Agent 协作](../guides/tower.md) 和 `/tower` 命令，需在启动前设置。持久配置等价于在 `config.toml` 中设置 `[experimental] tower = true`；在运行中的 CLI 里修改该配置后，需要重启 Kimi Code。`KIMI_CODE_EXPERIMENTAL_FLAG=1` 仅在未显式配置 `[experimental] tower` 时启用 Tower；`tower = false` 会优先于总开关，而本变量可覆盖该配置 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_WATCH` | 是否挂文件系统 watch 以热更新配置和工作区文件，优先级高于 `[watch] enabled`（默认 `true`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_GLOBAL_SEARCH` | 是否构建全局全文搜索索引并提供 `POST /api/v1/search`，优先级高于 `[database] global_search`（默认 `false`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_SEARCH_WORKER` | 全局搜索开启时，在独立 worker 线程中运行索引，优先级高于 `[database] search`（默认 `true`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
-| `KIMI_CODE_PERSISTENCE_MINIDB_READMODEL` | 会话索引使用基于 minidb 的读模型，优先级高于 `[database] base`（默认 `true`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_SWARM_TIMEOUT_MS` | `AgentSwarm` subagent 可运行的最长时间（毫秒），优先级高于 `config.toml` 的 `[swarm] timeout_ms` | 正整数；非法值回退到配置或默认值 |
+| `KIKO_IDENTITY_NAME` | Agent 在系统提示词中的自称，优先级高于 `config.toml` 的 `[identity] name`，不写回配置文件 | 任意非空字符串；空值视为未设置 |
+| `KIKO_IDENTITY_SLUG` | 协议标识（`User-Agent` 产品名、MCP 客户端名），优先级高于 `[identity] slug`；未设置时由名称派生 | 任意非空字符串；会转小写并将连续非字母数字字符折叠为 `-` |
+| `KIKO_BUILTIN_PRODUCT_SKILLS` | 是否向模型提供介绍 Kimi Code 自身的内置 Skills，优先级高于 `config.toml` 的 `builtin_product_skills` | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_REPEAT_BREAKER` | 同一工具调用连续重复多次时，是否注入提醒并最终强制停止该轮。未设置时保持开启 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off`；其他值忽略 |
+| `KIKO_SESSION_LOCK` | 本进程是否使用跨进程会话锁，防止两个 Kimi Code 进程同时写同一会话。未设置时保持开启；关闭后回到加锁前的行为，多个进程同时写入时会话历史可能交错 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off`；其他值忽略 |
+| `KIKO_EXPERIMENTAL_SUBAGENT_FORK` | 在 `Agent`/`AgentSwarm` 上启用实验性 `fork` 参数：以调用方对话历史快照而非空上下文启动 subagent | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_EXPERIMENTAL_TOOL_SELECT` | 启用实验性按需加载工具：标记 `deferred: true` 的 MCP server 工具不进入顶层工具列表，由模型经 `select_tools` 按需加载；还需模型声明 `dynamically_loaded_tools` 能力，详见 [MCP](../customization/mcp.md#按需加载工具) | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_EXPERIMENTAL_PROMPT_PREDICTION` | 在交互式 TUI 中启用实验性的下一条提示词预测，在轮次正常完成后显示建议，详见[提示词预测](../guides/interaction.md#提示词预测（实验）) | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_EXPERIMENTAL_TOWER` | 启用实验性 [Tower 多 Agent 协作](../guides/tower.md) 和 `/tower` 命令，需在启动前设置。持久配置等价于在 `config.toml` 中设置 `[experimental] tower = true`；在运行中的 CLI 里修改该配置后，需要重启 Kimi Code。`KIKO_EXPERIMENTAL_FLAG=1` 仅在未显式配置 `[experimental] tower` 时启用 Tower；`tower = false` 会优先于总开关，而本变量可覆盖该配置 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_WATCH` | 是否挂文件系统 watch 以热更新配置和工作区文件，优先级高于 `[watch] enabled`（默认 `true`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_GLOBAL_SEARCH` | 是否构建全局全文搜索索引并提供 `POST /api/v1/search`，优先级高于 `[database] global_search`（默认 `false`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_SEARCH_WORKER` | 全局搜索开启时，在独立 worker 线程中运行索引，优先级高于 `[database] search`（默认 `true`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_PERSISTENCE_MINIDB_READMODEL` | 会话索引使用基于 minidb 的读模型，优先级高于 `[database] base`（默认 `true`） | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
 | `KIMI_MCP_STARTUP_TIMEOUT_MS` | MCP server 全局默认连接超时（毫秒）；优先级高于配置文件，低于 `mcp.json` 的 `startupTimeoutMs` | `1` 到 `2147483647` 的整数；非法值被忽略 |
 | `KIMI_MCP_TOOL_TIMEOUT_MS` | MCP server 全局默认单次工具调用超时（毫秒）；优先级高于配置文件，低于 `mcp.json` 的 `toolTimeoutMs` | `1` 到 `2147483647` 的整数；非法值被忽略 |
 | `KIMI_MCP_RECONNECT_INITIAL_DELAY_MS` | workspace 级 MCP server 首次连接失败或意外断连后，首次自动重连前的等待时间（毫秒）；优先级高于配置文件 | `1` 到 `2147483647` 的整数；非法值被忽略 |
 | `KIMI_MCP_RECONNECT_MAX_DELAY_MS` | workspace 级 MCP server 自动重连退避等待的上限（毫秒）；优先级高于配置文件 | `1` 到 `2147483647` 的整数；非法值被忽略 |
-| `KIMI_CODE_TRUST_WORKSPACE` | 将当前工作区标记为受信任，等效于在交互式信任提示中选择 "Trust this folder"；按进程生效，不写入持久化的信任记录。该变量与 [`[workspace] require_trust`](./config-files.md#workspace-trust) 相互独立；后者为 `false` 时，假值不会重新启用信任机制 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_TRUST_WORKSPACE` | 将当前工作区标记为受信任，等效于在交互式信任提示中选择 "Trust this folder"；按进程生效，不写入持久化的信任记录。该变量与 [`[workspace] require_trust`](./config-files.md#workspace-trust) 相互独立；后者为 `false` 时，假值不会重新启用信任机制 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
 | `KIMI_LOOP_MAX_STEPS_PER_TURN` | Agent 单轮最大步数，优先级高于 `config.toml` 的 `[loop_control] max_steps_per_turn`；`0` 表示无上限 | 非负整数；非法值被忽略 |
 | `KIMI_LOOP_MAX_ATTEMPTS_PER_STEP` | 单步失败后的最大总尝试次数（含首次尝试），优先级高于 `config.toml` 的 `[loop_control] max_attempts_per_step` | 非负整数；非法值被忽略 |
-| `KIMI_CODE_INFINITE_RETRY` | 让所有失败的 LLM 请求无限重试而不是终止任务；指数退避（32 秒封顶）并尊重 `Retry-After`，等待期间中断仍生效 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
+| `KIKO_INFINITE_RETRY` | 让所有失败的 LLM 请求无限重试而不是终止任务；指数退避（32 秒封顶）并尊重 `Retry-After`，等待期间中断仍生效 | 真值：`1`/`true`/`yes`/`on`；假值：`0`/`false`/`no`/`off` |
 | `KIMI_TOKEN_COUNTING_STRATEGY` | 对外上报的上下文 token 计数，优先级高于 `config.toml` 的 `[token_counting] strategy` | `measured+estimated`、`measured`、`estimated`（不区分大小写）；非法值被忽略 |
 | `KIMI_WEB_SEARCH_BASE_URL` | 网页搜索（`WebSearch`）服务的 API URL，优先级高于配置文件；凭据与自定义 header 不发往该端点 | 非空字符串；空白值被忽略 |
 | `KIMI_WEB_SEARCH_API_KEY` | 网页搜索（`WebSearch`）服务的 API 密钥；设置后同时替换配置中的 API 密钥和 OAuth 凭据 | 非空字符串；空白值被忽略 |
 | `KIMI_WEB_FETCH_BASE_URL` | 网页抓取（`FetchURL`）服务的 API URL，优先级高于配置文件；未指定端点时已登录用户走 Kimi OAuth 托管抓取，再回退本地直连；凭据不发往该端点 | 非空字符串；空白值被忽略 |
 | `KIMI_WEB_FETCH_API_KEY` | 网页抓取（`FetchURL`）服务的 API 密钥；设置后同时替换配置中的 API 密钥和 OAuth 凭据 | 非空字符串；空白值被忽略 |
-| `KIMI_CODE_EXPERIMENTAL_FLAG` | 在当前进程启用所有已注册的实验功能 | `1`、`true`、`yes`、`on` |
+| `KIKO_EXPERIMENTAL_FLAG` | 在当前进程启用所有已注册的实验功能 | `1`、`true`、`yes`、`on` |
 | `KIMI_SHELL_PATH` | Windows 上覆盖 Git Bash 路径（自动探测失败时使用） | 绝对路径 |
 | `KIMI_MODEL_MAX_COMPLETION_TOKENS` | 单步 LLM 请求的 `max_completion_tokens` 硬上限，仅对 `kimi` 供应商生效 | 正整数；`0` 或负数禁用 clamp |
 | `KIMI_MODEL_TEMPERATURE` | 每次请求的采样温度，仅对 `kimi` 供应商生效（全局生效，不依赖 `KIMI_MODEL_NAME`） | 数字，如 `0.3` |
 | `KIMI_MODEL_TOP_P` | 每次请求的核采样 `top_p`，仅对 `kimi` 供应商生效（全局生效） | 数字，如 `0.95` |
 | `KIMI_MODEL_THINKING_EFFORT` | 在线上强制使用指定的思考强度，绕过模型声明的 `support_efforts`；仅 `kimi` 供应商生效 | 思考强度值，如 `max` |
 | `KIMI_MODEL_THINKING_KEEP` | 保留思考透传；`kimi` 以 `thinking.keep` 发送，`anthropic` 以 `clear_thinking_20251015` 编辑发送；覆盖 `[thinking] keep` | API 接受的值，如 `all`；传入关值（`false`/`0`/`no`/`off`/`none`/`null`）可禁用 |
-| `KIMI_CODE_LLM_HEADERS_TIMEOUT_MS` | `openai` / `openai-responses` / `anthropic` 协议的 LLM 请求等待响应头（首字节）的最长时间（毫秒），替代 HTTP 客户端默认的 300 秒响应头超时——长时间非流式 thinking 可调大；未设置保持默认；SDK 自身的总请求超时（默认 10 分钟）仍对单次尝试生效；`google-genai` 不支持（其 SDK 没有 dispatcher 配置项）；SOCKS 代理下不生效（请求仍走代理） | 正整数，不超过 2147483647；非法值会使请求失败 |
-| `KIMI_CODE_NO_AUTO_UPDATE` | 完全禁用更新预检：不检查、不后台安装、不提示。同时兼容旧名 `KIMI_CLI_NO_AUTO_UPDATE` | 真值：`1`/`true`/`yes`/`on` |
-| `KIMI_CODE_CLIPBOARD_OSC52` | 复制时同时交给终端（OSC 52），远程连接下复制不生效时可以试试。tmux 中还需设置 `set -g set-clipboard on` | `1` 表示启用 |
-| `KIMI_CODE_TUI_ANIMATION_FPS` | 终端界面中进行中标题扫光的帧率 | `1` 到 `60` 的整数；非法值被忽略，并在启动时提示 |
+| `KIKO_LLM_HEADERS_TIMEOUT_MS` | `openai` / `openai-responses` / `anthropic` 协议的 LLM 请求等待响应头（首字节）的最长时间（毫秒），替代 HTTP 客户端默认的 300 秒响应头超时——长时间非流式 thinking 可调大；未设置保持默认；SDK 自身的总请求超时（默认 10 分钟）仍对单次尝试生效；`google-genai` 不支持（其 SDK 没有 dispatcher 配置项）；SOCKS 代理下不生效（请求仍走代理） | 正整数，不超过 2147483647；非法值会使请求失败 |
+| `KIKO_NO_AUTO_UPDATE` | 完全禁用更新预检：不检查、不后台安装、不提示 | 真值：`1`/`true`/`yes`/`on` |
+| `KIKO_CLIPBOARD_OSC52` | 复制时同时交给终端（OSC 52），远程连接下复制不生效时可以试试。tmux 中还需设置 `set -g set-clipboard on` | `1` 表示启用 |
+| `KIKO_TUI_ANIMATION_FPS` | 终端界面中进行中标题扫光的帧率 | `1` 到 `60` 的整数；非法值被忽略，并在启动时提示 |
 | `KIMI_DISABLE_CRON` | 禁用定时任务工具（`CronCreate` 拒绝新计划，已有任务不触发） | `1` 表示禁用 |
 
-`KIMI_CODE_INFINITE_RETRY`、`KIMI_CODE_IDENTITY_*` 和 `KIMI_CODE_BUILTIN_PRODUCT_SKILLS` 这几个变量由 `agent-core-v2` 引擎读取。
+`KIKO_INFINITE_RETRY`、`KIKO_IDENTITY_*` 和 `KIKO_BUILTIN_PRODUCT_SKILLS` 这几个变量由 `agent-core-v2` 引擎读取。
 
 ## 诊断日志
 
@@ -256,5 +256,5 @@ Kimi Code 会遵循标准代理环境变量，让所有出网流量（模型 API
 ## 下一步
 
 - [配置覆盖](./overrides.md) — 环境变量、CLI 选项、配置文件的优先级关系
-- [数据路径](./data-locations.md) — `KIMI_CODE_HOME` 影响的完整目录结构
+- [数据路径](./data-locations.md) — `KIKO_HOME` 影响的完整目录结构
 - [平台与模型](./providers.md) — 各供应商类型的完整接入示例

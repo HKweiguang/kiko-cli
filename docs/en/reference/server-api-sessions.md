@@ -190,7 +190,7 @@ All `agent_config` fields are optional. The server applies them to the main agen
 | `permission_mode` | string | `manual` / `yolo` / `auto`. Synced to every agent in the session, except agents with a fixed permission mode (for example Tower workers) |
 | `plan_mode` | boolean | Enter or exit Plan mode |
 | `swarm_mode` | boolean | Enter or exit swarm mode |
-| `tower_mode` | boolean | Enter or exit Tower mode. Requires the Tower experimental flag (`KIMI_CODE_EXPERIMENTAL_TOWER=1`, or `[experimental] tower = true` in `config.toml`) |
+| `tower_mode` | boolean | Enter or exit Tower mode. Requires the Tower experimental flag (`KIKO_EXPERIMENTAL_TOWER=1`, or `[experimental] tower = true` in `config.toml`) |
 | `tower_base` | string | Base branch used when entering Tower mode; used only together with `tower_mode: true`. When the branch does not exist, the server creates it in the repository, switches to it, and commits uncommitted changes onto it |
 | `goal_objective` | string | Create a goal with this text |
 | `goal_control` | string | Control the current goal: `pause` / `resume` / `cancel` |

@@ -183,7 +183,7 @@
 
 客户端未登录、且上述输入都无法决定区域时，服务端根据设备时区和语言环境推断。推断出明确结果时，服务端把它缓存到 `<home>/region.json`，之后直接使用缓存；客户端登录后缓存被清除。原始时区和语言环境值不会上传。
 
-信号缺失或冲突时，本次进程回退到 `mainland-cn`，但不持久化这个结果，下次启动时重新判断。设置 `KIMI_CODE_REGION_MARKER=off` 可以同时禁用安装渠道标记和本地推断；设置了 `KIMI_CODE_BASE_URL` 时也不做本地推断。
+信号缺失或冲突时，本次进程回退到 `mainland-cn`，但不持久化这个结果，下次启动时重新判断。设置 `KIKO_REGION_MARKER=off` 可以同时禁用安装渠道标记和本地推断；设置了 `KIKO_BASE_URL` 时也不做本地推断。
 
 成功时 `data` 为 `{ region }`，`region` 为 `mainland-cn` / `global`。
 
@@ -351,7 +351,7 @@
 
 ### `POST /api/v1/client_configs`
 
-读取由 Kimi Code 服务远程控制的指定客户端配置，包括哪些模型或思考强度的切换需要用户确认，以及客户端的升级策略。服务端从账号所在区域的 Kimi Code 服务读取（设置了 `KIMI_CODE_BASE_URL` 时改用该地址），并把结果规范化成该名称预期的结构。
+读取由 Kimi Code 服务远程控制的指定客户端配置，包括哪些模型或思考强度的切换需要用户确认，以及客户端的升级策略。服务端从账号所在区域的 Kimi Code 服务读取（设置了 `KIKO_BASE_URL` 时改用该地址），并把结果规范化成该名称预期的结构。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
@@ -1049,7 +1049,7 @@ cloud-only 条目不能在本机安装。旧 `kimi-webbridge` 条目不再返回
 
 只读返回指定项目 `local.toml` 中的 `workspace.additional_dir`，结果已解析为绝对路径、去重，并剔除 `root` 自身。接口不修改注册表，也不修改 `local.toml`。客户端可以用它把项目的旧配置并入新建或编辑工作区的表单，随保存生效。
 
-服务端从 `root` 向上查找包含 `.git` 的目录作为项目根（找不到时用 `root` 本身），读取其中的 `.kimi-code/local.toml`。`local.toml` 缺失时返回空数组。TOML 损坏或配置的目录已不存在时请求失败，不会按空配置返回。
+服务端从 `root` 向上查找包含 `.git` 的目录作为项目根（找不到时用 `root` 本身），读取其中的 `.kiko/local.toml`。`local.toml` 缺失时返回空数组。TOML 损坏或配置的目录已不存在时请求失败，不会按空配置返回。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
@@ -1104,7 +1104,7 @@ cloud-only 条目不能在本机安装。旧 `kimi-webbridge` 条目不再返回
 | --- | --- | --- | --- |
 | `workspace_id` | path | string | 必填。工作区 id |
 
-成功时 `data` 为 `{ trusted }`，表示撤销后的有效信任状态。通常为 `false`；`KIMI_CODE_TRUST_WORKSPACE` 或 [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) 生效时仍为 `true`。
+成功时 `data` 为 `{ trusted }`，表示撤销后的有效信任状态。通常为 `false`；`KIKO_TRUST_WORKSPACE` 或 [`[workspace] require_trust = false`](../configuration/config-files.md#workspace-trust) 生效时仍为 `true`。
 
 - `40410`：工作区不存在
 

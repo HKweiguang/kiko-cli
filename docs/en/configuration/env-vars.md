@@ -12,15 +12,15 @@ For background, see [Config overrides: provider credentials](./overrides.md#prov
 
 ## Core paths
 
-### `KIMI_CODE_HOME`
+### `KIKO_HOME`
 
-Overrides the data root directory; the default is `~/.kimi-code`. Once set, the config file, sessions, logs, OAuth credentials, and all other data land under the new path:
+Overrides the data root directory; the default is `~/.kiko`. Once set, the config file, sessions, logs, OAuth credentials, and all other data land under the new path:
 
 ```sh
-export KIMI_CODE_HOME="/path/to/custom/kimi-code"
+export KIKO_HOME="/path/to/custom/kiko"
 ```
 
-> Make sure the directory is writable. Multiple `kiko` instances sharing the same `KIMI_CODE_HOME` will share config and credential files.
+> Make sure the directory is writable. Multiple `kiko` instances sharing the same `KIKO_HOME` will share config and credential files.
 
 For the complete data directory structure, see [Data locations](./data-locations.md).
 
@@ -36,7 +36,7 @@ export KIMI_DISABLE_TELEMETRY=1
 
 Switch models temporarily without modifying `config.toml`: when `KIMI_MODEL_NAME` is set, the CLI synthesizes a temporary provider in memory, and the change does not persist after restart. See [Define a model from environment variables](#define-a-model-from-environment-variables-kimi_model_).
 
-### `KIMI_CODE_CUSTOM_HEADERS`
+### `KIKO_CUSTOM_HEADERS`
 
 ::: info Added
 Added in 0.20.2.
@@ -45,7 +45,7 @@ Added in 0.20.2.
 Attaches custom HTTP headers to every outbound model request: both LLM chat requests (across all provider protocols) and `/models` listing requests carry them. Useful when a gateway routes by header, for example to pin a specific cluster:
 
 ```sh
-export KIMI_CODE_CUSTOM_HEADERS=$'X-Gateway-Cluster: my-cluster\nX-Custom-Tag: debug'
+export KIKO_CUSTOM_HEADERS=$'X-Gateway-Cluster: my-cluster\nX-Custom-Tag: debug'
 ```
 
 The format mirrors `ANTHROPIC_CUSTOM_HEADERS`: newline-separated `Name: Value` lines. Names and values are trimmed, and lines without a colon are ignored.
@@ -103,13 +103,13 @@ This group of variables redirects OAuth authentication and managed service endpo
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| `KIMI_CODE_OAUTH_HOST` | OAuth auth host; highest priority | Falls back to `KIMI_OAUTH_HOST` when unset |
-| `KIMI_OAUTH_HOST` | OAuth auth host; fallback for `KIMI_CODE_OAUTH_HOST` | Falls back to `https://auth.kimi.com` when unset |
-| `KIMI_CODE_BASE_URL` | Managed API base URL used after OAuth login | `https://api.kimi.com/coding/v1` |
-| `KIMI_CODE_REGION_MARKER` | Install-channel marker and logged-out local region inference | Enabled; set `off` to disable both and use the `mainland-cn` default |
+| `KIKO_OAUTH_HOST` | OAuth auth host; highest priority | Falls back to `KIMI_OAUTH_HOST` when unset |
+| `KIMI_OAUTH_HOST` | OAuth auth host; fallback for `KIKO_OAUTH_HOST` | Falls back to `https://auth.kimi.com` when unset |
+| `KIKO_BASE_URL` | Managed API base URL used after OAuth login | `https://api.kimi.com/coding/v1` |
+| `KIKO_REGION_MARKER` | Install-channel marker and logged-out local region inference | Enabled; set `off` to disable both and use the `mainland-cn` default |
 
 ::: warning
-`KIMI_CODE_BASE_URL` (OAuth-managed service, targeting `kimi.com`) and `KIMI_BASE_URL` (direct API key connection, targeting `moonshot.ai`) are two distinct variables. Use each one in its appropriate context.
+`KIKO_BASE_URL` (OAuth-managed service, targeting `kimi.com`) and `KIMI_BASE_URL` (direct API key connection, targeting `moonshot.ai`) are two distinct variables. Use each one in its appropriate context.
 :::
 
 ## Define a model from environment variables (`KIMI_MODEL_*`)
@@ -150,61 +150,61 @@ Switches that control the behavior of subsystems such as telemetry, background t
 | Variable | Purpose | Valid values |
 | --- | --- | --- |
 | `KIMI_DISABLE_TELEMETRY` | Disable anonymous telemetry reporting | `1`, `true`, `yes`, `y` (case-insensitive) |
-| `KIMI_CODE_PASSWORD` | Parallel auth credential for `kiko web`, recommended when binding beyond loopback (see [Security notes](../guides/web.md#security-notes)) | Any non-empty string; when unset, only the token is valid |
-| `KIMI_CODE_SESSION_IDLE_RECLAIM_MS` | How long (ms) a `kiko web` session may stay idle before it is unloaded from memory; the session resumes transparently on next access (default `1800000`; `0` = never unload) | Non-negative integer; invalid values fail fast |
-| `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` | Keep background tasks when the session closes; higher priority than `config.toml` (default: stop them on exit) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S` | Default timeout (seconds) for background `Bash` tasks, also used to re-arm foreground commands moved to the background; higher priority than `[task] bash_task_timeout_s` (`0` = no timeout) | Non-negative integer; invalid values are ignored |
-| `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE` | What `kiko -p` does while background tasks are still pending after the main turn; higher priority than `[task] print_background_mode` | `exit`, `drain`, or `steer`; invalid values are ignored |
-| `KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S` | Wall-clock ceiling (seconds) for the print-mode drain/steer wait; higher priority than `[task] print_wait_ceiling_s` | Positive integer; invalid values are ignored |
-| `KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS` | Max number of new turns triggered by background-task completions in print mode; higher priority than `[task] print_max_turns` | Positive integer; invalid values are ignored |
+| `KIKO_PASSWORD` | Parallel auth credential for `kiko web`, recommended when binding beyond loopback (see [Security notes](../guides/web.md#security-notes)) | Any non-empty string; when unset, only the token is valid |
+| `KIKO_SESSION_IDLE_RECLAIM_MS` | How long (ms) a `kiko web` session may stay idle before it is unloaded from memory; the session resumes transparently on next access (default `1800000`; `0` = never unload) | Non-negative integer; invalid values fail fast |
+| `KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT` | Keep background tasks when the session closes; higher priority than `config.toml` (default: stop them on exit) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S` | Default timeout (seconds) for background `Bash` tasks, also used to re-arm foreground commands moved to the background; higher priority than `[task] bash_task_timeout_s` (`0` = no timeout) | Non-negative integer; invalid values are ignored |
+| `KIKO_BACKGROUND_PRINT_BACKGROUND_MODE` | What `kiko -p` does while background tasks are still pending after the main turn; higher priority than `[task] print_background_mode` | `exit`, `drain`, or `steer`; invalid values are ignored |
+| `KIKO_BACKGROUND_PRINT_WAIT_CEILING_S` | Wall-clock ceiling (seconds) for the print-mode drain/steer wait; higher priority than `[task] print_wait_ceiling_s` | Positive integer; invalid values are ignored |
+| `KIKO_BACKGROUND_PRINT_MAX_TURNS` | Max number of new turns triggered by background-task completions in print mode; higher priority than `[task] print_max_turns` | Positive integer; invalid values are ignored |
 | `KIMI_IMAGE_MAX_EDGE_PX` | Longest-edge ceiling (px) for image compression; higher priority than `[image] max_edge_px` (default `2000`) | Positive integer; invalid values are ignored |
 | `KIMI_IMAGE_READ_BYTE_BUDGET` | Per-image byte budget for model-initiated image reads; higher priority than `[image] read_byte_budget` (default `262144`) | Positive integer; invalid values are ignored |
-| `KIMI_CODE_PLUGIN_MARKETPLACE_URL` | Override the marketplace JSON loaded by `/plugins`; defaults to `${baseURL}/plugins/marketplace`, derived from the managed provider configuration or `KIMI_CODE_BASE_URL` | Also accepts `http://`, `file://` URLs, and local paths |
-| `KIMI_CODE_AGENT_SWARM_MAX_CONCURRENCY` | Cap on AgentSwarm subagents running concurrently during the initial ramp; unset = no cap | Positive integer; invalid values fail fast |
-| `KIMI_CODE_SUBAGENT_SCOPE_CACHE_SIZE` | How many completed subagent scopes stay resident for fast resume; older ones are evicted and rebuilt from persisted state on demand (default `32`; `0` or negative = never evict) | Integer; invalid values fail fast |
-| `KIMI_CODE_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS` | Max wall-clock time (ms) a single subagent scope eviction may take before the eviction queue skips it and moves on (default `15000`) | Positive integer; invalid values fail fast |
+| `KIKO_PLUGIN_MARKETPLACE_URL` | Override the marketplace JSON loaded by `/plugins`; defaults to `${baseURL}/plugins/marketplace`, derived from the managed provider configuration or `KIKO_BASE_URL` | Also accepts `http://`, `file://` URLs, and local paths |
+| `KIKO_AGENT_SWARM_MAX_CONCURRENCY` | Cap on AgentSwarm subagents running concurrently during the initial ramp; unset = no cap | Positive integer; invalid values fail fast |
+| `KIKO_SUBAGENT_SCOPE_CACHE_SIZE` | How many completed subagent scopes stay resident for fast resume; older ones are evicted and rebuilt from persisted state on demand (default `32`; `0` or negative = never evict) | Integer; invalid values fail fast |
+| `KIKO_SUBAGENT_SCOPE_EVICT_TIMEOUT_MS` | Max wall-clock time (ms) a single subagent scope eviction may take before the eviction queue skips it and moves on (default `15000`) | Positive integer; invalid values fail fast |
 | `KIMI_SUBAGENT_TIMEOUT_MS` | Max wall-clock time (ms) a single `Agent` subagent may run; higher priority than `[subagent] timeout_ms` | Positive integer; invalid values fall back to the config or default |
-| `KIMI_CODE_SWARM_TIMEOUT_MS` | Max wall-clock time (ms) an `AgentSwarm` subagent may run; higher priority than `[swarm] timeout_ms` | Positive integer; invalid values fall back to the config or default |
-| `KIMI_CODE_IDENTITY_NAME` | Name the agent calls itself in the system prompt; higher priority than `[identity] name`, never written back | Any non-empty string; blank values read as unset |
-| `KIMI_CODE_IDENTITY_SLUG` | `User-Agent` product token and MCP client name; higher priority than `[identity] slug`; derived from the name when unset | Any non-empty string; normalized to lowercase with non-alphanumeric runs folded to `-` |
-| `KIMI_CODE_BUILTIN_PRODUCT_SKILLS` | Offer the built-in skills documenting Kimi Code itself to the model; higher priority than `builtin_product_skills` | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_REPEAT_BREAKER` | Whether repeating the same tool call many times in a row injects reminders and eventually force-stops the turn. Unset keeps this on | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off`; any other value is ignored |
-| `KIMI_CODE_SESSION_LOCK` | Whether this process takes the cross-process session lock that stops two Kimi Code processes from writing the same session at once. Unset keeps it on; turning it off brings back pre-lock behavior, so concurrent writers can interleave the session history | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off`; any other value is ignored |
-| `KIMI_CODE_EXPERIMENTAL_SUBAGENT_FORK` | Experimental `fork` parameter on `Agent`/`AgentSwarm`: start the subagent from a snapshot of the caller's history instead of an empty context; `KIMI_CODE_EXPERIMENTAL_FLAG=1` also enables it | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_EXPERIMENTAL_TOOL_SELECT` | Experimental on-demand tool loading: tools of MCP servers marked `deferred: true` stay out of the top-level tool list and are loaded via `select_tools`; also requires the model to declare the `dynamically_loaded_tools` capability — see [MCP](../customization/mcp.md#loading-tools-on-demand) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_EXPERIMENTAL_PROMPT_PREDICTION` | Experimental next-prompt suggestions after completed turns in the interactive TUI — see [Prompt prediction](../guides/interaction.md#prompt-prediction-experimental) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_EXPERIMENTAL_TOWER` | Enable experimental [Tower multi-agent coordination](../guides/tower.md) and the `/tower` command; set it before launch. The persistent equivalent is `[experimental] tower = true` in `config.toml`; changing that setting in a running CLI requires a restart. `KIMI_CODE_EXPERIMENTAL_FLAG=1` enables Tower only when `[experimental] tower` is not set in `config.toml`; an explicit `tower = false` takes precedence over the master flag, while this per-feature variable overrides the config | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_WATCH` | Attach filesystem watchers that reload config and workspace files; higher priority than `[watch] enabled` (default `true`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_GLOBAL_SEARCH` | Build the global full-text search index and serve `POST /api/v1/search`; higher priority than `[database] global_search` (default `false`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_SEARCH_WORKER` | With global search enabled, run the index in a dedicated worker thread; higher priority than `[database] search` (default `true`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
-| `KIMI_CODE_PERSISTENCE_MINIDB_READMODEL` | Use the minidb-backed read model for session indexing; higher priority than `[database] base` (default `true`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_SWARM_TIMEOUT_MS` | Max wall-clock time (ms) an `AgentSwarm` subagent may run; higher priority than `[swarm] timeout_ms` | Positive integer; invalid values fall back to the config or default |
+| `KIKO_IDENTITY_NAME` | Name the agent calls itself in the system prompt; higher priority than `[identity] name`, never written back | Any non-empty string; blank values read as unset |
+| `KIKO_IDENTITY_SLUG` | `User-Agent` product token and MCP client name; higher priority than `[identity] slug`; derived from the name when unset | Any non-empty string; normalized to lowercase with non-alphanumeric runs folded to `-` |
+| `KIKO_BUILTIN_PRODUCT_SKILLS` | Offer the built-in skills documenting Kimi Code itself to the model; higher priority than `builtin_product_skills` | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_REPEAT_BREAKER` | Whether repeating the same tool call many times in a row injects reminders and eventually force-stops the turn. Unset keeps this on | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off`; any other value is ignored |
+| `KIKO_SESSION_LOCK` | Whether this process takes the cross-process session lock that stops two Kimi Code processes from writing the same session at once. Unset keeps it on; turning it off brings back pre-lock behavior, so concurrent writers can interleave the session history | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off`; any other value is ignored |
+| `KIKO_EXPERIMENTAL_SUBAGENT_FORK` | Experimental `fork` parameter on `Agent`/`AgentSwarm`: start the subagent from a snapshot of the caller's history instead of an empty context; `KIKO_EXPERIMENTAL_FLAG=1` also enables it | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_EXPERIMENTAL_TOOL_SELECT` | Experimental on-demand tool loading: tools of MCP servers marked `deferred: true` stay out of the top-level tool list and are loaded via `select_tools`; also requires the model to declare the `dynamically_loaded_tools` capability — see [MCP](../customization/mcp.md#loading-tools-on-demand) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_EXPERIMENTAL_PROMPT_PREDICTION` | Experimental next-prompt suggestions after completed turns in the interactive TUI — see [Prompt prediction](../guides/interaction.md#prompt-prediction-experimental) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_EXPERIMENTAL_TOWER` | Enable experimental [Tower multi-agent coordination](../guides/tower.md) and the `/tower` command; set it before launch. The persistent equivalent is `[experimental] tower = true` in `config.toml`; changing that setting in a running CLI requires a restart. `KIKO_EXPERIMENTAL_FLAG=1` enables Tower only when `[experimental] tower` is not set in `config.toml`; an explicit `tower = false` takes precedence over the master flag, while this per-feature variable overrides the config | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_WATCH` | Attach filesystem watchers that reload config and workspace files; higher priority than `[watch] enabled` (default `true`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_GLOBAL_SEARCH` | Build the global full-text search index and serve `POST /api/v1/search`; higher priority than `[database] global_search` (default `false`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_SEARCH_WORKER` | With global search enabled, run the index in a dedicated worker thread; higher priority than `[database] search` (default `true`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_PERSISTENCE_MINIDB_READMODEL` | Use the minidb-backed read model for session indexing; higher priority than `[database] base` (default `true`) | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
 | `KIMI_MCP_STARTUP_TIMEOUT_MS` | Global default connection timeout (ms) for MCP servers; overrides the config file, but `mcp.json` `startupTimeoutMs` still wins | Integer from `1` to `2147483647`; invalid values are ignored |
 | `KIMI_MCP_TOOL_TIMEOUT_MS` | Global default single tool-call timeout (ms) for MCP servers; overrides the config file, but `mcp.json` `toolTimeoutMs` still wins | Integer from `1` to `2147483647`; invalid values are ignored |
 | `KIMI_MCP_RECONNECT_INITIAL_DELAY_MS` | Initial delay (ms) before the first automatic reconnect attempt for a workspace-level MCP server that failed to connect or dropped unexpectedly; overrides the config file | Integer from `1` to `2147483647`; invalid values are ignored |
 | `KIMI_MCP_RECONNECT_MAX_DELAY_MS` | Cap (ms) for the automatic reconnect backoff delay of workspace-level MCP servers; overrides the config file | Integer from `1` to `2147483647`; invalid values are ignored |
-| `KIMI_CODE_TRUST_WORKSPACE` | Mark the current workspace as trusted, equivalent to choosing "Trust this folder" at the interactive trust prompt; takes effect per process and does not write a persistent trust record. This is independent of [`[workspace] require_trust`](./config-files.md#workspace-trust); a falsy value does not re-enable trust when that setting is `false` | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_TRUST_WORKSPACE` | Mark the current workspace as trusted, equivalent to choosing "Trust this folder" at the interactive trust prompt; takes effect per process and does not write a persistent trust record. This is independent of [`[workspace] require_trust`](./config-files.md#workspace-trust); a falsy value does not re-enable trust when that setting is `false` | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
 | `KIMI_LOOP_MAX_STEPS_PER_TURN` | Max Agent steps per turn; higher priority than `[loop_control] max_steps_per_turn` (`0` = unlimited) | Non-negative integer; invalid values are ignored |
 | `KIMI_LOOP_MAX_ATTEMPTS_PER_STEP` | Max total attempts for a failing step (including the first); higher priority than `[loop_control] max_attempts_per_step` | Non-negative integer; invalid values are ignored |
-| `KIMI_CODE_INFINITE_RETRY` | Retry failed LLM requests indefinitely; exponential backoff (32 s cap) honoring `Retry-After`; aborting still cancels immediately | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
+| `KIKO_INFINITE_RETRY` | Retry failed LLM requests indefinitely; exponential backoff (32 s cap) honoring `Retry-After`; aborting still cancels immediately | Truthy: `1`/`true`/`yes`/`on`; falsy: `0`/`false`/`no`/`off` |
 | `KIMI_TOKEN_COUNTING_STRATEGY` | Context token count reported externally; higher priority than `[token_counting] strategy` | `measured+estimated`, `measured`, `estimated` (case-insensitive); invalid values are ignored |
 | `KIMI_WEB_SEARCH_BASE_URL` | Web search (`WebSearch`) service API URL; higher priority than the config file; credentials and custom headers not forwarded | Non-blank string; blank values are ignored |
 | `KIMI_WEB_SEARCH_API_KEY` | Web search (`WebSearch`) service API key; replaces both the configured key and the OAuth credential | Non-blank string; blank values are ignored |
 | `KIMI_WEB_FETCH_BASE_URL` | Web fetch (`FetchURL`) service API URL; higher priority than the config file; credentials not forwarded. Without an endpoint, signed-in users get the managed Kimi OAuth fetch service before direct local requests | Non-blank string; blank values are ignored |
 | `KIMI_WEB_FETCH_API_KEY` | Web fetch (`FetchURL`) service API key; replaces both the configured key and the OAuth credential | Non-blank string; blank values are ignored |
-| `KIMI_CODE_EXPERIMENTAL_FLAG` | Enable all registered experimental features for this process | `1`, `true`, `yes`, `on` |
+| `KIKO_EXPERIMENTAL_FLAG` | Enable all registered experimental features for this process | `1`, `true`, `yes`, `on` |
 | `KIMI_SHELL_PATH` | Override the Git Bash path on Windows (used when auto-detection fails) | Absolute path |
 | `KIMI_MODEL_MAX_COMPLETION_TOKENS` | Hard cap on `max_completion_tokens` per LLM step; applies to the `kimi` provider only | Positive integer; `0` or negative disables clamping |
 | `KIMI_MODEL_TEMPERATURE` | Sampling temperature for every request; `kimi` provider only (global, independent of `KIMI_MODEL_NAME`) | Number, e.g. `0.3` |
 | `KIMI_MODEL_TOP_P` | Nucleus-sampling `top_p` for every request; `kimi` provider only (global) | Number, e.g. `0.95` |
 | `KIMI_MODEL_THINKING_EFFORT` | Force a thinking effort (`thinking.effort`), bypassing the model's declared `support_efforts`; `kimi` provider only | An effort value, e.g. `max` |
 | `KIMI_MODEL_THINKING_KEEP` | Preserved-thinking passthrough: `thinking.keep` on `kimi`, a `clear_thinking_20251015` edit on `anthropic`; overrides `[thinking] keep` | A value the API accepts, e.g. `all`; an off-value (`false`/`0`/`no`/`off`/`none`/`null`) disables it |
-| `KIMI_CODE_LLM_HEADERS_TIMEOUT_MS` | Max time (ms) an LLM request on the `openai` / `openai-responses` / `anthropic` protocols may wait for the response headers (first byte), replacing the HTTP client's default 300 s headers timeout — raise it for long non-streaming thinking; unset keeps the default; the SDK's own total request timeout (default 10 minutes) still caps each attempt; not supported for `google-genai` (its SDK exposes no dispatcher option) or behind a SOCKS proxy (requests still go through the proxy) | Positive integer no greater than 2147483647; invalid values fail the request |
-| `KIMI_CODE_NO_AUTO_UPDATE` | Fully disable the update preflight: no check, background install, or prompt. Legacy alias `KIMI_CLI_NO_AUTO_UPDATE` also honored | Truthy: `1`/`true`/`yes`/`on` |
-| `KIMI_CODE_CLIPBOARD_OSC52` | Also copy through your terminal (OSC 52); try it when copying does not work over a remote connection. In tmux, also add `set -g set-clipboard on` | `1` to enable |
-| `KIMI_CODE_TUI_ANIMATION_FPS` | Frame rate of the shimmer on in-progress titles in the terminal UI | Integer from `1` to `60`; invalid values are ignored with a notice at startup |
+| `KIKO_LLM_HEADERS_TIMEOUT_MS` | Max time (ms) an LLM request on the `openai` / `openai-responses` / `anthropic` protocols may wait for the response headers (first byte), replacing the HTTP client's default 300 s headers timeout — raise it for long non-streaming thinking; unset keeps the default; the SDK's own total request timeout (default 10 minutes) still caps each attempt; not supported for `google-genai` (its SDK exposes no dispatcher option) or behind a SOCKS proxy (requests still go through the proxy) | Positive integer no greater than 2147483647; invalid values fail the request |
+| `KIKO_NO_AUTO_UPDATE` | Fully disable the update preflight: no check, background install, or prompt | Truthy: `1`/`true`/`yes`/`on` |
+| `KIKO_CLIPBOARD_OSC52` | Also copy through your terminal (OSC 52); try it when copying does not work over a remote connection. In tmux, also add `set -g set-clipboard on` | `1` to enable |
+| `KIKO_TUI_ANIMATION_FPS` | Frame rate of the shimmer on in-progress titles in the terminal UI | Integer from `1` to `60`; invalid values are ignored with a notice at startup |
 | `KIMI_DISABLE_CRON` | Disable the scheduled-task tool (`CronCreate` rejects new schedules; existing tasks do not fire) | `1` to disable |
 
-The `KIMI_CODE_INFINITE_RETRY`, `KIMI_CODE_IDENTITY_*`, and `KIMI_CODE_BUILTIN_PRODUCT_SKILLS` variables are read by the `agent-core-v2` engine.
+The `KIKO_INFINITE_RETRY`, `KIKO_IDENTITY_*`, and `KIKO_BUILTIN_PRODUCT_SKILLS` variables are read by the `agent-core-v2` engine.
 
 ## Diagnostic logs
 
@@ -256,5 +256,5 @@ Stdio MCP servers that run as Node child processes honor `HTTP_PROXY` / `HTTPS_P
 ## Next steps
 
 - [Config overrides](./overrides.md) — how environment variables, CLI options, and the config file interact by priority
-- [Data locations](./data-locations.md) — directory structure affected by `KIMI_CODE_HOME`
+- [Data locations](./data-locations.md) — directory structure affected by `KIKO_HOME`
 - [Providers and models](./providers.md) — full connection examples per provider type

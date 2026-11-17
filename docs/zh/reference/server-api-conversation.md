@@ -72,7 +72,7 @@ WebSocket 只有一个端点：`ws://<host>:<port>/api/v1/ws`。鉴权在升级�
 
 ### 会话在服务端关闭和重新打开
 
-服务端会关闭一段时间没有活动的会话：默认 30 分钟（环境变量 `KIMI_CODE_SESSION_IDLE_RECLAIM_MS` 可以修改），忙碌、有待处理交互或有定时任务的会话不会被关闭，有没有订阅者不影响这个判断。`:reload` 也会先关闭再重新打开会话。
+服务端会关闭一段时间没有活动的会话：默认 30 分钟（环境变量 `KIKO_SESSION_IDLE_RECLAIM_MS` 可以修改），忙碌、有待处理交互或有定时任务的会话不会被关闭，有没有订阅者不影响这个判断。`:reload` 也会先关闭再重新打开会话。
 
 会话关闭期间不推送任何会话帧，但订阅仍然有效。会话重新打开后，服务端给这些连接重发每个已订阅 agent 的 `task.list`、`agent`、`usage`、`goal`、`todo` 和 `turns`。所以 `turns` 不只在订阅之后出现，客户端任何时候收到它，都要用它替换这个 agent 的对话。
 
@@ -134,7 +134,7 @@ REST 请求的响应和 WebSocket 帧走不同的通道，到达顺序不固定�
 | `status` | `running` 或 `ended` |
 | `outcome` | 已结束的条目除下文另有说明外为 `completed` |
 | `created_at` | 创建时间 |
-| `debug` | 服务端以 `KIMI_CODE_DEBUG=1` 运行时，每个已结束步骤的最后一个条目带上它，描述这一步的模型请求：`{ finish_reason?, usage?, timing? }`。`timing` 在有测量值时包含 `first_token_ms`、`stream_ms`、`request_build_ms`、`server_first_token_ms`、`server_decode_ms`、`client_consume_ms` 和 `client_blocked_ms`。步骤结束时，这个条目会以 `item.ended` 再下发一次 |
+| `debug` | 服务端以 `KIKO_DEBUG=1` 运行时，每个已结束步骤的最后一个条目带上它，描述这一步的模型请求：`{ finish_reason?, usage?, timing? }`。`timing` 在有测量值时包含 `first_token_ms`、`stream_ms`、`request_build_ms`、`server_first_token_ms`、`server_decode_ms`、`client_consume_ms` 和 `client_blocked_ms`。步骤结束时，这个条目会以 `item.ended` 再下发一次 |
 
 条目按出现的先后排列。各类型条目的其余字段如下。
 

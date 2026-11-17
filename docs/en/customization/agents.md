@@ -58,13 +58,13 @@ Beyond the three built-in sub-agents, you can define your own agents as Markdown
 Kimi Code CLI discovers agent files by scope; more specific scopes take higher priority: **Explicit (`--agent-file`) > Project > Extra > User > Plugin > Built-in**. When two files define the same `name`, the higher-priority scope wins. Each directory is scanned recursively for `.md` files.
 
 **User level** (applies to all projects):
-- `$KIMI_CODE_HOME/agents/` (default: `~/.kimi-code/agents/`)
+- `$KIKO_HOME/agents/` (default: `~/.kiko/agents/`)
 - `~/.agents/agents/`
 
-The Kimi-specific user agent directory moves with `KIMI_CODE_HOME`, while the generic `~/.agents/agents/` directory stays under the real OS home so it can be shared across tools.
+The Kimi-specific user agent directory moves with `KIKO_HOME`, while the generic `~/.agents/agents/` directory stays under the real OS home so it can be shared across tools.
 
 **Project level** (project root = the nearest directory containing `.git`, searching upward from the working directory):
-- `.kimi-code/agents/`
+- `.kiko/agents/`
 - `.agents/agents/`
 
 **Extra directories**: Declared via `extra_agent_dirs` at the top level of `config.toml`:
@@ -77,10 +77,10 @@ extra_agent_dirs = ["~/team-agents", ".agents/team-agents"]
 
 **Built-in agents** are distributed with the CLI and have the lowest priority. A directory-discovered file does not override a same-name built-in Agent unless its frontmatter declares `override: true`. A file loaded through `--agent-file` is treated as explicit launch intent, may override a same-name built-in Agent, outranks every directory scope, and applies to the current launch only.
 
-Separately, `$KIMI_CODE_HOME/SYSTEM.md` permanently overrides the default main agent's system prompt; it is not part of agent-file discovery. Its precedence interactions are covered in the [SYSTEM.md section](#overriding-the-main-agents-system-prompt-with-systemmd).
+Separately, `$KIKO_HOME/SYSTEM.md` permanently overrides the default main agent's system prompt; it is not part of agent-file discovery. Its precedence interactions are covered in the [SYSTEM.md section](#overriding-the-main-agents-system-prompt-with-systemmd).
 
 ::: warning Trust model
-Agent files are prompt configuration, and project-level files come from the repository itself, including repositories you have just cloned and do not trust yet. A project-scoped file can take over a built-in agent entirely: naming it `agent.md` with `override: true` replaces the **default main agent's whole system prompt**, and `coder.md` with `override: true` replaces the default sub-agent type. Unlike `AGENTS.md` content, which is injected into the prompt as reference data, an override file *is* the system prompt, and a file without a `tools` list keeps every tool. Review `.kimi-code/agents/` and `.agents/agents/` in unfamiliar repositories with the same caution you would apply to scripts, before running Kimi Code inside them.
+Agent files are prompt configuration, and project-level files come from the repository itself, including repositories you have just cloned and do not trust yet. A project-scoped file can take over a built-in agent entirely: naming it `agent.md` with `override: true` replaces the **default main agent's whole system prompt**, and `coder.md` with `override: true` replaces the default sub-agent type. Unlike `AGENTS.md` content, which is injected into the prompt as reference data, an override file *is* the system prompt, and a file without a `tools` list keeps every tool. Review `.kiko/agents/` and `.agents/agents/` in unfamiliar repositories with the same caution you would apply to scripts, before running Kimi Code inside them.
 :::
 
 ### Agent File Format
@@ -157,7 +157,7 @@ For main-agent customization, reference `${base_prompt}` in the body so the envi
 
 ### Overriding the main agent's system prompt with SYSTEM.md
 
-To override the main agent's system prompt permanently, without passing `--agent` or `--agent-file` on every launch, write a `$KIMI_CODE_HOME/SYSTEM.md` file (default: `~/.kimi-code/SYSTEM.md`; it moves with `KIMI_CODE_HOME`). While the file exists and is non-empty, it fully replaces the built-in default main agent's system prompt (and only the prompt: the description, tool set, and sub-agent delegation allowlist are inherited from the built-in defaults). SYSTEM.md takes effect in every launch mode, including interactive TUI sessions.
+To override the main agent's system prompt permanently, without passing `--agent` or `--agent-file` on every launch, write a `$KIKO_HOME/SYSTEM.md` file (default: `~/.kiko/SYSTEM.md`; it moves with `KIKO_HOME`). While the file exists and is non-empty, it fully replaces the built-in default main agent's system prompt (and only the prompt: the description, tool set, and sub-agent delegation allowlist are inherited from the built-in defaults). SYSTEM.md takes effect in every launch mode, including interactive TUI sessions.
 
 SYSTEM.md is a plain Markdown body; no frontmatter is required or read. A missing or empty file has no effect, and a read failure falls back to the built-in prompt with a warning.
 
@@ -196,7 +196,7 @@ ${plugin_sections}
 
 ## Instruction Files
 
-Global Kimi-specific instructions can live at `$KIMI_CODE_HOME/AGENTS.md` (default: `~/.kimi-code/AGENTS.md`). When you relocate the data root with `KIMI_CODE_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.kimi-code/AGENTS.md` or `AGENTS.md`.
+Global Kimi-specific instructions can live at `$KIKO_HOME/AGENTS.md` (default: `~/.kiko/AGENTS.md`). When you relocate the data root with `KIKO_HOME`, this global instruction file moves with it. Generic cross-tool instructions can still live under `~/.agents/AGENTS.md` in the real OS home, and project-level instructions remain under the project tree, for example `.kiko/AGENTS.md` or `AGENTS.md`.
 
 ## Storage Location in the Session Directory
 

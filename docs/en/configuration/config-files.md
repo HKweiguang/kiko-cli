@@ -1,16 +1,16 @@
 # Configuration files
 
-Kimi Code CLI writes all long-term preferences into TOML (plain-text configuration) files under `~/.kimi-code/`: runtime settings live in `config.toml`, and terminal-UI preferences live in a companion `tui.toml`.
+Kimi Code CLI writes all long-term preferences into TOML (plain-text configuration) files under `~/.kiko/`: runtime settings live in `config.toml`, and terminal-UI preferences live in a companion `tui.toml`.
 
 ## Config file location
 
-The CLI reads configuration from `~/.kimi-code/config.toml`, created automatically on first run. To relocate the data directory, override it with the `KIMI_CODE_HOME` environment variable:
+The CLI reads configuration from `~/.kiko/config.toml`, created automatically on first run. To relocate the data directory, override it with the `KIKO_HOME` environment variable:
 
 ```sh
-export KIMI_CODE_HOME=/path/to/kimi-home
+export KIKO_HOME=/path/to/kiko-home
 ```
 
-The config file path then becomes `$KIMI_CODE_HOME/config.toml`. Regardless of where the directory lives, the file name is always `config.toml`.
+The config file path then becomes `$KIKO_HOME/config.toml`. Regardless of where the directory lives, the file name is always `config.toml`.
 
 ::: tip
 TOML field names always use snake_case, for example `default_model` and `max_context_size`. If a key contains `.`, you must quote it (for example `[models."gpt-4.1"]`); otherwise TOML treats `.` as a nested table separator.
@@ -84,7 +84,7 @@ pattern = "Bash(rm -rf*)"
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash"
-command = "node ~/.kimi-code/hooks/check-bash.mjs"
+command = "node ~/.kiko/hooks/check-bash.mjs"
 timeout = 5
 ```
 
@@ -351,7 +351,7 @@ Retries only apply to transient failures: connection errors, timeouts, HTTP 429 
 | `print_wait_ceiling_s` | `integer` | `2147483` | Wall-clock ceiling (seconds) for the print-mode wait/steer loop; no effect outside print mode or with `"exit"` |
 | `print_max_turns` | `integer` | `100000` | Maximum number of new turns triggered by background-task completions in `"steer"` mode; keeps the steering loop bounded |
 
-`keep_alive_on_exit` can be overridden by the `KIMI_CODE_BACKGROUND_KEEP_ALIVE_ON_EXIT` environment variable, `bash_task_timeout_s` by `KIMI_CODE_BACKGROUND_BASH_TASK_TIMEOUT_S`, and `print_background_mode`, `print_wait_ceiling_s`, and `print_max_turns` by `KIMI_CODE_BACKGROUND_PRINT_BACKGROUND_MODE`, `KIMI_CODE_BACKGROUND_PRINT_WAIT_CEILING_S`, and `KIMI_CODE_BACKGROUND_PRINT_MAX_TURNS`; all take higher priority than either configuration section.
+`keep_alive_on_exit` can be overridden by the `KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT` environment variable, `bash_task_timeout_s` by `KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S`, and `print_background_mode`, `print_wait_ceiling_s`, and `print_max_turns` by `KIKO_BACKGROUND_PRINT_BACKGROUND_MODE`, `KIKO_BACKGROUND_PRINT_WAIT_CEILING_S`, and `KIKO_BACKGROUND_PRINT_MAX_TURNS`; all take higher priority than either configuration section.
 
 In print mode (`kiko -p "<prompt>"`), Kimi Code stays alive after the main agent's turn as long as background tasks are still pending: each completion is fed back to the main agent as a synthetic user message, steering it into a new turn (`print_background_mode = "steer"` by default), and the run exits once a turn ends with nothing pending. The loop is bounded by `print_wait_ceiling_s` and `print_max_turns`, both effectively unbounded by default. Background work is never killed by a wall-clock cap in print mode either: background `Bash` tasks default to no timeout (`bash_task_timeout_s = 0`), and subagents run without a timeout (`[subagent] timeout_ms` and `[swarm] timeout_ms` both default to `0` unless explicitly set), so only the model itself stops a task. Set `print_background_mode` to `"drain"` to wait for tasks without feeding results back, or `"exit"` to end the run as soon as the main agent finishes.
 
@@ -373,7 +373,7 @@ In print mode (`kiko -p "<prompt>"`), Kimi Code stays alive after the main agent
 | --- | --- | --- | --- |
 | `timeout_ms` | `integer` | `7200000` (2 hours) | Maximum wall-clock time (milliseconds) a single `AgentSwarm` subagent may run; on timeout it is aborted and the aggregated report marks `Subagent timed out.`; `0` means no timeout |
 
-`timeout_ms` can be overridden by the `KIMI_CODE_SWARM_TIMEOUT_MS` environment variable, which takes higher priority than `config.toml`.
+`timeout_ms` can be overridden by the `KIKO_SWARM_TIMEOUT_MS` environment variable, which takes higher priority than `config.toml`.
 
 ## `mcp`
 
@@ -404,7 +404,7 @@ name = "Acme Dev Agent"
 slug = "acme-dev"        # optional
 ```
 
-Both fields can be set through the `KIMI_CODE_IDENTITY_NAME` and `KIMI_CODE_IDENTITY_SLUG` environment variables, which take higher priority than `config.toml` and are never written back to it, making them convenient for containers and CI, where writing a config file is awkward.
+Both fields can be set through the `KIKO_IDENTITY_NAME` and `KIKO_IDENTITY_SLUG` environment variables, which take higher priority than `config.toml` and are never written back to it, making them convenient for containers and CI, where writing a config file is awkward.
 
 A name that contains no ASCII letters or digits (for example a purely Chinese name) leaves nothing to derive a slug from and falls back to `agent`; write `slug` explicitly if you need a specific protocol token.
 
@@ -470,7 +470,7 @@ Both values must be positive integers. A call's `max_chars` overrides the defaul
 | `global_search` | `boolean` | `false` | Build the global full-text search index and serve `POST /api/v1/search`; when off, no sessions are scanned, no search worker starts, and the search endpoint reports the index as unavailable |
 | `search` | `boolean` | `true` | With global search enabled, run the index in a dedicated worker thread; `false` runs it in the server process |
 
-`base` can be overridden by the `KIMI_CODE_PERSISTENCE_MINIDB_READMODEL` environment variable, `global_search` by `KIMI_CODE_GLOBAL_SEARCH`, and `search` by `KIMI_CODE_SEARCH_WORKER`; all take higher priority than `config.toml`.
+`base` can be overridden by the `KIKO_PERSISTENCE_MINIDB_READMODEL` environment variable, `global_search` by `KIKO_GLOBAL_SEARCH`, and `search` by `KIKO_SEARCH_WORKER`; all take higher priority than `config.toml`.
 
 ## `watch`
 
@@ -480,7 +480,7 @@ Both values must be positive integers. A call's `max_chars` overrides the defaul
 | --- | --- | --- | --- |
 | `enabled` | `boolean` | `true` | Attach filesystem watchers; `false` disables every `watch()` for the process |
 
-`enabled` can be overridden by the `KIMI_CODE_WATCH` environment variable, which takes higher priority than `config.toml`.
+`enabled` can be overridden by the `KIKO_WATCH` environment variable, which takes higher priority than `config.toml`.
 
 ## `workspace trust`
 
@@ -496,10 +496,10 @@ require_trust = false
 ```
 
 ::: warning Note
-Disabling the trust requirement loads project-level MCP servers and other trust-gated project configuration without confirmation. Use this setting only when every workspace is already trusted. Permission modes and the `dangerous_command_guard` setting are unchanged, but [project `allow` rules](#permission) loaded from `.kimi-code/local.toml` can suppress tool approval prompts, including sensitive-file and git-control-path guards.
+Disabling the trust requirement loads project-level MCP servers and other trust-gated project configuration without confirmation. Use this setting only when every workspace is already trusted. Permission modes and the `dangerous_command_guard` setting are unchanged, but [project `allow` rules](#permission) loaded from `.kiko/local.toml` can suppress tool approval prompts, including sensitive-file and git-control-path guards.
 :::
 
-Changes take effect on `/reload`; a running TUI does not show a startup trust prompt retroactively. `KIMI_CODE_TRUST_WORKSPACE=1` remains an independent per-process trust override, and a falsy value does not restore the first-open requirement when `require_trust` is `false`. Existing trust records are preserved and used again if the requirement is re-enabled.
+Changes take effect on `/reload`; a running TUI does not show a startup trust prompt retroactively. `KIKO_TRUST_WORKSPACE=1` remains an independent per-process trust override, and a falsy value does not restore the first-open requirement when `require_trust` is `false`. Existing trust records are preserved and used again if the requirement is re-enabled.
 
 <!--
 ## `experimental`
@@ -540,9 +540,9 @@ api_key = "sk-xxx"
 
 User rules are loaded from the user `config.toml` at session startup. For compatibility, legacy `turn-override` and `session-runtime` rules in the user config are silently ignored without a warning.
 
-Project rules are read from `.kimi-code/local.toml` only in the local environment when the workspace is trusted, with an omitted `scope` defaulting to `project`. Remote project rules are not supported. Project rule changes take effect in a new session and are not hot-reloaded.
+Project rules are read from `.kiko/local.toml` only in the local environment when the workspace is trusted, with an omitted `scope` defaulting to `project`. Remote project rules are not supported. Project rule changes take effect in a new session and are not hot-reloaded.
 
-You can also set `dangerous_command_guard = false` under `[permission]` to turn off every built-in guard confirmation policy entirely: dangerous commands, access to sensitive files such as `.env` or `id_rsa`, and access to git control paths no longer ask for confirmation in Always Ask and Ask When Needed mode (these policies are never active in Never Ask mode); the default is `true`. An environment variable `KIMI_CODE_DANGEROUS_COMMAND_GUARD=false` overrides the file setting. With all built-in guards off, only `ask` rules you configured yourself can still prompt in Ask When Needed mode; in Always Ask mode, tools that are not auto-approved continue to prompt as before. The hard block that stops `Read`/`Write`/`Edit` from touching secret files stays in effect. Use this switch only for environments that already gate commands outside the agent.
+You can also set `dangerous_command_guard = false` under `[permission]` to turn off every built-in guard confirmation policy entirely: dangerous commands, access to sensitive files such as `.env` or `id_rsa`, and access to git control paths no longer ask for confirmation in Always Ask and Ask When Needed mode (these policies are never active in Never Ask mode); the default is `true`. An environment variable `KIKO_DANGEROUS_COMMAND_GUARD=false` overrides the file setting. With all built-in guards off, only `ask` rules you configured yourself can still prompt in Ask When Needed mode; in Always Ask mode, tools that are not auto-approved continue to prompt as before. The hard block that stops `Read`/`Write`/`Edit` from touching secret files stays in effect. Use this switch only for environments that already gate commands outside the agent.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -572,7 +572,7 @@ pattern = "Bash"
 ```
 
 ::: tip
-MCP server declarations are configured in `~/.kimi-code/mcp.json` or the project-local `.kimi-code/mcp.json`, not in `config.toml`. The interactive configuration entry point is `/mcp-config`; see [Model Context Protocol](../customization/mcp.md).
+MCP server declarations are configured in `~/.kiko/mcp.json` or the project-local `.kiko/mcp.json`, not in `config.toml`. The interactive configuration entry point is `/mcp-config`; see [Model Context Protocol](../customization/mcp.md).
 :::
 
 ## `environments`
@@ -591,7 +591,7 @@ The optional top-level `default` names the environment a session binds to when c
 | --- | --- | --- | --- |
 | `type` | `string` | Yes | `"ssh"` |
 | `host` | `string` | Yes | SSH host; spawned through the system `ssh`, so `~/.ssh/config` (user, port, key, `ProxyJump`, `ControlMaster`) applies |
-| `remoteBin` | `string` | No | Path to `kiko` on the target; defaults to `~/.kimi-code/bin/kiko` on POSIX and `~/.kimi-code/bin/kiko.exe` on Windows. Supports absolute paths with spaces, `~/` paths under the target account's home, or bare names on the target's `PATH`, such as `kiko` |
+| `remoteBin` | `string` | No | Path to `kiko` on the target; defaults to `~/.kiko/bin/kiko` on POSIX and `~/.kiko/bin/kiko.exe` on Windows. Supports absolute paths with spaces, `~/` paths under the target account's home, or bare names on the target's `PATH`, such as `kiko` |
 | `defaultCwd` | `string` | No | Working-directory prefill when binding a session; not validated locally |
 
 ### Docker entries
@@ -601,7 +601,7 @@ The optional top-level `default` names the environment a session binds to when c
 | `type` | `string` | Yes | `"docker"` |
 | `container` | `string` | Yes | Running container name or id; attached with `docker exec` |
 | `context` | `string` | No | Docker context (for example `orbstack`) |
-| `remoteBin` | `string` | No | Path to `kiko` inside the container; defaults to `~/.kimi-code/bin/kiko` under the container user's home. The launcher runs through `docker exec … sh -c`, so a leading `~` is expanded by the container's shell |
+| `remoteBin` | `string` | No | Path to `kiko` inside the container; defaults to `~/.kiko/bin/kiko` under the container user's home. The launcher runs through `docker exec … sh -c`, so a leading `~` is expanded by the container's shell |
 | `defaultCwd` | `string` | No | Working-directory prefill when binding a session |
 
 ### Command entries
@@ -611,9 +611,9 @@ The generic launcher form, for any environment the built-in launchers do not cov
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `command` | `string` | Yes | Launcher executable: a name resolved against `PATH`, or an absolute path. A resolution landing inside the working directory is refused, so a project cannot shadow the launcher with a same-named binary |
-| `args` | `array<string>` | No | Launcher arguments that reach the target. When an argument already invokes `exec-server` (for example `--command "~/.kimi-code/bin/kiko exec-server"`), nothing is appended and the arguments run as written |
+| `args` | `array<string>` | No | Launcher arguments that reach the target. When an argument already invokes `exec-server` (for example `--command "~/.kiko/bin/kiko exec-server"`), nothing is appended and the arguments run as written |
 | `env` | `table<string, string>` | No | Environment for the launcher process on your machine; never propagated into commands running on the target |
-| `remoteBin` | `string` | No | Path to `kiko` on the target, appended after `args`; defaults to `~/.kimi-code/bin/kiko`. Use a plain path without spaces or shell metacharacters. `~` only expands when the launcher runs the arguments through a shell on the target, as ssh does; launchers that pass arguments straight through, such as `kubectl exec` and `docker exec`, need an absolute path |
+| `remoteBin` | `string` | No | Path to `kiko` on the target, appended after `args`; defaults to `~/.kiko/bin/kiko`. Use a plain path without spaces or shell metacharacters. `~` only expands when the launcher runs the arguments through a shell on the target, as ssh does; launchers that pass arguments straight through, such as `kubectl exec` and `docker exec`, need an absolute path |
 | `defaultCwd` | `string` | No | Working-directory prefill when binding a session |
 
 ```toml
@@ -633,18 +633,18 @@ container = "myapp-dev"
 command = "sandbox"
 args = ["ssh", "i-1234567890", "--"]
 env = { SANDBOX_TOKEN = "..." }
-defaultCwd = "/home/me/kimi-code"
+defaultCwd = "/home/me/project"
 
 [environments.k8s]
 command = "kubectl"
 args = ["exec", "-i", "dev-pod", "--"]
-remoteBin = "/root/.kimi-code/bin/kiko"
+remoteBin = "/root/.kiko/bin/kiko"
 defaultCwd = "/workspace"
 ```
 
 ## `tui.toml`
 
-Alongside `config.toml`, the CLI keeps terminal-UI and client preferences in a companion `tui.toml` in the same directory (`~/.kimi-code/tui.toml`, or `$KIMI_CODE_HOME/tui.toml` when overridden). It is created with defaults on first run, and the interactive commands `/config`, `/theme`, and `/editor` write to it for you, so you rarely need to edit it by hand. If the file is malformed, the CLI falls back to defaults and shows a notice instead of failing to start.
+Alongside `config.toml`, the CLI keeps terminal-UI and client preferences in a companion `tui.toml` in the same directory (`~/.kiko/tui.toml`, or `$KIKO_HOME/tui.toml` when overridden). It is created with defaults on first run, and the interactive commands `/config`, `/theme`, and `/editor` write to it for you, so you rarely need to edit it by hand. If the file is malformed, the CLI falls back to defaults and shows a notice instead of failing to start.
 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -673,7 +673,7 @@ Model, cwd, git branch, permission mode, plan mode, context usage, session id, v
 </details>
 
 ```toml
-# ~/.kimi-code/tui.toml
+# ~/.kiko/tui.toml
 theme = "auto" # "auto" | "dark" | "light" | custom theme name
 # tui_mode = "regular" # "regular" | "fullscreen" ("fullscreen" is experimental)
 copy_on_select = true # fullscreen only: false copies only when you press Ctrl-C
@@ -699,16 +699,16 @@ thinking = "grouped" # "grouped" | "ungrouped"
 
 # [status_line]
 # items = ["mode", "goal", "model", "tasks", "cwd", "git", "tips"]
-# command = "~/.kimi-code/statusline.sh"
+# command = "~/.kiko/statusline.sh"
 ```
 
 Changes apply on the next start, or immediately with `/reload-tui` (which reloads only `tui.toml`); `/reload` reloads both `config.toml` and `tui.toml`.
 
 ## Project-local configuration
 
-In addition to the user-level files under `~/.kimi-code`, Kimi Code reads a project-local configuration file at `<project-root>/.kimi-code/local.toml`. It holds settings that are specific to one project checkout and typically should not be shared with teammates.
+In addition to the user-level files under `~/.kiko`, Kimi Code reads a project-local configuration file at `<project-root>/.kiko/local.toml`. It holds settings that are specific to one project checkout and typically should not be shared with teammates.
 
-Earlier versions of [`/add-dir`](../reference/slash-commands.md) wrote remembered directories to this file; current versions write them to the workspace registry in `~/.kimi-code/projects.json` instead, and `local.toml` is now a read-only legacy field that nothing writes to. Sessions of implicit workspaces (entered by directory in the terminal) still merge its `additional_dir` into the additional directories; sessions of explicitly created (managed) workspaces no longer read it. To move legacy entries into the registry, use the import action in the client's create/edit workspace dialog (backed by [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api-service.md#get-api-v1-workspaces-project-config-dirs)); imported entries are registry-managed and removals take effect immediately.
+Earlier versions of [`/add-dir`](../reference/slash-commands.md) wrote remembered directories to this file; current versions write them to the workspace registry in `~/.kiko/projects.json` instead, and `local.toml` is now a read-only legacy field that nothing writes to. Sessions of implicit workspaces (entered by directory in the terminal) still merge its `additional_dir` into the additional directories; sessions of explicitly created (managed) workspaces no longer read it. To move legacy entries into the registry, use the import action in the client's create/edit workspace dialog (backed by [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api-service.md#get-api-v1-workspaces-project-config-dirs)); imported entries are registry-managed and removals take effect immediately.
 
 ### `[workspace]`
 
@@ -723,12 +723,12 @@ The `[workspace]` table groups project-level workspace settings:
 additional_dir = ["/absolute/path/to/shared"]
 ```
 
-Because directories are stored as absolute paths, which are specific to your machine, we recommend adding `.kimi-code/local.toml` to your project's `.gitignore` so it is not committed.
+Because directories are stored as absolute paths, which are specific to your machine, we recommend adding `.kiko/local.toml` to your project's `.gitignore` so it is not committed.
 
-Besides `local.toml`, the project `.kimi-code/` directory can also hold `mcp.json` (project MCP servers), which is gated by workspace trust: it only takes effect after you trust the folder in the startup prompt. See [Model Context Protocol](../customization/mcp.md).
+Besides `local.toml`, the project `.kiko/` directory can also hold `mcp.json` (project MCP servers), which is gated by workspace trust: it only takes effect after you trust the folder in the startup prompt. See [Model Context Protocol](../customization/mcp.md).
 
 ## Next steps
 
 - [Providers and models](./providers.md) — connection examples for each provider type (Kimi, Claude, OpenAI, Gemini)
 - [Config overrides](./overrides.md) — priority rules for CLI options, config file, and environment variables
-- [Environment variables](./env-vars.md) — complete list of runtime variables like `KIMI_CODE_HOME`
+- [Environment variables](./env-vars.md) — complete list of runtime variables like `KIKO_HOME`

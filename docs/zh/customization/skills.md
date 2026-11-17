@@ -87,13 +87,13 @@ arguments:
 Kimi Code CLI 按作用域分四档扫描，越具体的作用域优先级越高：**Project > User > Extra > Built-in**。
 
 **用户级**（对所有项目生效）：
-- `$KIMI_CODE_HOME/skills/`（默认：`~/.kimi-code/skills/`）
+- `$KIKO_HOME/skills/`（默认：`~/.kiko/skills/`）
 - `~/.agents/skills/`
 
-Kimi 专属用户级 Skill 目录会随 `KIMI_CODE_HOME` 移动，隔离数据根时也会隔离 Kimi 专属 Skills。通用 `~/.agents/skills/` 目录仍放在真实 OS home 下，以便跨工具共享。
+Kimi 专属用户级 Skill 目录会随 `KIKO_HOME` 移动，隔离数据根时也会隔离 Kimi 专属 Skills。通用 `~/.agents/skills/` 目录仍放在真实 OS home 下，以便跨工具共享。
 
 **项目级**（项目根 = 工作目录向上最近的含 `.git` 的目录）：
-- `.kimi-code/skills/`
+- `.kiko/skills/`
 - `.agents/skills/`
 
 当工作区包含多个已配置的源目录时，Kimi Code CLI 会按上述项目根规则发现每个源目录的项目级 Skills，并合并到同一个 Skill 列表中。同名 Skill 会作为不同变体全部保留。仅按名称调用时，仍优先使用主目录，其后按工作区中的目录顺序确定默认项；菜单会显示各来源目录的最后一级名称，便于选择指定变体。无所属目录的 Skill 会在右侧显示「全局」，内置 Skill 则显示「内置」。斜杠补全中，普通命令位于前面，所有 Skill 连续归入同一个 "Skills" 分组。任意源目录中的 Skill 发生变化时，列表都会自动刷新。仅当前会话临时添加的目录不参与合并；如需使用其中的 Skills，请将该目录记住到工作区。
@@ -145,7 +145,7 @@ arguments:
    - 值得肯定的地方
 ```
 
-将文件保存为 `$KIMI_CODE_HOME/skills/review-pr/SKILL.md`，未设置 `KIMI_CODE_HOME` 时为 `~/.kimi-code/skills/review-pr/SKILL.md`。检查清单放在同目录的 `references/checklist.md`。重开会话后即可调用，例如 `/skill:review-pr #1234`，其中的参数会展开到 `$pr_ref`。
+将文件保存为 `$KIKO_HOME/skills/review-pr/SKILL.md`，未设置 `KIKO_HOME` 时为 `~/.kiko/skills/review-pr/SKILL.md`。检查清单放在同目录的 `references/checklist.md`。重开会话后即可调用，例如 `/skill:review-pr #1234`，其中的参数会展开到 `$pr_ref`。
 
 ## 下一步
 

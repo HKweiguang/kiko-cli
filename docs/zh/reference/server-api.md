@@ -28,7 +28,7 @@ onMounted(() => redirectLegacyServerApiAnchor('zh'))
 
 默认地址为 `http://127.0.0.1:58627`。端口被占用时，服务会依次尝试下一个端口，最多重试 100 次。用 `--port` 和 `--host` 可以修改绑定地址。
 
-同一个 home 目录下可以同时运行多个实例，运行中的实例登记在 `~/.kimi-code/server/instances/`。
+同一个 home 目录下可以同时运行多个实例，运行中的实例登记在 `~/.kiko/server/instances/`。
 
 ## 鉴权
 

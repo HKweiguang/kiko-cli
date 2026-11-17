@@ -6,7 +6,7 @@ A remote environment lets the Agent read and write files and run Shell commands 
 
 ### 1. Prepare the remote machine
 
-- Install the Kimi Code executor for the target platform at `~/.kimi-code/bin/kiko`.
+- Install the Kimi Code executor for the target platform at `~/.kiko/bin/kiko`.
 - Make sure your machine can sign in to the remote machine with SSH keys.
 - Configure users, ports, keys, and jump hosts in `~/.ssh/config` if needed.
 
@@ -87,7 +87,7 @@ Custom command example:
 [environments.sandbox]
 command = "sandbox"
 args = ["ssh", "i-1234567890", "--"]
-defaultCwd = "/home/me/kimi-code"
+defaultCwd = "/home/me/project"
 ```
 
 Common rules:
@@ -104,7 +104,7 @@ See the [`environments` configuration reference](../configuration/config-files.m
 When the remote target is a Windows machine:
 
 - Install [Git for Windows](https://gitforwindows.org/) and the Windows executor on the target.
-- The default executor path is `~/.kimi-code/bin/kiko.exe`.
+- The default executor path is `~/.kiko/bin/kiko.exe`.
 - Use a native drive path such as `C:\work\project` for `defaultCwd`.
 - SSH and custom commands are supported; Docker containers are not.
 

@@ -54,13 +54,13 @@ Network requests only go through `github.com` redirects and `codeload.github.com
 ### Notes
 
 - Plugin changes apply after `/reload` or in new sessions. After installing, enabling/disabling, or removing a plugin, run `/reload` or `/new`; the current session will not update.
-- Local installations are copied to `$KIMI_CODE_HOME/plugins/managed/<id>/`, and the CLI always runs from this managed copy. Editing the original source directory after installation has no effect; you must reinstall.
+- Local installations are copied to `$KIKO_HOME/plugins/managed/<id>/`, and the CLI always runs from this managed copy. Editing the original source directory after installation has no effect; you must reinstall.
 - Removing a plugin only deletes the installation record; the managed copy and original source files remain on disk.
 - Plugins are currently installed per-user and apply to all projects; project-level installation scope is not yet supported.
 
 ### Custom marketplace JSON
 
-Pass a custom marketplace JSON path or URL to `/plugins marketplace <source>`, or set [`KIMI_CODE_PLUGIN_MARKETPLACE_URL`](../configuration/env-vars.md) to override the default catalog. Each entry in the `plugins` array needs an `id` and a `source` (local path, zip URL, or GitHub URL):
+Pass a custom marketplace JSON path or URL to `/plugins marketplace <source>`, or set [`KIKO_PLUGIN_MARKETPLACE_URL`](../configuration/env-vars.md) to override the default catalog. Each entry in the `plugins` array needs an `id` and a `source` (local path, zip URL, or GitHub URL):
 
 ```json
 {
@@ -77,7 +77,7 @@ Pass a custom marketplace JSON path or URL to `/plugins marketplace <source>`, o
 
 Marketplace entries can also declare `clients` (`desktop`, `cli`, or both) and `platforms` (`macos`, `windows`, `linux`, or `cloud`). `clients` selects the product host, while `platforms` selects the server operating system; both constraints must match. If `clients` is omitted, the entry is available to both hosts. Web and Remote Control follow the host of the connected server, not the browser's operating system.
 
-Installations remain shared under `$KIMI_CODE_HOME`. An entry hidden on one host is also excluded from that host's installed list and runtime capabilities. The last successful availability configuration is cached in `$KIMI_CODE_HOME/plugins/availability.json`; after the catalog changes, a successful refresh hides or restores the existing installation without reinstalling or deleting its files.
+Installations remain shared under `$KIKO_HOME`. An entry hidden on one host is also excluded from that host's installed list and runtime capabilities. The last successful availability configuration is cached in `$KIKO_HOME/plugins/availability.json`; after the catalog changes, a successful refresh hides or restores the existing installation without reinstalling or deleting its files.
 
 ## Official Plugins
 
@@ -491,7 +491,7 @@ Plugin hooks reuse the same mechanism as global hooks. See [Hooks](./hooks.md) f
 
 - A plugin's hooks are active only while the plugin is **enabled**; disabling the plugin stops its hooks.
 - Each hook runs with its working directory set to the plugin root, so `command` can use `./` paths inside the plugin.
-- The hook process receives two extra environment variables: `KIMI_CODE_HOME` and `KIMI_PLUGIN_ROOT` (the plugin root directory).
+- The hook process receives two extra environment variables: `KIKO_HOME` and `KIMI_PLUGIN_ROOT` (the plugin root directory).
 
 Installing a plugin never runs its hooks by itself. They only fire when their matching event occurs while the plugin is enabled.
 

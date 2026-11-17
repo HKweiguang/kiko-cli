@@ -169,7 +169,7 @@ kiko web --no-open       # don't open the browser
 kiko web --port 58628    # pick a specific bind port
 ```
 
-Multiple instances can share one home directory: each registers itself under `~/.kimi-code/server/instances/`, and a busy port is retried with `port + 1` (58628, 58629, …).
+Multiple instances can share one home directory: each registers itself under `~/.kiko/server/instances/`, and a busy port is retried with `port + 1` (58628, 58629, …).
 
 | Option | Description |
 | --- | --- |
@@ -194,11 +194,11 @@ The `kiko server` command tree is deprecated: any `kiko server …` invocation (
 
 #### `kiko server kill`
 
-Deprecated — only stops a server started by a version before 0.28.0. Those versions could leave a background server behind, recorded in the legacy single-instance lock at `~/.kimi-code/server/lock`; the command first tries `POST /api/v1/shutdown` for a graceful exit, then signals the recorded pid with SIGTERM, escalating to SIGKILL when needed, and removes the lock file once the process is confirmed dead. Servers started by `kiko web` run in the foreground — stop them with `Ctrl+C` instead.
+Deprecated — only stops a server started by a version before 0.28.0. Those versions could leave a background server behind, recorded in the legacy single-instance lock at `~/.kiko/server/lock`; the command first tries `POST /api/v1/shutdown` for a graceful exit, then signals the recorded pid with SIGTERM, escalating to SIGKILL when needed, and removes the lock file once the process is confirmed dead. Servers started by `kiko web` run in the foreground — stop them with `Ctrl+C` instead.
 
 #### `kiko web rotate-token`
 
-Generate a new persistent bearer token (written to `~/.kimi-code/server.token`); the previous token stops working immediately. The token is shared by the whole home directory, so every running instance picks the new one up on its next auth check — no restart needed.
+Generate a new persistent bearer token (written to `~/.kiko/server.token`); the previous token stops working immediately. The token is shared by the whole home directory, so every running instance picks the new one up on its next auth check — no restart needed.
 
 ### `kiko app`
 
@@ -225,7 +225,7 @@ This subcommand has no flags. The former name, `kiko install-app`, still works a
 
 ### `kiko doctor`
 
-Validate `config.toml` and `tui.toml` without starting the TUI or modifying either file. By default, the command checks the files under `KIMI_CODE_HOME` (or `~/.kimi-code` when the environment variable is unset). Missing default files are reported as skipped because built-in defaults can apply.
+Validate `config.toml` and `tui.toml` without starting the TUI or modifying either file. By default, the command checks the files under `KIKO_HOME` (or `~/.kiko` when the environment variable is unset). Missing default files are reported as skipped because built-in defaults can apply.
 
 ```sh
 kiko doctor
@@ -265,7 +265,7 @@ kiko export [sessionId] [options]
 | `--yes` | `-y` | Skip the confirmation prompt for the default session and export directly |
 | `--no-include-global-log` | | Do not include the global diagnostic log. Included by default |
 
-The export contains all files in the target session directory. The global diagnostic log (`~/.kimi-code/logs/kimi-code.log`) is included by default because it may contain events from other sessions or projects; add `--no-include-global-log` if you do not want to share it.
+The export contains all files in the target session directory. The global diagnostic log (`~/.kiko/logs/kimi-code.log`) is included by default because it may contain events from other sessions or projects; add `--no-include-global-log` if you do not want to share it.
 
 ```sh
 # Export the most recent session in the current directory, skipping confirmation

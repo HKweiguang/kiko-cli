@@ -87,13 +87,13 @@ Positional arguments support single and double quoting, so in `/skill:commit "fi
 Kimi Code CLI scans four tiers by scope; more specific scopes take higher priority: **Project > User > Extra > Built-in**
 
 **User level** (applies to all projects):
-- `$KIMI_CODE_HOME/skills/` (default: `~/.kimi-code/skills/`)
+- `$KIKO_HOME/skills/` (default: `~/.kiko/skills/`)
 - `~/.agents/skills/`
 
-The Kimi-specific user Skill directory moves with `KIMI_CODE_HOME`, so isolated data roots also get isolated Kimi-specific Skills. The generic `~/.agents/skills/` directory stays under the real OS home so it can be shared across tools.
+The Kimi-specific user Skill directory moves with `KIKO_HOME`, so isolated data roots also get isolated Kimi-specific Skills. The generic `~/.agents/skills/` directory stays under the real OS home so it can be shared across tools.
 
 **Project level** (project root = the nearest directory containing `.git`, searching upward from the working directory):
-- `.kimi-code/skills/`
+- `.kiko/skills/`
 - `.agents/skills/`
 
 For a workspace with multiple configured source directories, Kimi Code CLI discovers project-level Skills for every source directory using the project-root rules above and merges them into one Skill catalog. Same-name Skills remain available as separate variants. An unqualified Skill name still resolves to the primary directory first, then to additional directories in workspace order; menus show the final path segment of each source directory so you can select a specific variant. Skills without a workspace directory show a global source label, while built-in Skills show a built-in label at the right edge. In slash completion, ordinary commands appear first, followed by all Skills under a single "Skills" heading. Skill changes in any source directory automatically reload the catalog. Session-only additional directories are excluded; remember a directory in the workspace to include its Skills.
@@ -145,7 +145,7 @@ Please review the PR the user specified: $pr_ref
    - Noteworthy positives
 ```
 
-Save this as `$KIMI_CODE_HOME/skills/review-pr/SKILL.md` (or `~/.kimi-code/skills/review-pr/SKILL.md` when `KIMI_CODE_HOME` is unset), place the checklist at `references/checklist.md` in the same directory, and after starting a new session you can invoke it with `/skill:review-pr #1234`, where `#1234` is expanded into `$pr_ref`.
+Save this as `$KIKO_HOME/skills/review-pr/SKILL.md` (or `~/.kiko/skills/review-pr/SKILL.md` when `KIKO_HOME` is unset), place the checklist at `references/checklist.md` in the same directory, and after starting a new session you can invoke it with `/skill:review-pr #1234`, where `#1234` is expanded into `$pr_ref`.
 
 ## Next steps
 

@@ -6,7 +6,7 @@
 
 ### 1. 准备远程机器
 
-- 将目标平台的 Kimi Code 执行器安装到 `~/.kimi-code/bin/kiko`。
+- 将目标平台的 Kimi Code 执行器安装到 `~/.kiko/bin/kiko`。
 - 确认本机可以通过 SSH 密钥登录远程机器。
 - 用户、端口、密钥和跳板机可先在 `~/.ssh/config` 中配置。
 
@@ -87,7 +87,7 @@ defaultCwd = "/workspace"
 [environments.sandbox]
 command = "sandbox"
 args = ["ssh", "i-1234567890", "--"]
-defaultCwd = "/home/me/kimi-code"
+defaultCwd = "/home/me/project"
 ```
 
 常用规则：
@@ -104,7 +104,7 @@ defaultCwd = "/home/me/kimi-code"
 远程目标为 Windows 机器时：
 
 - 安装 [Git for Windows](https://gitforwindows.org/) 和 Windows 版执行器。
-- 默认执行器路径为 `~/.kimi-code/bin/kiko.exe`。
+- 默认执行器路径为 `~/.kiko/bin/kiko.exe`。
 - `defaultCwd` 使用 `C:\work\project` 这类原生驱动器路径。
 - 支持 SSH 和自定义命令，不支持 Docker 容器。
 
