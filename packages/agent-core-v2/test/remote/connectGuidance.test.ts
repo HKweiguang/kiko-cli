@@ -28,7 +28,7 @@ describe('connectWithGuidance', () => {
     expect(message).toContain('Kimi Code release CDN');
     expect(message).toContain('download the `kiko` binary');
     expect(message).not.toContain('download the `kimi` binary');
-    expect(message).toContain('executor path (~/.kimi-code/bin/kiko)');
+    expect(message).toContain('executor path (~/.kiko/bin/kiko)');
     expect(message).toContain('Then reconnect the environment.');
     expect(message).not.toContain('curl -fL');
     expect(message).not.toContain('/tmp/kimi-install');

@@ -495,7 +495,7 @@ describe('PluginManager consumption plane', () => {
         'plugin-demo:finance': expect.objectContaining({
           command: 'finance-mcp',
           cwd: managedRoot,
-          env: expect.objectContaining({ KIMI_CODE_HOME: home, KIMI_PLUGIN_ROOT: managedRoot }),
+          env: expect.objectContaining({ KIKO_HOME: home, KIMI_PLUGIN_ROOT: managedRoot }),
         }),
         'plugin-demo:docs': expect.objectContaining({ url: 'https://example.com/mcp' }),
         'plugin-demo:events': expect.objectContaining({
@@ -515,6 +515,31 @@ describe('PluginManager consumption plane', () => {
     await reloaded.load();
     expect(reloaded.info('demo')?.mcpServers).toContainEqual(
       expect.objectContaining({ name: 'finance', enabled: false }),
+    );
+  });
+
+  it('injects the canonical KIKO_HOME over a manifest-provided value without touching other env', async () => {
+    const home = await makeKimiHome();
+    const root = await makePlugin('demo', {
+      mcpServers: {
+        finance: {
+          command: 'finance-mcp',
+          env: { CUSTOM: '1', KIKO_HOME: '/manifest/home', KIMI_CODE_HOME: '/manifest/legacy' },
+        },
+      },
+    });
+    const manager = new PluginManager({ kimiHomeDir: home });
+    await manager.load();
+    await manager.install(root);
+
+    expect(manager.enabledMcpServers()['plugin-demo:finance']).toEqual(
+      expect.objectContaining({
+        env: expect.objectContaining({
+          CUSTOM: '1',
+          KIKO_HOME: home,
+          KIMI_CODE_HOME: '/manifest/legacy',
+        }),
+      }),
     );
   });
 
@@ -636,7 +661,7 @@ describe('PluginManager consumption plane', () => {
         cwd: managedRoot,
         env: expect.objectContaining({
           CUSTOM: '1',
-          KIMI_CODE_HOME: home,
+          KIKO_HOME: home,
           KIMI_PLUGIN_ROOT: managedRoot,
         }),
       }),
@@ -724,7 +749,7 @@ describe('PluginManager consumption plane', () => {
         command: './hooks/guard.sh',
         timeout: 10,
         cwd: installedRoot,
-        env: { KIMI_CODE_HOME: home, KIMI_PLUGIN_ROOT: installedRoot },
+        env: { KIKO_HOME: home, KIMI_PLUGIN_ROOT: installedRoot },
       },
     ]);
   });
@@ -908,7 +933,7 @@ describe('PluginManager consumption plane', () => {
           args: ['./bin/data.mjs'],
           cwd: managedRoot,
           env: expect.objectContaining({
-            KIMI_CODE_HOME: home,
+            KIKO_HOME: home,
             KIMI_PLUGIN_ROOT: managedRoot,
             ELECTRON_RUN_AS_NODE: '1',
           }),
