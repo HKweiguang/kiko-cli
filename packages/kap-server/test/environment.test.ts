@@ -139,10 +139,10 @@ describe('server-v2 /api/v1 environment routes', () => {
       );
       const incompatible = await call<null>('GET', `/api/v1/sessions/${id}/environment`);
       expect(incompatible.body.code).toBe(40930);
-      expect(incompatible.body.msg).toContain('Upgrade Kimi Code');
+      expect(incompatible.body.msg).toContain('Upgrade Kiko');
       const incompatibleList = await call<null>('GET', `/api/v1/sessions/${id}/environments`);
       expect(incompatibleList.body.code).toBe(40930);
-      expect(incompatibleList.body.msg).toContain('Upgrade Kimi Code');
+      expect(incompatibleList.body.msg).toContain('Upgrade Kiko');
     });
 
     it('creates a session bound to a declared environment via POST /sessions', async () => {
