@@ -22,6 +22,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { MiniDb } from '../src/index.js';
+import { readSessionIndexEntries } from './session-index.js';
 
 const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
 const LIMIT = 50;
@@ -37,15 +38,9 @@ interface Msg {
 
 function loadAllMessages(): Msg[] {
   const DATA = path.join(os.homedir(), '.kiko');
-  const lines = readFileSync(path.join(DATA, 'session_index.jsonl'), 'utf8').trim().split('\n');
+  const sessions = readSessionIndexEntries(DATA);
   const out: Msg[] = [];
-  for (const line of lines) {
-    let meta: any;
-    try {
-      meta = JSON.parse(line);
-    } catch {
-      continue;
-    }
+  for (const meta of sessions) {
     const wire = path.join(meta.sessionDir, 'agents', 'main', 'wire.jsonl');
     if (!existsSync(wire)) continue;
     let raw: string;

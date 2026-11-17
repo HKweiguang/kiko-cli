@@ -14,6 +14,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 import { readWorkspaceEntries } from './read-workspaces.js';
+import { readSessionIndexEntries } from './session-index.js';
 
 const argv = process.argv.slice(2);
 const arg = (name: string, def: string) => {
@@ -126,19 +127,13 @@ async function main() {
   console.log(`data: ${DATA}`);
 
   const workspaces = readWorkspaceEntries(DATA);
-  const lines = readFileSync(path.join(DATA, 'session_index.jsonl'), 'utf8').trim().split('\n');
+  const sessions = readSessionIndexEntries(DATA);
 
   const t0 = performance.now();
   const docs: Doc[] = [];
   let totalTextBytes = 0;
   let skipped = 0;
-  for (const line of lines) {
-    let meta: any;
-    try {
-      meta = JSON.parse(line);
-    } catch {
-      continue;
-    }
+  for (const meta of sessions) {
     const { sessionId, sessionDir } = meta;
     const wirePath = path.join(sessionDir, 'agents', 'main', 'wire.jsonl');
     if (!existsSync(wirePath)) {
