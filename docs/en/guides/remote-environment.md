@@ -1,16 +1,16 @@
 # Remote environments
 
-A remote environment lets the Agent read and write files and run Shell commands on another machine or in a container, while Kimi Code CLI, model requests, credentials, and session state stay on your machine.
+A remote environment lets the Agent read and write files and run Shell commands on another machine or in a container, while Kiko CLI, model requests, credentials, and session state stay on your machine.
 
 ## Use a remote environment over SSH
 
 ### 1. Prepare the remote machine
 
-- Install the Kimi Code executor for the target platform at `~/.kiko/bin/kiko`.
+- Install the Kiko executor for the target platform at `~/.kiko/bin/kiko`.
 - Make sure your machine can sign in to the remote machine with SSH keys.
 - Configure users, ports, keys, and jump hosts in `~/.ssh/config` if needed.
 
-Kimi Code does not install the executor automatically. If it is missing or incompatible, install or update to the build provided for the target platform.
+Kiko does not install the executor automatically. If it is missing or incompatible, install or update to the build provided for the target platform.
 
 ### 2. Declare the environment in `config.toml` on your machine
 

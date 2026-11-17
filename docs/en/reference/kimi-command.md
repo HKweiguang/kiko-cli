@@ -1,6 +1,6 @@
 # `kiko` Command
 
-`kiko` is the main command for Kimi Code CLI, used to start an interactive session in the terminal. Running it without any arguments opens a new session in the current working directory; combined with different flags, you can resume a previous session, skip approvals, start in Plan mode, or load Skills from a custom directory.
+`kiko` is the main command for Kiko CLI, used to start an interactive session in the terminal. Running it without any arguments opens a new session in the current working directory; combined with different flags, you can resume a previous session, skip approvals, start in Plan mode, or load Skills from a custom directory.
 
 ```sh
 kiko [options]
@@ -151,7 +151,7 @@ This subcommand has no flags. Press `Ctrl-C` at any time during polling to cance
 
 ### `kiko acp`
 
-Switch Kimi Code CLI to ACP (Agent Client Protocol) mode, communicating with an IDE via JSON-RPC over stdin/stdout so the editor can directly drive kimi's sessions and tool calls. You typically do not need to run this manually — the IDE starts it as a subprocess entry point. For configuration, see [Using in IDEs](../guides/ides.md); for technical details, see the [kiko acp reference](./kimi-acp.md).
+Switch Kiko CLI to ACP (Agent Client Protocol) mode, communicating with an IDE via JSON-RPC over stdin/stdout so the editor can directly drive Kiko's sessions and tool calls. You typically do not need to run this manually — the IDE starts it as a subprocess entry point. For configuration, see [Using in IDEs](../guides/ides.md); for technical details, see the [kiko acp reference](./kimi-acp.md).
 
 ```sh
 kiko acp
@@ -185,7 +185,7 @@ Multiple instances can share one home directory: each registers itself under `~/
 `kiko web` binds to local loopback only by default and prints the bearer token in the startup banner; the web UI authenticates automatically via the `#token=` URL fragment.
 
 ::: info
-The `kiko server` command tree is deprecated: any `kiko server …` invocation (including all legacy subcommands) only prints a deprecation notice and exits with code 1 — use `kiko web` instead. The one exception is `kiko server kill`, which stays functional for stopping servers started by a version before 0.28.0. The notice will be removed in the next major version of Kimi Code.
+The `kiko server` command tree is deprecated: any `kiko server …` invocation (including all legacy subcommands) only prints a deprecation notice and exits with code 1 — use `kiko web` instead. The one exception is `kiko server kill`, which stays functional for stopping servers started by a version before 0.28.0. The notice will be removed in the next major version of Kiko.
 :::
 
 ::: danger
@@ -202,7 +202,7 @@ Generate a new persistent bearer token (written to `~/.kiko/server.token`); the 
 
 ### `kiko app`
 
-Open Kimi Code desktop and start a new chat in the current directory or a specified directory:
+Open Kiko desktop and start a new chat in the current directory or a specified directory:
 
 ```sh
 kiko app
@@ -215,7 +215,7 @@ If the system reports that it cannot open the app, the command suggests `kiko in
 
 ### `kiko install-desktop`
 
-Print the Kimi Code desktop app page and open it in the default browser, so you can download and install the desktop app without leaving the terminal. The URL follows the active region: `https://www.kimi.com/code` on the mainland region, `https://www.kimi.ai/code` on the global region.
+Print the Kiko desktop app page and open it in the default browser, so you can download and install the desktop app without leaving the terminal. The URL follows the active region: `https://www.kimi.com/code` on the mainland region, `https://www.kimi.ai/code` on the global region.
 
 ```sh
 kiko install-desktop
@@ -280,7 +280,7 @@ kiko export 01HZ...XYZ -o ./bug-report.zip --no-include-global-log
 
 ### `kiko migrate`
 
-Migrate local data from a legacy kimi-cli installation to kimi-code, including session history and configuration files. Runs entirely interactively, guiding you through the full process.
+Migrate local data from a legacy kimi-cli installation to Kiko, including session history and configuration files. Runs entirely interactively, guiding you through the full process.
 
 ```sh
 kiko migrate
@@ -290,7 +290,7 @@ For full migration instructions, see [Migrating from kimi-cli](../guides/migrati
 
 ### `kiko import-sessions`
 
-Import recent Claude Code and Codex sessions as regular Kimi Code sessions. The command opens an interactive page: choose the last 15 days (the default) or the last 30 days, then follow the progress and the summary. Inside the TUI, `/import-sessions` opens the same page.
+Import recent Claude Code and Codex sessions as regular Kiko sessions. The command opens an interactive page: choose the last 15 days (the default) or the last 30 days, then follow the progress and the summary. Inside the TUI, `/import-sessions` opens the same page.
 
 ```sh
 kiko import-sessions

@@ -29,7 +29,7 @@ Before rewriting a page, always: (1) understand why the original is structured t
 
 ## Readers
 
-Kimi Code documentation serves two overlapping audiences. Write for both simultaneously.
+Kiko documentation serves two overlapping audiences. Write for both simultaneously.
 
 **Technical users** — familiar with the terminal, config files, API keys, and environment variables. Give them commands and paths directly; do not explain basics.
 
@@ -53,7 +53,7 @@ Both groups share the same behavior: they arrive with a specific goal, scan head
 
 ## Wording conventions
 
-- Do not change H1 titles or nav/sidebar labels.
+- Do not change H1 titles or nav/sidebar labels, except for product-brand labels when the product name changes: those must follow the current product name (**Kiko CLI** / **Kiko**).
 - English H2+ headings use sentence case (only the first word capitalized unless it is a proper noun). Treat "Wire", "Plan mode", "Thinking mode", and the permission mode names "Always Ask", "Ask When Needed", and "Never Ask" as proper nouns; do not treat "agent" as a proper noun.
 - Chinese H2+ headings keep English words in sentence case; preserve proper nouns listed in the term table below.
 - Use `API key` in English and `API 密钥` in Chinese; keep `JSON`, `JSONL`, `OAuth`, `macOS`, `Node.js`, `npm`, `pnpm`, and `TypeScript` as-is.
@@ -76,7 +76,7 @@ Term mapping (Chinese <-> English, and proper noun handling):
 | 完全自动 | Never Ask | yes | yes |
 | Thinking 模式 | Thinking mode | yes | yes (Thinking mode) |
 | MCP | MCP | yes | yes |
-| Kimi Code CLI | Kimi Code CLI | yes | yes |
+| Kiko CLI | Kiko CLI | yes | yes |
 | Agent Skills | Agent Skills | yes | yes |
 | Skill | skill | yes | no |
 | 系统提示词 | system prompt | no | no |
@@ -117,10 +117,10 @@ Two distinct platforms exist and must never be mixed:
 | API key entry | [Kimi Code console](https://www.kimi.com/code/console) | [platform.kimi.com](https://platform.kimi.com) |
 
 Rules:
-- When documenting Kimi Code CLI or VS Code: always use `api.kimi.com/coding/…`. Never write `api.moonshot.cn` in this context.
+- When documenting Kiko CLI or Kiko for VS Code: always use `api.kimi.com/coding/…`. Never write `api.moonshot.cn` in this context.
 - When documenting Open Platform integration: use `api.moonshot.cn/v1`.
-- Distinguish context explicitly: "in Kimi Code CLI / VS Code" vs "in third-party tools / your own product".
-- Product full names: **Kimi Code CLI** and **Kimi Code for VS Code**. Do not abbreviate to "Kimi CLI".
+- Distinguish context explicitly: "in Kiko CLI / Kiko for VS Code" vs "in third-party tools / your own product".
+- Product full names: **Kiko CLI** and **Kiko for VS Code**. Use **Kiko** for the product family; do not write "Kimi CLI".
 
 ## Typography
 
@@ -199,9 +199,9 @@ Outline prompt:
 ```markdown
 ## Install and upgrade
 
-Kimi Code CLI requires Node.js 24.15.0 or later. We recommend using pnpm for installation and management.
+Kiko CLI requires Node.js 24.15.0 or later. We recommend using pnpm for installation and management.
 
-If you haven't installed pnpm yet, please refer to the pnpm installation docs first. Install Kimi Code CLI:
+If you haven't installed pnpm yet, please refer to the pnpm installation docs first. Install Kiko CLI:
 
 (code block)
 
@@ -310,7 +310,7 @@ Before shipping, verify these values match the rest of the docs:
 - **Upgrade command**: matches `guides/getting-started.md`
 - **Model ID**: use `kimi-for-coding`, not a versioned model name
 - **Login command**: `/login`, not `/setup`
-- **Product full name**: **Kimi Code CLI** or **Kimi Code for VS Code** — never "Kimi CLI"
+- **Product full name**: **Kiko CLI** or **Kiko for VS Code** — never "Kimi CLI"
 - **Platform URLs**: `api.kimi.com/coding/…` for Kimi Code platform; `api.moonshot.cn/v1` for Open Platform — never mix the two
 
 ## Build and preview

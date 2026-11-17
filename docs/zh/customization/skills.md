@@ -1,6 +1,6 @@
 # Agent Skills
 
-Agent Skills 是 Kimi Code CLI 扩展模型能力的轻量机制。一个 Skill 就是一份带 YAML frontmatter 的 Markdown 文档，描述某项专业知识或工作流程：项目的代码风格规范、PR review 流程、提交消息格式。
+Agent Skills 是 Kiko CLI 扩展模型能力的轻量机制。一个 Skill 就是一份带 YAML frontmatter 的 Markdown 文档，描述某项专业知识或工作流程：项目的代码风格规范、PR review 流程、提交消息格式。
 
 与每次把同样的指引粘到提示词里相比，Skill 把内容沉淀在文件里，可以跨项目和团队复用，既可以通过斜杠命令一键加载，也可以让模型在需要时自动调用。
 
@@ -84,7 +84,7 @@ arguments:
 
 ## Skill 存放位置
 
-Kimi Code CLI 按作用域分四档扫描，越具体的作用域优先级越高：**Project > User > Extra > Built-in**。
+Kiko CLI 按作用域分四档扫描，越具体的作用域优先级越高：**Project > User > Extra > Built-in**。
 
 **用户级**（对所有项目生效）：
 - `$KIKO_HOME/skills/`（默认：`~/.kiko/skills/`）
@@ -96,7 +96,7 @@ Kimi 专属用户级 Skill 目录会随 `KIKO_HOME` 移动，隔离数据根时�
 - `.kiko/skills/`
 - `.agents/skills/`
 
-当工作区包含多个已配置的源目录时，Kimi Code CLI 会按上述项目根规则发现每个源目录的项目级 Skills，并合并到同一个 Skill 列表中。同名 Skill 会作为不同变体全部保留。仅按名称调用时，仍优先使用主目录，其后按工作区中的目录顺序确定默认项；菜单会显示各来源目录的最后一级名称，便于选择指定变体。无所属目录的 Skill 会在右侧显示「全局」，内置 Skill 则显示「内置」。斜杠补全中，普通命令位于前面，所有 Skill 连续归入同一个 "Skills" 分组。任意源目录中的 Skill 发生变化时，列表都会自动刷新。仅当前会话临时添加的目录不参与合并；如需使用其中的 Skills，请将该目录记住到工作区。
+当工作区包含多个已配置的源目录时，Kiko CLI 会按上述项目根规则发现每个源目录的项目级 Skills，并合并到同一个 Skill 列表中。同名 Skill 会作为不同变体全部保留。仅按名称调用时，仍优先使用主目录，其后按工作区中的目录顺序确定默认项；菜单会显示各来源目录的最后一级名称，便于选择指定变体。无所属目录的 Skill 会在右侧显示「全局」，内置 Skill 则显示「内置」。斜杠补全中，普通命令位于前面，所有 Skill 连续归入同一个 "Skills" 分组。任意源目录中的 Skill 发生变化时，列表都会自动刷新。仅当前会话临时添加的目录不参与合并；如需使用其中的 Skills，请将该目录记住到工作区。
 
 **额外目录**：通过 `config.toml` 顶层的 `extra_skill_dirs` 声明：
 
@@ -104,7 +104,7 @@ Kimi 专属用户级 Skill 目录会随 `KIKO_HOME` 移动，隔离数据根时�
 extra_skill_dirs = ["~/team-skills", ".agents/team-skills"]
 ```
 
-**内置 Skills** 随 CLI 一起分发，优先级最低，为常见任务提供开箱即用的工作流，例如配置 MCP server、定制 TUI 主题和编辑配置文件。完整列表详见[内置 Skill 命令](../reference/slash-commands.md#内置-skill-命令)。其中介绍 Kimi Code 自身的部分可以通过顶层 [`builtin_product_skills`](../configuration/config-files.md#顶层字段) 字段关闭。
+**内置 Skills** 随 CLI 一起分发，优先级最低，为常见任务提供开箱即用的工作流，例如配置 MCP server、定制 TUI 主题和编辑配置文件。完整列表详见[内置 Skill 命令](../reference/slash-commands.md#内置-skill-命令)。其中介绍 Kiko 自身的部分可以通过顶层 [`builtin_product_skills`](../configuration/config-files.md#顶层字段) 字段关闭。
 
 ## 调用 Skill
 

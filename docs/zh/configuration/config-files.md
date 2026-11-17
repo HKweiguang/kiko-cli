@@ -1,6 +1,6 @@
 # 配置文件
 
-Kimi Code CLI 的长期偏好都写在 `~/.kiko/` 下的 TOML 文件里：运行时设置放 `config.toml`，终端界面偏好放配套的 `tui.toml`。
+Kiko CLI 的长期偏好都写在 `~/.kiko/` 下的 TOML 文件里：运行时设置放 `config.toml`，终端界面偏好放配套的 `tui.toml`。
 
 ## 配置文件位置
 
@@ -100,7 +100,7 @@ timeout = 5
 | `merge_all_available_skills` | `boolean` | `true` | 是否合并所有目录中的 Agent Skills |
 | `extra_skill_dirs` | `array<string>` | — | 额外 Skill 搜索目录，叠加到默认目录之上 |
 | `extra_agent_dirs` | `array<string>` | — | 额外自定义 Agent 搜索目录，叠加到默认目录之上 |
-| `builtin_product_skills` | `boolean` | `true` | 是否向模型提供介绍 Kimi Code 自身的内置 Skills |
+| `builtin_product_skills` | `boolean` | `true` | 是否向模型提供介绍 Kiko 自身的内置 Skills |
 | `telemetry` | `boolean` | `true` | 是否启用匿名遥测；显式设为 `false` 时关闭 |
 | `auto_session_title` | `boolean` | `true` | 是否允许客户端自动生成会话标题；显式设为 `false` 时关闭 |
 | `disable_feedback_survey` | `boolean` | `false` | 关闭 CLI 和桌面端偶尔出现的会话评分提示 |
@@ -352,7 +352,7 @@ k3-max = "同一模型的 max Thinking 档位。适合最难的子任务。"
 
 `keep_alive_on_exit` 可被环境变量 `KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT` 覆盖，`bash_task_timeout_s` 可被 `KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S` 覆盖，`print_background_mode`、`print_wait_ceiling_s`、`print_max_turns` 可分别被 `KIKO_BACKGROUND_PRINT_BACKGROUND_MODE`、`KIKO_BACKGROUND_PRINT_WAIT_CEILING_S`、`KIKO_BACKGROUND_PRINT_MAX_TURNS` 覆盖，优先级均高于两个配置节。
 
-在 print 模式（`kiko -p "<prompt>"`）下，只要还有未决的后台任务，Kimi Code 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
+在 print 模式（`kiko -p "<prompt>"`）下，只要还有未决的后台任务，Kiko 在 main agent 的 turn 结束后不会退出：每个任务完成都会以合成 user 消息回馈给 main agent，steer 出新的 turn（默认 `print_background_mode = "steer"`），直到某 turn 结束时没有任何未决任务才退出。该循环受 `print_wait_ceiling_s` 与 `print_max_turns` 约束，默认值都近似不设限。print 模式下后台工作也不会被墙钟超时杀掉：后台 `Bash` 任务默认无超时（`bash_task_timeout_s = 0`），subagent 默认无超时（`[subagent] timeout_ms` 与 `[swarm] timeout_ms` 未显式设置时均为 `0`），只有模型自己能停止任务。将 `print_background_mode` 设为 `"drain"` 可等待任务结束但不回馈结果，设为 `"exit"` 则在 main agent 结束后立即退出。
 
 ## `subagent`
 
@@ -409,7 +409,7 @@ slug = "acme-dev"        # 可选
 
 身份在启动时解析一次，进程生命周期内保持不变：建立连接时它已宣告给 MCP 服务器和 provider，中途无法更换。修改本节配置在下次启动时对新会话生效；resume 的会话保留录制时的系统提示词，因为其历史轮次本就以原身份自称。同理，已完成的 MCP OAuth 授权保留其授予时的客户端注册；重置该服务器的认证即可在新身份下重新注册。
 
-本节由 `agent-core-v2` 引擎读取，Kimi Code 的所有界面都运行在该引擎上。
+本节由 `agent-core-v2` 引擎读取，Kiko 的所有界面都运行在该引擎上。
 
 ## `tools`
 
@@ -605,7 +605,7 @@ MCP server 的声明配置写在 `~/.kiko/mcp.json` 或项目内 `.kiko/mcp.json
 
 ### command 条目
 
-通用启动器形式，用于内置启动器未覆盖的环境（OrbStack 机器、`kubectl exec`、Apple Container、受管沙箱等）。`command` 与 `args` 描述如何进入目标：启动器必须在目标上执行跟在它后面的参数，`ssh host`、`kubectl exec -i pod --`、`docker exec -i container` 都是这样。Kimi Code 会在 `args` 末尾追加 `<remoteBin> exec-server`；`args` 已经调用 `exec-server` 时不追加。
+通用启动器形式，用于内置启动器未覆盖的环境（OrbStack 机器、`kubectl exec`、Apple Container、受管沙箱等）。`command` 与 `args` 描述如何进入目标：启动器必须在目标上执行跟在它后面的参数，`ssh host`、`kubectl exec -i pod --`、`docker exec -i container` 都是这样。Kiko 会在 `args` 末尾追加 `<remoteBin> exec-server`；`args` 已经调用 `exec-server` 时不追加。
 
 | 字段 | 类型 | 是否必填 | 说明 |
 | --- | --- | --- | --- |
@@ -705,7 +705,7 @@ thinking = "grouped" # "grouped" | "ungrouped"
 
 ## 项目级本地配置
 
-除了 `~/.kiko` 下的用户级文件，Kimi Code 还会读取位于 `<项目根目录>/.kiko/local.toml` 的项目级本地配置文件。它保存的是与某一个项目检出相关、通常不应与队友共享的设置。
+除了 `~/.kiko` 下的用户级文件，Kiko 还会读取位于 `<项目根目录>/.kiko/local.toml` 的项目级本地配置文件。它保存的是与某一个项目检出相关、通常不应与队友共享的设置。
 
 早期版本的 [`/add-dir`](../reference/slash-commands.md) 会把「记住此目录」写入这个文件；现版本改为记入 `~/.kiko/projects.json` 中的工作区注册表，`local.toml` 随之成为只读的存量兼容字段，任何组件都不会再写入它。隐式工作区（终端按目录进入）的会话仍把其中的 `additional_dir` 并入额外目录；显式创建（managed）工作区的会话不再读取它。要把旧配置搬进注册表，可在客户端的新建/编辑工作区弹窗中使用导入功能（底层为 [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api-service.md#get-api-v1-workspaces-project-config-dirs)），导入后即由注册表管理，删除即时生效。
 

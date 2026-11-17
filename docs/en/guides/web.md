@@ -1,13 +1,13 @@
-# Using Kimi Code in the browser
+# Using Kiko in the browser
 
-Kimi Code Web is the browser-based graphical interface built into Kimi Code CLI: run `kiko web` in a terminal, and you can start sessions, chat, handle approvals, and review file changes in a browser — a friendlier interface, while sessions and data still live entirely on your machine.
+Kiko Web is the browser-based graphical interface built into Kiko CLI: run `kiko web` in a terminal, and you can start sessions, chat, handle approvals, and review file changes in a browser — a friendlier interface, while sessions and data still live entirely on your machine.
 
-![Kimi Code Web UI](../../media/kimi-web-ui.jpg)
+![Kiko Web UI](../../media/kimi-web-ui.jpg)
 
 ## Getting started
 
 <div class="step">
-<span class="step-num">1</span> <strong>Install Kimi Code CLI and log in</strong>
+<span class="step-num">1</span> <strong>Install Kiko CLI and log in</strong>
 
 `kiko web` is a built-in CLI command — it isn't available without the CLI. See [Getting started](./getting-started.md) for installation and login.
 </div>

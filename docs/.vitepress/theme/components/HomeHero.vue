@@ -9,9 +9,9 @@ const isZh = computed(() => lang.value.startsWith('zh'))
 
 const copy = computed(() => isZh.value
   ? {
-      titleLead: 'Kimi',
-      titleAccent: 'Code',
-      titleTail: ' CLI',
+      titleLead: 'Kiko',
+      titleAccent: 'CLI',
+      titleTail: '',
       tagline: 'The Starting Point for Next-Gen Agents',
       primaryText: '开始使用',
       primaryHref: '/zh/guides/getting-started',
@@ -19,9 +19,9 @@ const copy = computed(() => isZh.value
       secondaryHref: 'https://github.com/MoonshotAI/kimi-code',
     }
   : {
-      titleLead: 'Kimi',
-      titleAccent: 'Code',
-      titleTail: ' CLI',
+      titleLead: 'Kiko',
+      titleAccent: 'CLI',
+      titleTail: '',
       tagline: 'The Starting Point for Next-Gen Agents',
       primaryText: 'Get started',
       primaryHref: '/en/guides/getting-started',

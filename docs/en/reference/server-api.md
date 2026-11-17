@@ -38,7 +38,7 @@ All `/api/*` paths, plus `/openapi.json` and `/asyncapi.json`, require the beare
 - `GET /api/v1/healthz` (liveness probe);
 - static web assets (paths outside `/api/`).
 
-REST requests carry the token in the `Authorization: Bearer <token>` header. The WebSocket upgrade request accepts the same header or the subprotocol `kimi-code.bearer.<token>`. Token generation and rotation are covered in [Using Kimi Code in the browser](../guides/web.md#getting-started).
+REST requests carry the token in the `Authorization: Bearer <token>` header. The WebSocket upgrade request accepts the same header or the subprotocol `kimi-code.bearer.<token>`. Token generation and rotation are covered in [Using Kiko in the browser](../guides/web.md#getting-started).
 
 Failed authentication returns HTTP 401 with envelope `code` `40101`. When the server binds a non-loopback address, a source that fails authentication 10 times within 60 seconds is banned for 60 seconds. During the ban, every request gets HTTP 429 with `code` `42901`.
 
@@ -94,7 +94,7 @@ The error codes each endpoint may return are listed at the end of its descriptio
 
 `40931` and `40932` only appear when the same session is open in several clients.
 
-- **`40931`**: another Kimi Code process is writing to the session. Retry after it goes idle. If you are sure that process has exited and only left its lock behind, call [`POST /api/v1/sessions/{session_id}:takeover`](./server-api-sessions.md#post-api-v1-sessions-session-id-takeover) first, then retry.
+- **`40931`**: another Kiko process is writing to the session. Retry after it goes idle. If you are sure that process has exited and only left its lock behind, call [`POST /api/v1/sessions/{session_id}:takeover`](./server-api-sessions.md#post-api-v1-sessions-session-id-takeover) first, then retry.
 - **`40932`**: another client has updated the session. When this happens to prompt submission, skill activation, or compaction, the server reloads the session, sends subscribers a fresh `turns` frame, and runs the request again, so the caller never sees `40932`. Only undo returns `40932`: the server has already reloaded the session, and nothing was undone this time. The client should let the user review the refreshed history before deciding whether to undo.
 
 ## Pagination
@@ -168,5 +168,5 @@ This walkthrough runs the minimal flow with curl: check the server, create a ses
 ## Next steps
 
 - [Sessions and conversations](./server-api-conversation.md): the WebSocket protocol and the client flow
-- [Using Kimi Code in the browser](../guides/web.md): start the server and use Kimi Code in a browser
+- [Using Kiko in the browser](../guides/web.md): start the server and use Kiko in a browser
 - [kiko command](./kimi-command.md#kiko-web): all `kiko web` command-line options

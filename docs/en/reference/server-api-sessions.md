@@ -342,7 +342,7 @@ On success, `data` is the [session object](#session-object). Although the sessio
 
 #### `POST /api/v1/sessions/{session_id}:takeover`
 
-Removes the lock another Kimi Code process holds on the session. After that, requests that previously failed with [`40931`](./server-api.md#error-codes) can be retried.
+Removes the lock another Kiko process holds on the session. After that, requests that previously failed with [`40931`](./server-api.md#error-codes) can be retried.
 
 Use it only when the process holding the lock has exited and left the lock behind. If that process is still running, both processes write to the session until it goes idle, and the session history can interleave.
 

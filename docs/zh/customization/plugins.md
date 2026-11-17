@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins 把可复用的 Kimi Code CLI 能力打包成可安装单元：可以添加 [Agent Skills](./skills.md)、自定义 [Agent](./agents.md)，可以指定会话启动时自动加载的 Skill、提供系统提示词指令，也可以声明 MCP servers 提供真实工具能力。适合把工作流共享给团队、连接外部服务，或从 [官方插件](#官方插件)安装扩展。
+Plugins 把可复用的 Kiko CLI 能力打包成可安装单元：可以添加 [Agent Skills](./skills.md)、自定义 [Agent](./agents.md)，可以指定会话启动时自动加载的 Skill、提供系统提示词指令，也可以声明 MCP servers 提供真实工具能力。适合把工作流共享给团队、连接外部服务，或从 [官方插件](#官方插件)安装扩展。
 
 ## 安装与管理
 
@@ -111,7 +111,7 @@ Kimi Datasource 是 Kimi Code 官方数据插件。用自然语言直接查询�
 
 #### 使用方式
 
-1. 直接用自然语言描述需求，Kimi Code 会自动调用数据能力
+1. 直接用自然语言描述需求，Kiko 会自动调用数据能力
 2. 通过 `/skill:kimi-datasource:kimi-datasource` 明确触发数据查询 Skill
 
 #### 能做什么
@@ -218,7 +218,7 @@ Kimi Computer Use 让 AI 直接操作你的桌面应用，可以完成点击、�
 安装后首次使用时，Kimi Computer Use 会弹出授权窗口，按照提示操作即可：
 
 1. 点击**辅助功能**和**屏幕录制**右侧的**去授权**，在系统设置中开启这两项权限。前者用于执行点击、输入与滚动，后者用于读取屏幕内容、识别需要操作的位置。
-2. 在**接入本地 Agent**中打开 **Kimi Code** 开关，重启 Kimi Code 后生效。
+2. 在**接入本地 Agent**中打开 **Kimi Code** 开关，重启 Kiko 后生效。
 
 <div style="max-width: 380px; margin: 0 auto;">
 
@@ -261,7 +261,7 @@ Plugin 是一个带 manifest 的目录或 zip 文件。Manifest 可以放在以�
 {
   "name": "kimi-finance",
   "version": "1.0.0",
-  "description": "Finance data and analysis workflows for Kimi Code CLI",
+  "description": "Finance data and analysis workflows for Kiko CLI",
   "skills": "./skills/",
   "systemPromptPath": "./SYSTEM.md",
   "sessionStart": {
@@ -322,7 +322,7 @@ Plugin 通过 `systemPrompt` 和 `systemPromptPath` 两个字段向 Agent 的系
 
 ### 两个引擎的差异
 
-系统提示词贡献在 Kimi Code 的所有界面上都生效：交互式 TUI、`kiko -p` 和 `kiko web` 都运行在 v2 引擎上。
+系统提示词贡献在 Kiko 的所有界面上都生效：交互式 TUI、`kiko -p` 和 `kiko web` 都运行在 v2 引擎上。
 
 新会话和新建 Agent 会读取当前已启用 plugin 的指令，正在进行的请求继续使用已有的系统提示词。`/plugins reload` 会刷新 plugin Skill 列表，并请求重建活跃 Agent 的提示词；需要让变更在下一轮前明确收敛时使用该命令。切换 plugin 的 MCP server 不会改变系统提示词指令。
 
@@ -409,7 +409,7 @@ my-plugin/
       SKILL.md
 ```
 
-`sessionStart.skill` 在会话启动时把一个 plugin Skill 加载到 main agent，适合放置初始化说明、工作流规则，或把其他工具中的术语映射到 Kimi Code CLI。它只注入文本，不执行代码。字段值是插件内 Skill frontmatter 中声明的名字，不带 `<plugin-id>:` 前缀。
+`sessionStart.skill` 在会话启动时把一个 plugin Skill 加载到 main agent，适合放置初始化说明、工作流规则，或把其他工具中的术语映射到 Kiko CLI。它只注入文本，不执行代码。字段值是插件内 Skill frontmatter 中声明的名字，不带 `<plugin-id>:` 前缀。
 
 Plugin Skill 以全限定名 `<plugin-id>:<skill-name>` 列出和调用（例如 `/skill:my-plugin:using-my-plugin`），与[插件斜杠命令](#插件斜杠命令)的命名方式一致：不同插件的同名 Skill 互不冲突，裸名不会解析到 plugin Skill。当插件命令与插件 Skill 同名时，`/plugin-id:name` 执行命令；调用 Skill 需使用显式形态 `/skill:plugin-id:name`。
 

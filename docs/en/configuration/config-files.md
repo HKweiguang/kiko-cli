@@ -1,6 +1,6 @@
 # Configuration files
 
-Kimi Code CLI writes all long-term preferences into TOML (plain-text configuration) files under `~/.kiko/`: runtime settings live in `config.toml`, and terminal-UI preferences live in a companion `tui.toml`.
+Kiko CLI writes all long-term preferences into TOML (plain-text configuration) files under `~/.kiko/`: runtime settings live in `config.toml`, and terminal-UI preferences live in a companion `tui.toml`.
 
 ## Config file location
 
@@ -100,7 +100,7 @@ Fields in the config file fall into two categories: **top-level scalars** that d
 | `merge_all_available_skills` | `boolean` | `true` | Whether to merge Agent Skills from all available directories |
 | `extra_skill_dirs` | `array<string>` | — | Extra skill search directories, layered on top of the default directories |
 | `extra_agent_dirs` | `array<string>` | — | Extra custom agent search directories, layered on top of the default directories |
-| `builtin_product_skills` | `boolean` | `true` | Whether the built-in skills that document Kimi Code itself are offered to the model |
+| `builtin_product_skills` | `boolean` | `true` | Whether the built-in skills that document Kiko itself are offered to the model |
 | `telemetry` | `boolean` | `true` | Whether anonymous telemetry is enabled; disabled only when explicitly set to `false` |
 | `auto_session_title` | `boolean` | `true` | Whether clients may automatically generate session titles; disabled only when explicitly set to `false` |
 | `disable_feedback_survey` | `boolean` | `false` | Turn off the occasional session rating prompt in the CLI and the desktop app |
@@ -353,7 +353,7 @@ Retries only apply to transient failures: connection errors, timeouts, HTTP 429 
 
 `keep_alive_on_exit` can be overridden by the `KIKO_BACKGROUND_KEEP_ALIVE_ON_EXIT` environment variable, `bash_task_timeout_s` by `KIKO_BACKGROUND_BASH_TASK_TIMEOUT_S`, and `print_background_mode`, `print_wait_ceiling_s`, and `print_max_turns` by `KIKO_BACKGROUND_PRINT_BACKGROUND_MODE`, `KIKO_BACKGROUND_PRINT_WAIT_CEILING_S`, and `KIKO_BACKGROUND_PRINT_MAX_TURNS`; all take higher priority than either configuration section.
 
-In print mode (`kiko -p "<prompt>"`), Kimi Code stays alive after the main agent's turn as long as background tasks are still pending: each completion is fed back to the main agent as a synthetic user message, steering it into a new turn (`print_background_mode = "steer"` by default), and the run exits once a turn ends with nothing pending. The loop is bounded by `print_wait_ceiling_s` and `print_max_turns`, both effectively unbounded by default. Background work is never killed by a wall-clock cap in print mode either: background `Bash` tasks default to no timeout (`bash_task_timeout_s = 0`), and subagents run without a timeout (`[subagent] timeout_ms` and `[swarm] timeout_ms` both default to `0` unless explicitly set), so only the model itself stops a task. Set `print_background_mode` to `"drain"` to wait for tasks without feeding results back, or `"exit"` to end the run as soon as the main agent finishes.
+In print mode (`kiko -p "<prompt>"`), Kiko stays alive after the main agent's turn as long as background tasks are still pending: each completion is fed back to the main agent as a synthetic user message, steering it into a new turn (`print_background_mode = "steer"` by default), and the run exits once a turn ends with nothing pending. The loop is bounded by `print_wait_ceiling_s` and `print_max_turns`, both effectively unbounded by default. Background work is never killed by a wall-clock cap in print mode either: background `Bash` tasks default to no timeout (`bash_task_timeout_s = 0`), and subagents run without a timeout (`[subagent] timeout_ms` and `[swarm] timeout_ms` both default to `0` unless explicitly set), so only the model itself stops a task. Set `print_background_mode` to `"drain"` to wait for tasks without feeding results back, or `"exit"` to end the run as soon as the main agent finishes.
 
 ## `subagent`
 
@@ -410,7 +410,7 @@ A name that contains no ASCII letters or digits (for example a purely Chinese na
 
 The identity is resolved once at startup and holds for the life of the process: it is announced to MCP servers and providers when connections are made, so it cannot change midway. Edits to this section take effect on the next start, for new sessions: a resumed session keeps the system prompt it was recorded with, since its past turns already speak under that identity. Likewise, an MCP OAuth authorization keeps the client registration it was granted under; reset that server's authentication to register under the new identity.
 
-This section is read by the `agent-core-v2` engine, which powers every Kimi Code surface.
+This section is read by the `agent-core-v2` engine, which powers every Kiko surface.
 
 ## `tools`
 
@@ -484,7 +484,7 @@ Both values must be positive integers. A call's `max_chars` overrides the defaul
 
 ## `workspace trust`
 
-`workspace` groups workspace-related settings in the user-level `config.toml`. Its `require_trust` field controls whether Kimi Code asks for trust confirmation when an untrusted workspace is opened for the first time; confirmation is required by default.
+`workspace` groups workspace-related settings in the user-level `config.toml`. Its `require_trust` field controls whether Kiko asks for trust confirmation when an untrusted workspace is opened for the first time; confirmation is required by default.
 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -606,7 +606,7 @@ The optional top-level `default` names the environment a session binds to when c
 
 ### Command entries
 
-The generic launcher form, for any environment the built-in launchers do not cover (OrbStack machines, `kubectl exec`, Apple Container, managed sandboxes). The command and `args` describe how to reach the target: the launcher must run the arguments that follow it on the target, as `ssh host`, `kubectl exec -i pod --` and `docker exec -i container` do. Kimi Code appends `<remoteBin> exec-server` to `args`, unless `args` already invokes `exec-server`.
+The generic launcher form, for any environment the built-in launchers do not cover (OrbStack machines, `kubectl exec`, Apple Container, managed sandboxes). The command and `args` describe how to reach the target: the launcher must run the arguments that follow it on the target, as `ssh host`, `kubectl exec -i pod --` and `docker exec -i container` do. Kiko appends `<remoteBin> exec-server` to `args`, unless `args` already invokes `exec-server`.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -706,7 +706,7 @@ Changes apply on the next start, or immediately with `/reload-tui` (which reload
 
 ## Project-local configuration
 
-In addition to the user-level files under `~/.kiko`, Kimi Code reads a project-local configuration file at `<project-root>/.kiko/local.toml`. It holds settings that are specific to one project checkout and typically should not be shared with teammates.
+In addition to the user-level files under `~/.kiko`, Kiko reads a project-local configuration file at `<project-root>/.kiko/local.toml`. It holds settings that are specific to one project checkout and typically should not be shared with teammates.
 
 Earlier versions of [`/add-dir`](../reference/slash-commands.md) wrote remembered directories to this file; current versions write them to the workspace registry in `~/.kiko/projects.json` instead, and `local.toml` is now a read-only legacy field that nothing writes to. Sessions of implicit workspaces (entered by directory in the terminal) still merge its `additional_dir` into the additional directories; sessions of explicitly created (managed) workspaces no longer read it. To move legacy entries into the registry, use the import action in the client's create/edit workspace dialog (backed by [`GET /api/v1/workspaces/project-config-dirs`](../reference/server-api-service.md#get-api-v1-workspaces-project-config-dirs)); imported entries are registry-managed and removals take effect immediately.
 

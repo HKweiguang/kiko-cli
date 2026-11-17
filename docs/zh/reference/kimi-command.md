@@ -1,6 +1,6 @@
 # Kiko 命令
 
-`kiko` 是 Kimi Code CLI 的主命令，用于在终端中启动一次交互式会话。不带任何参数运行时，它会在当前工作目录下开启一个新会话；配合不同的 flag，可以续上历史会话、跳过审批、从 Plan 模式开始，或者指定自定义的 Skills 目录。
+`kiko` 是 Kiko CLI 的主命令，用于在终端中启动一次交互式会话。不带任何参数运行时，它会在当前工作目录下开启一个新会话；配合不同的 flag，可以续上历史会话、跳过审批、从 Plan 模式开始，或者指定自定义的 Skills 目录。
 
 ```sh
 kiko [options]
@@ -151,7 +151,7 @@ kiko login
 
 ### `kiko acp`
 
-把 Kimi Code CLI 切换到 ACP（Agent Client Protocol）模式，在标准输入/输出上以 JSON-RPC 形式与 IDE 对话，让编辑器直接驱动 kimi 的会话和工具调用。通常不需要手动运行——IDE 会把它作为子进程入口启动。配置方式见[在 IDE 中使用](../guides/ides.md)，技术细节见 [kiko acp 参考](./kimi-acp.md)。
+把 Kiko CLI 切换到 ACP（Agent Client Protocol）模式，在标准输入/输出上以 JSON-RPC 形式与 IDE 对话，让编辑器直接驱动 Kiko 的会话和工具调用。通常不需要手动运行——IDE 会把它作为子进程入口启动。配置方式见[在 IDE 中使用](../guides/ides.md)，技术细节见 [kiko acp 参考](./kimi-acp.md)。
 
 ```sh
 kiko acp
@@ -185,7 +185,7 @@ kiko web --port 58628    # 指定绑定端口
 `kiko web` 默认只绑定本机 loopback 地址，并在启动横幅中打印 bearer token；web UI 通过 URL 的 `#token=` 片段自动完成鉴权。
 
 ::: info 提示
-`kiko server` 命令树已废弃：任何 `kiko server …` 调用（含全部旧子命令）只会打印弃用提示并以退出码 1 结束，请改用 `kiko web`。唯一的例外是 `kiko server kill`，它仍然可用，仅用于停止 0.28.0 之前版本启动的服务。该提示将在 Kimi Code 下个大版本移除。
+`kiko server` 命令树已废弃：任何 `kiko server …` 调用（含全部旧子命令）只会打印弃用提示并以退出码 1 结束，请改用 `kiko web`。唯一的例外是 `kiko server kill`，它仍然可用，仅用于停止 0.28.0 之前版本启动的服务。该提示将在 Kiko 下个大版本移除。
 :::
 
 ::: danger 警告
@@ -202,7 +202,7 @@ kiko web --port 58628    # 指定绑定端口
 
 ### `kiko app`
 
-打开 Kimi Code 桌面端，在当前目录或指定目录中开始新会话：
+打开 Kiko 桌面端，在当前目录或指定目录中开始新会话：
 
 ```sh
 kiko app
@@ -215,7 +215,7 @@ kiko app ~/project
 
 ### `kiko install-desktop`
 
-打印 Kimi Code 桌面端页面地址并在默认浏览器中打开，无需离开终端即可下载并安装桌面端应用。页面地址随当前区域而定：国内区域为 `https://www.kimi.com/code`，全球区域为 `https://www.kimi.ai/code`。
+打印 Kiko 桌面端页面地址并在默认浏览器中打开，无需离开终端即可下载并安装桌面端应用。页面地址随当前区域而定：国内区域为 `https://www.kimi.com/code`，全球区域为 `https://www.kimi.ai/code`。
 
 ```sh
 kiko install-desktop
@@ -280,7 +280,7 @@ kiko export 01HZ...XYZ -o ./bug-report.zip --no-include-global-log
 
 ### `kiko migrate`
 
-将旧版 kimi-cli 的本地数据迁移到 kimi-code，包括历史会话和配置文件。纯交互式运行，会引导你完成全流程。
+将旧版 kimi-cli 的本地数据迁移到 Kiko，包括历史会话和配置文件。纯交互式运行，会引导你完成全流程。
 
 ```sh
 kiko migrate
@@ -290,7 +290,7 @@ kiko migrate
 
 ### `kiko import-sessions`
 
-把最近的 Claude Code 和 Codex 会话导入为普通的 Kimi Code 会话。命令会打开一个交互式页面：选择最近 15 天（默认）或最近 30 天，然后查看进度和汇总。在 TUI 中用 `/import-sessions` 打开的是同一个页面。
+把最近的 Claude Code 和 Codex 会话导入为普通的 Kiko 会话。命令会打开一个交互式页面：选择最近 15 天（默认）或最近 30 天，然后查看进度和汇总。在 TUI 中用 `/import-sessions` 打开的是同一个页面。
 
 ```sh
 kiko import-sessions

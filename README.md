@@ -4,7 +4,7 @@
 
 Kiko CLI is a customized branch of [Kimi Code CLI](https://github.com/MoonshotAI/kimi-code), carrying Kiko's own enhancements for a terminal coding agent.
 
-> Status: aligned with upstream `main`; Kiko-specific changes have not landed yet.
+> Status: Kiko-specific changes are on `main` and pushed to `origin`; no release has been cut yet.
 
 ## Relationship to upstream
 

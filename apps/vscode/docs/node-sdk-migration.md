@@ -4,6 +4,8 @@ Status: accepted and implemented for extension `0.6.0`
 
 Last updated: 2026-07-16
 
+> Naming note: this document records the migration under the product name used at the time. The product is now **Kiko** (CLI: **Kiko CLI**); the extension ID `moonshot-ai.kimi-code`, package names, and marker file names are unchanged.
+
 ## Context
 
 The `0.5.x` VS Code extension launched a separately installed Python Kimi CLI
@@ -252,7 +254,7 @@ legacy source.
 
 On first launch, the extension detects work without mutating either home and
 offers **Migrate now** or **Later**. The command
-`Kimi Code: Migrate Legacy Data` remains available for manual runs and retries.
+`Kiko: Migrate Legacy Data` remains available for manual runs and retries.
 
 The shared marker `.migrated-to-kimi-code` can contain multiple target homes.
 This prevents duplicate migration when the TUI migrated the same source first,
