@@ -157,11 +157,11 @@ HTTP 状态码几乎总是 200，业务结果以 `code` 为准。例外情况如
 
    订阅端会先收到一帧 `turns`，里面是 main agent 最近的轮次。随后依次收到：`turn.started`（轮次开始），提示词对应的 `item.ended`，思考、回复和工具调用流式产生时的 `item.started`、`item.delta`、`item.ended`，每一步结束时的 `turn.updated`，最后是 `turn.ended`（轮次结束）。这些帧的含义见 [实时更新](./server-api-conversation.md#实时更新)。
 
-5. 随时可以用 REST 读回历史消息：
+5. 随时可以用 REST 读回对话历史：
 
    ```sh
    curl -s -H "Authorization: Bearer $TOKEN" \
-     "http://127.0.0.1:58627/api/v1/sessions/<session_id>/messages?page_size=20"
+     "http://127.0.0.1:58627/api/v1/sessions/<session_id>/agents/main/turns?page_size=20"
    ```
 
 ## 下一步

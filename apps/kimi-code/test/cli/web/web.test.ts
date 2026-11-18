@@ -146,7 +146,7 @@ describe('kiko web', () => {
     expect(longs).not.toContain('--allow-remote-terminals');
   });
 
-  it('routes `kiko server` and any legacy subcommand to a deprecation notice', async () => {
+it('routes `kiko server` and any legacy subcommand to a deprecation notice', async () => {
     for (const argv of [
       ['node', 'kimi', 'server'],
       ['node', 'kimi', 'server', 'run', '--port', '1'],
@@ -180,6 +180,7 @@ describe('kiko web', () => {
 
   it('keeps only the two functional subcommands under the deprecated `server` command', () => {
     const program = makeProgram();
+    expect(program.helpInformation()).not.toMatch(/^\s+server\s/m);
     const server = program.commands.find((c) => c.name() === 'server');
     expect(server).toBeDefined();
     expect(server?.commands.map((c) => c.name()).toSorted()).toEqual([

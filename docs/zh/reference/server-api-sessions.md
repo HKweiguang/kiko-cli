@@ -4,7 +4,7 @@
 
 ## 会话
 
-这部分接口管理会话本身：创建、列出、读取和修改会话，执行 fork、压缩、撤销等会话动作，以及读取目标、告警、环境、文件历史等会话级信息。返回会话的接口都使用 [会话对象](#会话对象) 格式。
+这部分接口管理会话本身：创建、列出、读取和修改会话，执行 fork、压缩、撤销等会话动作，以及读取告警、环境、文件历史等会话级信息。返回会话的接口都使用 [会话对象](#会话对象) 格式。
 
 ### 会话对象
 
@@ -43,7 +43,6 @@
 | `POST /api/v1/sessions:archive` | 批量归档会话 |
 | `POST /api/v1/sessions:restore` | 批量恢复已归档会话 |
 | `GET /api/v1/sessions/{session_id}` | 读取单个会话 |
-| `GET /api/v1/sessions/{session_id}/profile` | 读取会话档案 |
 | `POST /api/v1/sessions/{session_id}/profile` | 更新标题、元数据和 main agent 配置 |
 | `POST /api/v1/sessions/{session_id}/title/generate` | 通过托管的 `chat_title` 工具生成标题 |
 
@@ -156,18 +155,6 @@
 
 - `40401`：会话不存在，或会话的工作区已无法解析
 
-#### `GET /api/v1/sessions/{session_id}/profile`
-
-读取会话档案，返回内容与 `GET /api/v1/sessions/{session_id}` 相同。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-
-成功时 `data` 为 [会话对象](#会话对象)。
-
-- `40401`：会话不存在
-
 #### `POST /api/v1/sessions/{session_id}/profile`
 
 更新会话档案：标题、自定义元数据和 main agent 的配置。
@@ -229,7 +216,7 @@
 | `POST /api/v1/sessions/{session_id}:fork` | 把会话复制成同一工作区的新会话 |
 | `POST /api/v1/sessions/{session_id}:compact` | 手动压缩 main agent 的上下文 |
 | `POST /api/v1/sessions/{session_id}:undo` | 撤销某一轮及其之后的轮次 |
-| `POST /api/v1/sessions/{session_id}:abort` | 取消 main agent 正在运行的轮次 |
+| `POST /api/v1/sessions/{session_id}:cancel` | 停止某个 Agent 正在运行的轮次（默认 main agent），可一并停止其后台任务 |
 | `POST /api/v1/sessions/{session_id}:btw` | 开启只读的旁路对话 |
 | `POST /api/v1/sessions/{session_id}:archive` | 归档会话 |
 | `POST /api/v1/sessions/{session_id}:restore` | 取消归档 |
@@ -298,13 +285,20 @@
 - `40911`：这一轮无法撤销：开场不是用户输入，或要删除的范围跨过了上下文压缩
 - `40932`：会话已被其他客户端更新。服务端已重新载入会话，这次没有撤销任何内容（见 [错误码](./server-api.md#错误码)）
 
-#### `POST /api/v1/sessions/{session_id}:abort`
+#### `POST /api/v1/sessions/{session_id}:cancel`
 
-停止 main agent 当前的轮次，相当于用户在 TUI 中中止轮次。只作用于 main agent，其他 Agent 的轮次不受影响。
+停止一个 Agent 当前的轮次，默认是 main agent，相当于用户在 TUI 中中止轮次。其他 Agent 的轮次不受影响，除非通过 `agent_id` 指定。
 
-无论当时有没有正在运行的轮次，成功时 `data` 都为 `{ aborted: true }`，因此可以安全重试。要确认轮次已经停止，等待该轮的 `turn.ended` 帧。
+| 参数 | 位置 | 类型 | 说明 |
+| --- | --- | --- | --- |
+| `agent_id` | body | string | 要停止的 Agent，默认 `main` |
+| `include_background` | body | boolean | 同时停止已分离的后台任务。指定 `agent_id` 时只停该 Agent 的任务，否则停会话内所有 Agent 的任务。默认 `false` |
+
+成功时 `data` 为 `{ cancelled }`：真正停掉了运行中的轮次或后台任务时为 `true`，目标本来就空闲时为 `false`。该调用可以安全重试。要确认轮次已经停止，等待该轮的 `turn.ended` 帧。
 
 停止轮次不会清空队列：排队的用户提示词和尚未插入的用户插话保留下来，在被停止的轮次结束后开始执行；排队的 Skill 激活被取消。流程见 [停止](./server-api-conversation.md#停止)。
+
+- `40401`：会话不存在，或 `agent_id` 指定的 Agent 不在该会话中
 
 #### `POST /api/v1/sessions/{session_id}:btw`
 
@@ -312,7 +306,7 @@
 
 成功时 `data` 为 `{ agent_id }`，即新 subagent 的 id。
 
-旁路对话等非 main agent 的轮次没有公开的停止接口，[`:abort`](#post-api-v1-sessions-session-id-abort) 只停止 main agent。
+旁路对话等非 main agent 的轮次同样通过该接口停止：把它们的 `agent_id` 传给 [`:cancel`](#post-api-v1-sessions-session-id-cancel)。
 
 #### `POST /api/v1/sessions/{session_id}:archive`
 
@@ -349,103 +343,6 @@
 成功时 `data` 为 `{ taken_over: true }`。
 
 - `40401`：会话不存在
-
-### 子会话
-
-子会话是从当前会话 fork 出来、并记录为其子会话的会话。
-
-| 方法与路径 | 说明 |
-| --- | --- |
-| `GET /api/v1/sessions/{session_id}/children` | 列出子会话 |
-| `POST /api/v1/sessions/{session_id}/children` | 创建子会话（fork 并打标） |
-
-#### `GET /api/v1/sessions/{session_id}/children`
-
-列出通过 `POST /api/v1/sessions/{session_id}/children` 创建的子会话。游标分页遵循 [分页](./server-api.md#分页) 约定。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `before_id` | query | string | 只保留早于该 id 的子会话。与 `after_id` 互斥 |
-| `after_id` | query | string | 只保留晚于该 id 的子会话。与 `before_id` 互斥 |
-| `page_size` | query | integer | 1–100。默认 `100` |
-| `busy` | query | boolean | 只保留忙碌（或只保留空闲）的子会话 |
-
-成功时 `data` 为 `{ items, has_more }`，`items` 的每项是 [会话对象](#会话对象)。
-
-- `40401`：会话不存在
-
-#### `POST /api/v1/sessions/{session_id}/children`
-
-创建子会话：fork 当前会话并记录为它的子会话，之后可以在 `GET /api/v1/sessions/{session_id}/children` 中列出。创建成功时，服务端广播 `event.session.created`。
-
-源会话正在运行时，采用与 [`:fork`](#post-api-v1-sessions-session-id-fork) 相同的边界：保留最近一个已完成的轮次，当前轮次保存为只含提示词的 `cancelled` 轮次。创建子会话不接受历史 `turn_index` 参数。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `title` | body | string | 子会话的标题，至少 1 个字符。默认 `Child: <source title>` |
-| `metadata` | body | object | 子会话的自定义元数据 |
-
-成功时 `data` 为新会话的 [会话对象](#会话对象)。
-
-- `40401`：会话不存在
-- `40901`：另一项会话历史操作正在进行
-
-### 目标
-
-读取和修改会话当前的目标。创建、暂停、恢复或取消目标通过 [`POST /api/v1/sessions/{session_id}/profile`](#post-api-v1-sessions-session-id-profile) 的 `goal_objective` 和 `goal_control` 完成。与本 API 的大多数载荷不同，目标接口的载荷使用 camelCase 键。
-
-| 方法与路径 | 说明 |
-| --- | --- |
-| `GET /api/v1/sessions/{session_id}/goal` | 读取当前目标快照（没有时为 `null`） |
-| `PATCH /api/v1/sessions/{session_id}/goal` | 就地修改当前目标的 objective |
-
-#### `GET /api/v1/sessions/{session_id}/goal`
-
-读取会话当前的目标快照。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-
-没有目标时 `data` 为 `null`。目标完成后即被清除，因此之后读取也返回 `null`。否则 `data` 为目标快照：
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `goalId` | string | 目标 id |
-| `objective` | string | 目标内容 |
-| `completionCriterion` | string | 完成标准，可选 |
-| `status` | string | `active` / `paused` / `blocked` / `complete` |
-| `turnsUsed` | number | 已用轮次 |
-| `tokensUsed` | number | 已用 token |
-| `wallClockMs` | number | 已用的 wall-clock 时间，毫秒 |
-| `budget.tokenBudget` / `budget.turnBudget` / `budget.wallClockBudgetMs` | number \| null | token、轮次与 wall-clock（毫秒）预算。未设置对应预算时为 `null` |
-| `budget.remainingTokens` / `budget.remainingTurns` / `budget.remainingWallClockMs` | number \| null | 各项预算的剩余量，最小为 `0`。未设置对应预算时为 `null` |
-| `budget.tokenBudgetReached` / `budget.turnBudgetReached` / `budget.wallClockBudgetReached` | boolean | 已用量达到对应预算时为 `true`。未设置对应预算时为 `false` |
-| `budget.overBudget` | boolean | 任一预算已达到时为 `true` |
-| `terminalReason` | string | 目标离开 `active` 状态（暂停、受阻）的原因，可选。目标回到 `active` 时清除 |
-
-- `40401`：会话不存在
-
-#### `PATCH /api/v1/sessions/{session_id}/goal`
-
-替换当前目标的 objective，`goalId`、状态、进度和预算都保持不变。适用于 `active`、`paused`、`blocked` 状态的目标。
-
-正在运行的轮次不会被打断，Agent 在下一轮收到新的 objective。订阅了该会话的客户端会收到新的 WebSocket [`goal` 帧](./server-api-conversation.md#agent-状态)。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `objective` | body | string | 必填。新的 objective，首尾空白会被去除 |
-
-成功时 `data` 为更新后的目标快照，结构与 `GET /api/v1/sessions/{session_id}/goal` 相同（camelCase）。
-
-- `40401`：会话不存在
-- `40914`：当前没有目标
-- `40915`：目标已完成
-- `40917`：objective 为空
-- `40918`：objective 超过 4000 字符
 
 ### 告警与环境
 
@@ -695,55 +592,11 @@ main agent 正在运行时，激活不会开启新轮次，而是作为插话插
 
 ### 消息与轮次
 
-`messages` 接口分页返回 main agent 扁平化的消息历史；`turns` 接口按轮次与条目分页返回某个 Agent 的对话，与 WebSocket 实时推送的 [轮次](./server-api-conversation.md#轮次) 是同一套模型。更早的历史用这些接口读取，订阅后收到的 `turns` 帧之后的内容都走 WebSocket。
+`turns` 接口按轮次与条目分页返回某个 Agent 的对话，与 WebSocket 实时推送的 [轮次](./server-api-conversation.md#轮次) 是同一套模型。更早的历史用该接口读取，订阅后收到的 `turns` 帧之后的内容都走 WebSocket。
 
 | 方法与路径 | 说明 |
 | --- | --- |
-| `GET /api/v1/sessions/{session_id}/messages` | 消息分页（`before_id` / `after_id` / `role`） |
-| `GET /api/v1/sessions/{session_id}/messages/{message_id}` | 读取单条消息 |
 | `GET /api/v1/sessions/{session_id}/agents/{agent_id}/turns` | 某个 Agent 的轮次分页（`before_ordinal` / `page_size`） |
-
-#### `GET /api/v1/sessions/{session_id}/messages`
-
-分页返回 main agent 的消息历史（扁平化的上下文转录），最新的在前。游标分页遵循 [分页](./server-api.md#分页) 约定。会话为冷会话时，读取历史会恢复该会话。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `before_id` | query | string | 只保留早于该消息 id 的消息。与 `after_id` 互斥 |
-| `after_id` | query | string | 只保留晚于该消息 id 的消息。与 `before_id` 互斥 |
-| `page_size` | query | integer | 1–100。默认 `50` |
-| `role` | query | string | 只保留一种角色：`user` / `assistant` / `tool` / `system`。过滤在分页切片之后进行，因此过滤后的一页可能少于 `page_size` 条而 `has_more` 仍为 `true`，需要一直翻到 `has_more` 为 `false` |
-
-成功时 `data` 为 `{ items, has_more }`，`items` 的每项是消息对象：
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `id` | string | 消息 id |
-| `session_id` | string | 会话 id |
-| `role` | string | 消息角色 |
-| `content` | array | 内容块数组，格式同 [提示词内容块](#post-api-v1-sessions-session-id-prompts)，类型包括 `text`、`tool_use`、`tool_result`、`image`、`video`、`file`、`thinking` |
-| `created_at` | string | 创建时间 |
-| `prompt_id` | string | 可选 |
-| `parent_message_id` | string | 可选 |
-| `metadata` | object | 可选 |
-
-- `40001`：校验失败，例如 `before_id` 与 `after_id` 同时传入
-- `40401`：会话不存在
-
-#### `GET /api/v1/sessions/{session_id}/messages/{message_id}`
-
-按 id 从同一份历史中读取单条消息。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `message_id` | path | string | 必填。消息 id |
-
-成功时 `data` 为消息对象，结构见 [`GET /api/v1/sessions/{session_id}/messages`](#get-api-v1-sessions-session-id-messages)。
-
-- `40401`：会话不存在
-- `40403`：该会话中不存在此 id 的消息
 
 #### `GET /api/v1/sessions/{session_id}/agents/{agent_id}/turns`
 
@@ -778,7 +631,6 @@ main agent 正在运行时，激活不会开启新轮次，而是作为插话插
 | `POST /api/v1/sessions/{session_id}/steer` | 直接把消息内容插入进行中的轮次 |
 | `POST /api/v1/sessions/{session_id}/prompts:steer` | 把排队的提示词插入进行中的轮次 |
 | `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:abort` | 中止运行中或排队中的提示词 |
-| `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:steer` | 插入单条排队的提示词 |
 
 #### `GET /api/v1/sessions/{session_id}/prompts`
 
@@ -903,11 +755,11 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 
 中止 main agent 的一条提示词：
 
-- 提示词正在运行时，效果与 [`:abort`](#post-api-v1-sessions-session-id-abort) 停止当前轮次相同。
+- 提示词正在运行时，效果与 [`:cancel`](#post-api-v1-sessions-session-id-cancel) 停止当前轮次相同。
 - 提示词在队列中时，把它移出队列，不产生轮次，也不发送任何帧。
 - 提示词已结束或 id 未知时，返回 `40402`。
 
-本接口与下面的 `:steer` 走同一条路由 `POST /api/v1/sessions/{session_id}/prompts/{tail}`：`{tail}` 解析为 `{prompt_id}:{action}`，动作缺失或未知时返回 `40001`（`unsupported action: ...`）。
+本接口走 `POST /api/v1/sessions/{session_id}/prompts/{tail}`：`{tail}` 解析为 `{prompt_id}:{action}`。只支持 `:abort`，动作缺失或未知时返回 `40001`（`unsupported action: ...`）。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
@@ -918,20 +770,6 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 
 - `40401`：会话不存在
 - `40402`：提示词已结束，或不存在该 id 的提示词
-
-#### `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:steer`
-
-把单条排队的提示词插入进行中的轮次，是 [`POST /api/v1/sessions/{session_id}/prompts:steer`](#post-api-v1-sessions-session-id-prompts-steer) 的单提示词形式。同样只在 main agent 有正在运行的轮次时可用。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `prompt_id` | path | string | 必填。排队中的提示词 id |
-
-成功时 `data` 为 `{ steered: true, prompt_ids: [prompt_id] }`。
-
-- `40401`：会话不存在
-- `40402`：main agent 没有正在运行的轮次，或没有该 id 的排队提示词
 
 ### 审批与提问
 

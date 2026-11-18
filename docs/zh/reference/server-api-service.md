@@ -300,7 +300,7 @@
 | --- | --- |
 | `GET /api/v1/config` | 读取全局配置（密钥字段脱敏） |
 | `POST /api/v1/config` | 合并式更新配置，并广播 `event.config.changed` |
-| `POST /api/v1/client_configs` | 读取由 Kimi Code 服务远程控制的指定客户端配置 |
+| `GET /api/v1/client-configs/{name}` | 读取由 Kimi Code 服务远程控制的指定客户端配置。不出现在 OpenAPI 文档中 |
 
 ### `GET /api/v1/config`
 
@@ -349,13 +349,15 @@
 
 - `40001`：补丁被拒绝（值非法或持久化失败），响应带底层错误信息
 
-### `POST /api/v1/client_configs`
+### `GET /api/v1/client-configs/{name}`
 
 读取由 Kimi Code 服务远程控制的指定客户端配置，包括哪些模型或思考强度的切换需要用户确认，以及客户端的升级策略。服务端从账号所在区域的 Kimi Code 服务读取（设置了 `KIKO_BASE_URL` 时改用该地址），并把结果规范化成该名称预期的结构。
 
+该接口供第一方客户端使用，不出现在 OpenAPI 文档中。
+
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `name` | body | string | 必填。`model_switch_confirm` / `effort_switch_confirm` / `client_upgrade_policy` |
+| `name` | path | string | 必填。`model_switch_confirm` / `effort_switch_confirm` / `client_upgrade_policy` |
 
 成功时 `data` 为 `{ name, config }`。名称不在上述范围内或读取失败时，`config` 为 `null`，客户端回退到内置行为。
 
@@ -1163,69 +1165,13 @@ cloud-only 条目不能在本机安装。旧 `kimi-webbridge` 条目不再返回
 
 - `40407`（HTTP 404）：没有该 id 的文件
 
-## GUI 存储
-
-由服务端支撑的键值存储，接口对齐浏览器的 `localStorage`，数据持久化在服务的 home 目录下。远程控制等 Web 客户端用它保存跨客户端的 UI 状态。值是不透明字符串，序列化由调用方负责。
-
-| 方法与路径 | 说明 |
-| --- | --- |
-| `GET /api/v1/gui/store/length` | 已存键的数量 |
-| `GET /api/v1/gui/store/getItem` | 按键读取值 |
-| `POST /api/v1/gui/store/setItem` | 按键写入值 |
-| `POST /api/v1/gui/store/removeItem` | 按键删除值 |
-| `POST /api/v1/gui/store/clear` | 删除所有值 |
-
-### `GET /api/v1/gui/store/length`
-
-返回已存键的数量，对齐 `localStorage.length`。无参数。
-
-成功时 `data` 为 `{ length }`。
-
-### `GET /api/v1/gui/store/getItem`
-
-读取一个值，对齐 `localStorage.getItem`。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `key` | query | string | 必填。要读取的键，1–256 个字符 |
-
-成功时 `data` 为 `{ value }`：已存的字符串，键不存在时为 `null`。
-
-### `POST /api/v1/gui/store/setItem`
-
-写入一个值，对齐 `localStorage.setItem`。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `key` | body | string | 必填。要写入的键，1–256 个字符 |
-| `value` | body | string | 必填。要存储的值 |
-
-成功时 `data` 为 `null`。
-
-### `POST /api/v1/gui/store/removeItem`
-
-删除一个值，对齐 `localStorage.removeItem`。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `key` | body | string | 必填。要删除的键，1–256 个字符 |
-
-成功时 `data` 为 `null`。
-
-### `POST /api/v1/gui/store/clear`
-
-删除所有已存的值，对齐 `localStorage.clear`。无参数。
-
-成功时 `data` 为 `null`。
-
 ## 全局搜索与其他
 
-跨会话全文搜索、列出在线的 WebSocket 连接，以及其他接口的入口。
+跨会话全文搜索以及其他接口的入口。
 
 | 方法与路径 | 说明 |
 | --- | --- |
 | `POST /api/v1/search` | 跨会话全文搜索，`mode` 为 `terms`（默认）或 `literal`（精确子串），`page_token` 分页 |
-| `GET /api/v1/connections` | 列出当前在线的 WebSocket 连接 |
 | `GET /api/v1/sessions` | 会话列表与分组查询，见 [`GET /api/v1/sessions`](./server-api-sessions.md#get-api-v1-sessions) |
 | `POST /api/v1/sessions:archive` | 批量归档会话，见 [`POST /api/v1/sessions:archive`](./server-api-sessions.md#post-api-v1-sessions-archive) |
 | `POST /api/v1/sessions:restore` | 批量恢复已归档会话，见 [`POST /api/v1/sessions:restore`](./server-api-sessions.md#post-api-v1-sessions-restore) |
@@ -1286,20 +1232,6 @@ cloud-only 条目不能在本机安装。旧 `kimi-webbridge` 条目不再返回
 | `score` | number | 相关性得分 |
 
 - `40001`：请求体校验失败、查询不可用（为空或超过 32 个词项），或分页令牌非法
-
-### `GET /api/v1/connections`
-
-列出当前连接到本服务的 WebSocket 客户端，最早连接的在前。无参数。
-
-成功时 `data` 为 `{ connections }`，每项字段如下：
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `id` | string | 连接 id |
-| `connected_at` | string | 连接时间，ISO 8601 |
-| `remote_address` | string \| null | 远端地址，未知时为 `null` |
-| `user_agent` | string \| null | User-Agent，未知时为 `null` |
-| `subscriptions` | string[] | 该连接订阅的会话 id |
 
 ## MCP 管理
 

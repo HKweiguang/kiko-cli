@@ -300,7 +300,7 @@ These endpoints read and write the global configuration (`config.toml`) and read
 | --- | --- |
 | `GET /api/v1/config` | Read the global config (secret fields redacted) |
 | `POST /api/v1/config` | Merge-patch the config and broadcast `event.config.changed` |
-| `POST /api/v1/client_configs` | Read a named client configuration controlled remotely by the Kimi Code service |
+| `GET /api/v1/client-configs/{name}` | Read a named client configuration controlled remotely by the Kimi Code service. Omitted from the OpenAPI document |
 
 ### `GET /api/v1/config`
 
@@ -349,13 +349,15 @@ Every config change broadcasts the global event `event.config.changed` (see [Glo
 
 - `40001`: the patch was rejected (invalid value or persistence failure); the response carries the underlying error message
 
-### `POST /api/v1/client_configs`
+### `GET /api/v1/client-configs/{name}`
 
 Reads a named client configuration that the Kimi Code service controls remotely, including which model or thinking-effort switches ask the user to confirm, and the client upgrade policy. The server reads it from the Kimi Code service of the account's region (or from `KIKO_BASE_URL` when that is set) and normalizes the result to the shape that name expects.
 
+This endpoint is mounted for first-party clients and is hidden from the OpenAPI document.
+
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
-| `name` | body | string | Required. `model_switch_confirm` / `effort_switch_confirm` / `client_upgrade_policy` |
+| `name` | path | string | Required. `model_switch_confirm` / `effort_switch_confirm` / `client_upgrade_policy` |
 
 On success, `data` is `{ name, config }`. When the name is outside that list or the read fails, `config` is `null` and the client falls back to its built-in behavior.
 
@@ -1163,69 +1165,13 @@ On success, `data` is `{ deleted: true }`.
 
 - `40407` (HTTP 404): no file with that id
 
-## GUI store
-
-A server-backed key/value store whose interface mirrors the browser's `localStorage`, with data persisted under the server's home directory. Web clients such as Remote Control use it to keep cross-client UI state. Values are opaque strings, and serialization is the caller's job.
-
-| Method and path | Description |
-| --- | --- |
-| `GET /api/v1/gui/store/length` | Number of stored keys |
-| `GET /api/v1/gui/store/getItem` | Read a value by key |
-| `POST /api/v1/gui/store/setItem` | Write a value by key |
-| `POST /api/v1/gui/store/removeItem` | Delete a value by key |
-| `POST /api/v1/gui/store/clear` | Delete all values |
-
-### `GET /api/v1/gui/store/length`
-
-Returns the number of stored keys, mirroring `localStorage.length`. No parameters.
-
-On success, `data` is `{ length }`.
-
-### `GET /api/v1/gui/store/getItem`
-
-Reads one value, mirroring `localStorage.getItem`.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `key` | query | string | Required. Key to read, 1–256 characters |
-
-On success, `data` is `{ value }`: the stored string, or `null` when the key does not exist.
-
-### `POST /api/v1/gui/store/setItem`
-
-Writes one value, mirroring `localStorage.setItem`.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `key` | body | string | Required. Key to write, 1–256 characters |
-| `value` | body | string | Required. Value to store |
-
-On success, `data` is `null`.
-
-### `POST /api/v1/gui/store/removeItem`
-
-Deletes one value, mirroring `localStorage.removeItem`.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `key` | body | string | Required. Key to delete, 1–256 characters |
-
-On success, `data` is `null`.
-
-### `POST /api/v1/gui/store/clear`
-
-Deletes every stored value, mirroring `localStorage.clear`. No parameters.
-
-On success, `data` is `null`.
-
 ## Global search and other endpoints
 
-Cross-session full-text search, the list of live WebSocket connections, and entry points to other endpoints.
+Cross-session full-text search and entry points to other endpoints.
 
 | Method and path | Description |
 | --- | --- |
 | `POST /api/v1/search` | Cross-session full-text search; `mode` is `terms` (default) or `literal` (exact substring); paginated with `page_token` |
-| `GET /api/v1/connections` | List live WebSocket connections |
 | `GET /api/v1/sessions` | Session list and grouped queries; see [`GET /api/v1/sessions`](./server-api-sessions.md#get-api-v1-sessions) |
 | `POST /api/v1/sessions:archive` | Batch-archive sessions; see [`POST /api/v1/sessions:archive`](./server-api-sessions.md#post-api-v1-sessions-archive) |
 | `POST /api/v1/sessions:restore` | Batch-restore archived sessions; see [`POST /api/v1/sessions:restore`](./server-api-sessions.md#post-api-v1-sessions-restore) |
@@ -1286,20 +1232,6 @@ Fields of each `items` entry:
 | `score` | number | Relevance score |
 
 - `40001`: body validation failed, the query is unusable (empty, or more than 32 terms), or the page token is invalid
-
-### `GET /api/v1/connections`
-
-Lists the WebSocket clients currently connected to this server, oldest connection first. No parameters.
-
-On success, `data` is `{ connections }`, each item with these fields:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | Connection id |
-| `connected_at` | string | Connection time, ISO 8601 |
-| `remote_address` | string \| null | Remote address; `null` when unknown |
-| `user_agent` | string \| null | User-Agent; `null` when unknown |
-| `subscriptions` | string[] | Ids of the sessions this connection subscribes to |
 
 ## MCP management
 
