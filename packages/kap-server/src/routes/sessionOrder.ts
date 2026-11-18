@@ -8,7 +8,8 @@ export function sessionKey(sort: SessionsSort, summary: Pick<SessionSummary, 'cr
 }
 
 export function compareSessionGroups(sort: SessionsSort, a: SessionPosition, b: SessionPosition): number {
-  return a.key === b.key ? a.id.localeCompare(b.id) : sort === 'updated_at_asc' ? a.key - b.key : b.key - a.key;
+  if (a.key !== b.key) return sort === 'updated_at_asc' ? a.key - b.key : b.key - a.key;
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
 export function compareSessionPositions(sort: SessionsSort, a: SessionPosition, b: SessionPosition): number {

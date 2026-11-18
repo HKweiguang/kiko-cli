@@ -66,11 +66,15 @@ function serve(sessions: readonly FakeSession[], query: Query): Record<string, u
     const list = [...groups].map(([workspace, members]) => {
         return { workspace_id: workspace, sessions: members.slice(0, Number(query['group_page_size'] ?? 5)).map(toItem), total: members.length, updated: members[0]!.updated };
     });
-    if (query['sort'] !== 'updated_at_asc') list.reverse();
+    const groupOrder = (a: { updated: number; workspace_id: string }, b: { updated: number; workspace_id: string }): number => {
+      if (a.updated !== b.updated) return ascending ? a.updated - b.updated : b.updated - a.updated;
+      return a.workspace_id < b.workspace_id ? -1 : a.workspace_id > b.workspace_id ? 1 : 0;
+    };
+    list.sort(groupOrder);
     let groupStart = 0;
     if (query['page_token']) {
       const [key, id] = JSON.parse(String(query['page_token'])) as [number, string];
-      groupStart = list.findIndex((group) => group.updated < key || group.updated === key && group.workspace_id > id);
+      groupStart = list.findIndex((group) => groupOrder(group, { updated: key, workspace_id: id }) > 0);
       if (groupStart === -1) groupStart = list.length;
     }
     const window = list.slice(groupStart, groupStart + pageSize);
@@ -269,6 +273,23 @@ describe('sessions across hosts', () => {
     expect((groups['groups'] as Array<{ workspace_id: string }>).map((group) => group.workspace_id)).toEqual(['wm_a']);
 
     expect((await collectIds({ fields: 'id,archived', page_size: 2 }, hosts, local)).flat()).toEqual(['s2', 's1', 'l1', 'l2', 'l3', 'l4']);
+  });
+
+  it('keeps tied workspace groups across a page boundary in the local group order', async () => {
+    const tied: FakeSession[] = [
+      { id: 'x1', workspace: 'wd_x', updated: 110 },
+      { id: 'h1', workspace: 'wd_a-b', updated: 100 },
+      { id: 'u1', workspace: 'wd_a_b', updated: 100 },
+    ];
+    const seen: string[] = [];
+    let token: string | undefined;
+    do {
+      const page = await list({ view: 'by_workspace', page_size: 2, page_token: token }, sourcesOf([]), tied);
+      seen.push(...(page['groups'] as Array<{ workspace_id: string }>).map((group) => group.workspace_id));
+      token = page['next_page_token'] as string | undefined;
+    } while (token !== undefined);
+
+    expect(seen).toEqual(['wd_x', 'wd_a-b', 'wd_a_b']);
   });
 
   it.each([3, 150, 10000])('collects projected ids with page_size=%i through bounded source pages', async (pageSize) => {
