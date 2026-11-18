@@ -4,7 +4,7 @@ This page lists the REST endpoints under `/api/v1/sessions` (session file system
 
 ## Sessions
 
-These endpoints manage sessions themselves: create, list, read, and update sessions, run session actions such as fork, compact, and undo, and read session-level information such as the goal, warnings, environments, and file history. Every endpoint that returns a session uses the [session object](#session-object) shape.
+These endpoints manage sessions themselves: create, list, read, and update sessions, run session actions such as fork, compact, and undo, and read session-level information such as warnings, environments, and file history. Every endpoint that returns a session uses the [session object](#session-object) shape.
 
 ### Session object
 
@@ -43,7 +43,6 @@ Create sessions, list and read them, archive or restore sessions in batch, and u
 | `POST /api/v1/sessions:archive` | Archive sessions in batch |
 | `POST /api/v1/sessions:restore` | Restore archived sessions in batch |
 | `GET /api/v1/sessions/{session_id}` | Read one session |
-| `GET /api/v1/sessions/{session_id}/profile` | Read the session profile |
 | `POST /api/v1/sessions/{session_id}/profile` | Update the title, metadata, and main agent config |
 | `POST /api/v1/sessions/{session_id}/title/generate` | Generate a title through the managed `chat_title` tool |
 
@@ -156,18 +155,6 @@ On success, `data` is a [session object](#session-object).
 
 - `40401`: the session does not exist, or its workspace can no longer be resolved
 
-#### `GET /api/v1/sessions/{session_id}/profile`
-
-Reads the session profile. The response is the same as `GET /api/v1/sessions/{session_id}`.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-
-On success, `data` is a [session object](#session-object).
-
-- `40401`: the session does not exist
-
 #### `POST /api/v1/sessions/{session_id}/profile`
 
 Updates the session profile: the title, custom metadata, and the main agent's config.
@@ -229,7 +216,7 @@ Session actions are non-CRUD operations on one session. Following the `:{action}
 | `POST /api/v1/sessions/{session_id}:fork` | Copy the session into a new session in the same workspace |
 | `POST /api/v1/sessions/{session_id}:compact` | Manually compact the main agent's context |
 | `POST /api/v1/sessions/{session_id}:undo` | Undo a turn and the turns after it |
-| `POST /api/v1/sessions/{session_id}:abort` | Cancel the main agent's running turn |
+| `POST /api/v1/sessions/{session_id}:cancel` | Stop the running turn of an agent (the main agent by default), optionally stopping its background tasks |
 | `POST /api/v1/sessions/{session_id}:btw` | Start a read-only side conversation |
 | `POST /api/v1/sessions/{session_id}:archive` | Archive the session |
 | `POST /api/v1/sessions/{session_id}:restore` | Unarchive the session |
@@ -298,13 +285,20 @@ On success, `data` is `{ removed_turn_ids }`: the removed turns in ascending ord
 - `40911`: the turn cannot be undone: it does not open with user input, or the removed range crosses a context compaction
 - `40932`: another client updated the session. The server has reloaded the session, and nothing was undone this time (see [Error codes](./server-api.md#error-codes))
 
-#### `POST /api/v1/sessions/{session_id}:abort`
+#### `POST /api/v1/sessions/{session_id}:cancel`
 
-Stops the main agent's current turn, the equivalent of the user aborting a turn in the TUI. Only the main agent is affected; other agents' turns keep running.
+Stops the running turn of one agent — by default the main agent, the equivalent of the user aborting a turn in the TUI. Other agents' turns keep running unless they are targeted through `agent_id`.
 
-On success, `data` is always `{ aborted: true }`, whether or not a turn was running, so the call is safe to retry. To confirm the turn has stopped, wait for that turn's `turn.ended` frame.
+| Parameter | In | Type | Description |
+| --- | --- | --- | --- |
+| `agent_id` | body | string | The agent whose turn to stop. Default `main` |
+| `include_background` | body | boolean | Also stop detached background tasks. With `agent_id`, only that agent's tasks; without it, those of every agent in the session. Default `false` |
+
+On success, `data` is `{ cancelled }`: `true` when a running turn or a background task was actually stopped, and `false` when the target was already idle. The call is safe to retry. To confirm the turn has stopped, wait for that turn's `turn.ended` frame.
 
 Stopping a turn does not clear the queue: queued user prompts and user steering messages not yet inserted are kept and start after the stopped turn ends; queued skill activations are cancelled. See [Stopping a turn](./server-api-conversation.md#stopping-a-turn) for the flow.
+
+- `40401`: the session does not exist, or `agent_id` names an agent this session does not have
 
 #### `POST /api/v1/sessions/{session_id}:btw`
 
@@ -312,7 +306,7 @@ Starts a "by the way" side conversation: forks the main agent into a subagent th
 
 On success, `data` is `{ agent_id }`, the id of the new subagent.
 
-Turns of agents other than the main agent, such as side conversations, have no public stop endpoint. [`:abort`](#post-api-v1-sessions-session-id-abort) stops only the main agent.
+Turns of agents other than the main agent, such as side conversations, are stopped through the same endpoint by passing their `agent_id` to [`:cancel`](#post-api-v1-sessions-session-id-cancel).
 
 #### `POST /api/v1/sessions/{session_id}:archive`
 
@@ -349,103 +343,6 @@ Use it only when the process holding the lock has exited and left the lock behin
 On success, `data` is `{ taken_over: true }`.
 
 - `40401`: the session does not exist
-
-### Child sessions
-
-A child session is a session forked from the current session and recorded as its child.
-
-| Method and path | Description |
-| --- | --- |
-| `GET /api/v1/sessions/{session_id}/children` | List child sessions |
-| `POST /api/v1/sessions/{session_id}/children` | Create a child session (fork with a tag) |
-
-#### `GET /api/v1/sessions/{session_id}/children`
-
-Lists the child sessions created through `POST /api/v1/sessions/{session_id}/children`. Cursor pagination follows the [Pagination](./server-api.md#pagination) conventions.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-| `before_id` | query | string | Only child sessions older than this id. Mutually exclusive with `after_id` |
-| `after_id` | query | string | Only child sessions newer than this id. Mutually exclusive with `before_id` |
-| `page_size` | query | integer | 1–100. Default `100` |
-| `busy` | query | boolean | Keep only busy (or only idle) child sessions |
-
-On success, `data` is `{ items, has_more }`, where each item is a [session object](#session-object).
-
-- `40401`: the session does not exist
-
-#### `POST /api/v1/sessions/{session_id}/children`
-
-Creates a child session: forks the current session and records the fork as its child, so it is listed by `GET /api/v1/sessions/{session_id}/children`. On success, the server broadcasts `event.session.created`.
-
-When the source session is running, the same boundary as [`:fork`](#post-api-v1-sessions-session-id-fork) applies: the most recent completed turn is kept, and the current turn is saved as a prompt-only `cancelled` turn. Creating a child session does not accept a historical `turn_index` parameter.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-| `title` | body | string | Title for the child session, at least 1 character. Default `Child: <source title>` |
-| `metadata` | body | object | Custom metadata for the child session |
-
-On success, `data` is the [session object](#session-object) of the new session.
-
-- `40401`: the session does not exist
-- `40901`: another session history operation is in progress
-
-### Goals
-
-Read and edit the session's current goal. Creating, pausing, resuming, or cancelling a goal goes through `goal_objective` and `goal_control` in [`POST /api/v1/sessions/{session_id}/profile`](#post-api-v1-sessions-session-id-profile). Unlike most payloads in this API, goal payloads use camelCase keys.
-
-| Method and path | Description |
-| --- | --- |
-| `GET /api/v1/sessions/{session_id}/goal` | Read the current goal snapshot (`null` when there is none) |
-| `PATCH /api/v1/sessions/{session_id}/goal` | Edit the current goal's objective in place |
-
-#### `GET /api/v1/sessions/{session_id}/goal`
-
-Reads the session's current goal snapshot.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-
-When there is no goal, `data` is `null`. A goal is cleared once it completes, so later reads also return `null`. Otherwise `data` is the goal snapshot:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `goalId` | string | Goal id |
-| `objective` | string | Goal content |
-| `completionCriterion` | string | Completion criterion; optional |
-| `status` | string | `active` / `paused` / `blocked` / `complete` |
-| `turnsUsed` | number | Turns used |
-| `tokensUsed` | number | Tokens used |
-| `wallClockMs` | number | Wall-clock time used, in milliseconds |
-| `budget.tokenBudget` / `budget.turnBudget` / `budget.wallClockBudgetMs` | number \| null | Token, turn, and wall-clock (milliseconds) budgets. `null` when the corresponding budget is not set |
-| `budget.remainingTokens` / `budget.remainingTurns` / `budget.remainingWallClockMs` | number \| null | Remaining amount of each budget, at least `0`. `null` when the corresponding budget is not set |
-| `budget.tokenBudgetReached` / `budget.turnBudgetReached` / `budget.wallClockBudgetReached` | boolean | `true` when usage has reached the corresponding budget. `false` when that budget is not set |
-| `budget.overBudget` | boolean | `true` when any budget has been reached |
-| `terminalReason` | string | Why the goal left the `active` status (paused, blocked); optional. Cleared when the goal returns to `active` |
-
-- `40401`: the session does not exist
-
-#### `PATCH /api/v1/sessions/{session_id}/goal`
-
-Replaces the current goal's objective. The `goalId`, status, progress, and budget stay unchanged. Works on goals in the `active`, `paused`, and `blocked` statuses.
-
-A running turn is not interrupted; the agent receives the new objective on its next turn. Clients subscribed to the session receive a new WebSocket [`goal` frame](./server-api-conversation.md#agent-state).
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-| `objective` | body | string | Required. The new objective; leading and trailing whitespace is trimmed |
-
-On success, `data` is the updated goal snapshot, in the same shape as `GET /api/v1/sessions/{session_id}/goal` (camelCase).
-
-- `40401`: the session does not exist
-- `40914`: there is no current goal
-- `40915`: the goal is complete
-- `40917`: the objective is empty
-- `40918`: the objective exceeds 4000 characters
 
 ### Warnings and environments
 
@@ -695,55 +592,11 @@ These endpoints read the conversation history, submit prompts, and answer approv
 
 ### Messages and turns
 
-The `messages` endpoints page the main agent's flattened message history. The `turns` endpoint pages one agent's conversation by turns and items, the same model as the [turns](./server-api-conversation.md#turns) the WebSocket pushes live. Read older history with these endpoints; everything after the `turns` frame received on subscription comes over the WebSocket.
+The `turns` endpoint pages one agent's conversation by turns and items, the same model as the [turns](./server-api-conversation.md#turns) the WebSocket pushes live. Read older history with this endpoint; everything after the `turns` frame received on subscription comes over the WebSocket.
 
 | Method and path | Description |
 | --- | --- |
-| `GET /api/v1/sessions/{session_id}/messages` | Page messages (`before_id` / `after_id` / `role`) |
-| `GET /api/v1/sessions/{session_id}/messages/{message_id}` | Read one message |
 | `GET /api/v1/sessions/{session_id}/agents/{agent_id}/turns` | Page one agent's turns (`before_ordinal` / `page_size`) |
-
-#### `GET /api/v1/sessions/{session_id}/messages`
-
-Pages the main agent's message history (the flattened context transcript), newest first. Cursor pagination follows the [Pagination](./server-api.md#pagination) conventions. Reading the history resumes the session when it is cold.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-| `before_id` | query | string | Only messages older than this message id. Mutually exclusive with `after_id` |
-| `after_id` | query | string | Only messages newer than this message id. Mutually exclusive with `before_id` |
-| `page_size` | query | integer | 1–100. Default `50` |
-| `role` | query | string | Keep only one role: `user` / `assistant` / `tool` / `system`. The filter applies after the page is sliced, so a filtered page can hold fewer than `page_size` items while `has_more` is still `true`; keep paging until `has_more` is `false` |
-
-On success, `data` is `{ items, has_more }`, where each item is a message object:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | Message id |
-| `session_id` | string | Session id |
-| `role` | string | Message role |
-| `content` | array | Array of content blocks, in the same format as [prompt content blocks](#post-api-v1-sessions-session-id-prompts); types include `text`, `tool_use`, `tool_result`, `image`, `video`, `file`, and `thinking` |
-| `created_at` | string | Creation time |
-| `prompt_id` | string | Optional |
-| `parent_message_id` | string | Optional |
-| `metadata` | object | Optional |
-
-- `40001`: validation failure, for example `before_id` together with `after_id`
-- `40401`: the session does not exist
-
-#### `GET /api/v1/sessions/{session_id}/messages/{message_id}`
-
-Reads one message from the same history by id.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-| `message_id` | path | string | Required. Message id |
-
-On success, `data` is a message object; see [`GET /api/v1/sessions/{session_id}/messages`](#get-api-v1-sessions-session-id-messages) for its shape.
-
-- `40401`: the session does not exist
-- `40403`: no message with that id in this session
 
 #### `GET /api/v1/sessions/{session_id}/agents/{agent_id}/turns`
 
@@ -903,7 +756,7 @@ On success, `data` is `{ steered: true, prompt_ids }`.
 
 Aborts one of the main agent's prompts:
 
-- When the prompt is running, the effect is the same as stopping the current turn with [`:abort`](#post-api-v1-sessions-session-id-abort).
+- When the prompt is running, the effect is the same as stopping the current turn with [`:cancel`](#post-api-v1-sessions-session-id-cancel).
 - When the prompt is queued, it is removed from the queue; no turn is produced and no frame is sent.
 - When the prompt has ended or the id is unknown, `40402` is returned.
 

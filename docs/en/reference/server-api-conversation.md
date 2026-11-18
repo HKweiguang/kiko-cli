@@ -298,7 +298,7 @@ Inserted input appears in the conversation as a `user_message` with `placement` 
 
 | Operation | Endpoint | Effect |
 | --- | --- | --- |
-| Stop the current turn | [`POST /api/v1/sessions/{session_id}:abort`](./server-api-sessions.md#post-api-v1-sessions-session-id-abort) | Stops the main agent's running turn. The turn ends with `outcome: "interrupted"` and `end_reason: "user_cancelled"` |
+| Stop the current turn | [`POST /api/v1/sessions/{session_id}:cancel`](./server-api-sessions.md#post-api-v1-sessions-session-id-cancel) | Stops an agent's running turn, the main agent by default. The turn ends with `outcome: "interrupted"` and `end_reason: "user_cancelled"` |
 | Stop or withdraw one input | [`POST .../prompts/{prompt_id}:abort`](./server-api-sessions.md#post-api-v1-sessions-session-id-prompts-prompt-id-abort) | While the input is running, the same as stopping the current turn; while it is queued, removes it from the queue |
 | Undo | [`POST /api/v1/sessions/{session_id}:undo`](./server-api-sessions.md#post-api-v1-sessions-session-id-undo) | Deletes the given turn and every turn after it. Files are not rolled back |
 | Compact the context | [`POST /api/v1/sessions/{session_id}:compact`](./server-api-sessions.md#post-api-v1-sessions-session-id-compact) | Starts a manual compaction of the main agent's context and returns immediately |
@@ -307,13 +307,13 @@ Inserted input appears in the conversation as a `user_message` with `placement` 
 
 ### Stopping a turn
 
-`:abort` acts only on the main agent's current turn. It returns `{ aborted: true }` whether or not a turn is running, so it is safe to resend. Whether the turn actually stopped is determined by the turn's `turn.ended`.
+`:cancel` stops one agent's current turn — the main agent by default, or the agent named by `agent_id`. It returns `{ cancelled }`, which is `false` when that agent was idle, so the call is safe to resend. Whether the turn actually stopped is determined by the turn's `turn.ended`. With `include_background: true` it also stops the target's detached background tasks.
 
-Stopping a turn does not clear the queue: queued user input and user steering not yet inserted are kept, and the next turn opens automatically once the stopped turn ends. Queued skill activations are cancelled along with it. The server has no endpoint to pause the queue. To stop everything, first withdraw each queued input with `prompts/{prompt_id}:abort`, then call `:abort`.
+Stopping a turn does not clear the queue: queued user input and user steering not yet inserted are kept, and the next turn opens automatically once the stopped turn ends. Queued skill activations are cancelled along with it. The server has no endpoint to pause the queue. To stop everything, first withdraw each queued input with `prompts/{prompt_id}:abort`, then call `:cancel`.
 
 `prompts/{prompt_id}:abort` also acts only on the main agent. Withdrawing a queued input produces no turn and pushes no frames. When the input has already ended or does not exist, it returns `40402`.
 
-Turns of agents other than the main agent, such as side chats, currently have no public stop endpoint.
+Turns of agents other than the main agent, such as side chats, are stopped through the same endpoint by passing their `agent_id`.
 
 ### Undo
 

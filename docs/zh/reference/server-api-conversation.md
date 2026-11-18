@@ -298,7 +298,7 @@ agent 正在运行时，排队的输入要等当前这一轮结束才会开启�
 
 | 操作 | 接口 | 效果 |
 | --- | --- | --- |
-| 停止当前轮次 | [`POST /api/v1/sessions/{session_id}:abort`](./server-api-sessions.md#post-api-v1-sessions-session-id-abort) | 停止 main agent 正在运行的轮次。这一轮以 `outcome: "interrupted"`、`end_reason: "user_cancelled"` 结束 |
+| 停止当前轮次 | [`POST /api/v1/sessions/{session_id}:cancel`](./server-api-sessions.md#post-api-v1-sessions-session-id-cancel) | 停止某个 Agent 正在运行的轮次（默认 main agent）。这一轮以 `outcome: "interrupted"`、`end_reason: "user_cancelled"` 结束 |
 | 停止或撤回一条输入 | [`POST .../prompts/{prompt_id}:abort`](./server-api-sessions.md#post-api-v1-sessions-session-id-prompts-prompt-id-abort) | 输入正在运行时，等同停止当前轮次；在队列中时，从队列移除 |
 | 撤销 | [`POST /api/v1/sessions/{session_id}:undo`](./server-api-sessions.md#post-api-v1-sessions-session-id-undo) | 删除指定的一轮及其之后的所有轮次，不回滚文件 |
 | 压缩上下文 | [`POST /api/v1/sessions/{session_id}:compact`](./server-api-sessions.md#post-api-v1-sessions-session-id-compact) | 对 main agent 的上下文发起一次手动压缩，立即返回 |
@@ -307,13 +307,13 @@ agent 正在运行时，排队的输入要等当前这一轮结束才会开启�
 
 ### 停止
 
-`:abort` 只作用于 main agent 的当前轮次。无论有没有运行中的轮次，它都返回 `{ aborted: true }`，可以安全地重发；是否真的停下，以这一轮的 `turn.ended` 为准。
+`:cancel` 停止一个 Agent 的当前轮次，默认是 main agent，也可以通过 `agent_id` 指定。它返回 `{ cancelled }`：目标本来就空闲时为 `false`，因此可以安全地重发；是否真的停下，以这一轮的 `turn.ended` 为准。传入 `include_background: true` 时还会停止该目标已分离的后台任务。
 
-停止一轮不会清空队列：排队的用户输入和还没插入的用户插话都会保留，被停止的那一轮结束后自动开启下一轮。排队中的 Skill 激活会一并取消。服务端没有暂停队列的接口，要全部停下，先对排队的输入逐条调用 `prompts/{prompt_id}:abort` 撤回，再调用 `:abort`。
+停止一轮不会清空队列：排队的用户输入和还没插入的用户插话都会保留，被停止的那一轮结束后自动开启下一轮。排队中的 Skill 激活会一并取消。服务端没有暂停队列的接口，要全部停下，先对排队的输入逐条调用 `prompts/{prompt_id}:abort` 撤回，再调用 `:cancel`。
 
 `prompts/{prompt_id}:abort` 同样只作用于 main agent。撤回排队的输入不产生轮次，也不推送任何帧；输入已经结束或不存在时返回 `40402`。
 
-侧边对话等非 main agent 的轮次，目前没有公开的停止接口。
+侧边对话等非 main agent 的轮次，同样通过该接口停止：把它们的 `agent_id` 传给 `:cancel`。
 
 ### 撤销
 

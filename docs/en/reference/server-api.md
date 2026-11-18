@@ -157,11 +157,11 @@ This walkthrough runs the minimal flow with curl: check the server, create a ses
 
    The subscriber first gets a `turns` frame with the main agent's latest turns. It then receives, in order: `turn.started` (the turn begins), `item.ended` for the prompt, `item.started`, `item.delta`, and `item.ended` as reasoning, the reply, and tool calls stream, `turn.updated` as each step ends, and finally `turn.ended` (the turn finishes). See [Live updates](./server-api-conversation.md#live-updates) for what these frames mean.
 
-5. Read the message history back over REST at any time:
+5. Read the conversation history back over REST at any time:
 
    ```sh
    curl -s -H "Authorization: Bearer $TOKEN" \
-     "http://127.0.0.1:58627/api/v1/sessions/<session_id>/messages?page_size=20"
+     "http://127.0.0.1:58627/api/v1/sessions/<session_id>/agents/main/turns?page_size=20"
    ```
 
 ## Next steps
