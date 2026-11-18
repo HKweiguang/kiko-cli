@@ -43,7 +43,7 @@ export class HostConnectError extends Error {
 }
 
 const BOOTSTRAP_MARKER = '__KIMI_ENSURE_DAEMON__';
-const DEFAULT_REMOTE_BIN = '~/.kimi-code/bin/kimi';
+const DEFAULT_REMOTE_BIN = '~/.kiko/bin/kiko';
 const BARE_BIN = /^[A-Za-z0-9._+-]+$/;
 const VERSION_LINE = /^v?\d+\.\d+\.\d+\S*$/;
 const SSH_OPTIONS = [
@@ -123,7 +123,7 @@ function readMarker(stdout: string): BootstrapMarker | undefined {
 function outdatedError(version: string | undefined): HostConnectError {
   return new HostConnectError(
     'executor_outdated',
-    `kimi ${version ?? '(unknown version)'} on this host is too old for this app; run \`kimi upgrade\` on the host`,
+    `Kiko ${version ?? '(unknown version)'} on this host is too old for this app; run \`kiko upgrade\` on the host`,
     version,
   );
 }

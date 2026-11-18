@@ -107,7 +107,7 @@ export function registerHostsRoutes(app: HostsRouteHost, core: Scope, manager: H
       body: hostWireSchema,
       success: { data: testResultSchema },
       errors: { [ErrorCode.VALIDATION_FAILED]: {} },
-      description: 'Check SSH connectivity and the remote kimi version without starting a server',
+      description: 'Check SSH connectivity and the remote Kiko version without starting a server',
       tags: ['hosts'],
     },
     async (req, reply) => {

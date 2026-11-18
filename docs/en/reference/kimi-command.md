@@ -191,7 +191,7 @@ The bundled browser UI has been removed. `kiko web` no longer opens a browser or
 :::
 
 ::: info
-The `kiko server` command tree is deprecated: any `kiko server …` invocation (including all legacy subcommands) only prints a deprecation notice and exits with code 1 — use `kiko web` instead. The one exception is `kiko server kill`, which stays functional for stopping servers started by a version before 0.28.0. The notice will be removed in the next major version of Kiko.
+The `kiko server` command tree is deprecated: any `kiko server …` invocation (including all legacy subcommands) only prints a deprecation notice and exits with code 1 — use `kiko web` instead. The one user-facing exception is `kiko server kill`, which stays functional for stopping servers started by a version before 0.28.0. The notice will be removed in the next major version of Kiko.
 :::
 
 ::: danger

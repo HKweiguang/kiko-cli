@@ -121,7 +121,7 @@ describe('host configuration', () => {
 
 describe('ssh bootstrap', () => {
   it('quotes the remote binary while keeping home expansion', () => {
-    expect(remoteBinCommand(undefined)).toBe(`"$HOME"/'.kimi-code/bin/kimi'`);
+    expect(remoteBinCommand(undefined)).toBe(`"$HOME"/'.kiko/bin/kiko'`);
     expect(remoteBinCommand('kimi')).toBe('kimi');
     expect(remoteBinCommand('/opt/my kimi')).toBe(`'/opt/my kimi'`);
     expect(remoteKimiCommand('kimi', 'server ensure-daemon')).toBe('kimi --version; kimi server ensure-daemon');
@@ -139,7 +139,7 @@ describe('ssh bootstrap', () => {
     );
     expect(error.failure).toBe('executor_outdated');
     expect(error.remoteVersion).toBe('0.40.0');
-    expect(error.message).toContain('kimi upgrade');
+    expect(error.message).toContain('kiko upgrade');
     expect(thrown(() => checkBootstrapOutput('0.40.0\n__KIMI_ENSURE_DAEMON__{"protocol":0}\n')).remoteVersion).toBe('0.40.0');
   });
 
@@ -150,7 +150,7 @@ describe('ssh bootstrap', () => {
       const error = thrown(() => checkBootstrapOutput(marker(apiLevel)));
       expect(error.failure).toBe('executor_outdated');
       expect(error.remoteVersion).toBe('2.5.2');
-      expect(error.message).toContain('kimi upgrade');
+      expect(error.message).toContain('kiko upgrade');
     }
     expect(checkBootstrapOutput(marker(HOST_API_LEVEL + 1))).toBe(true);
   });

@@ -1,5 +1,5 @@
 /**
- * `kimi server ensure-daemon` — internal bootstrap and stdio bridge for SSH Full-Remote.
+ * `kiko server ensure-daemon` — internal bootstrap and stdio bridge for SSH Full-Remote.
  *
  * Run over `ssh` by the local bridge: reuses a healthy background server on this
  * machine's Unix domain socket or starts a detached one, prints one marker-prefixed
@@ -145,7 +145,7 @@ async function findOrStart(deps: EnsureDaemonDeps): Promise<EnsureDaemonResult> 
     if (!stopped) {
       throw new EnsureDaemonError(
         'version_mismatch_busy',
-        `a kimi server of version ${existing.version} is still running work on this host; retry after it finishes`,
+        `a kiko server of version ${existing.version} is still running work on this host; retry after it finishes`,
       );
     }
     let closed = false;
@@ -161,7 +161,7 @@ async function findOrStart(deps: EnsureDaemonDeps): Promise<EnsureDaemonResult> 
     if (!closed) {
       throw new EnsureDaemonError(
         'start_timeout',
-        'the previous kimi server did not shut down in time',
+        'the previous kiko server did not shut down in time',
       );
     }
   }
@@ -174,7 +174,7 @@ async function findOrStart(deps: EnsureDaemonDeps): Promise<EnsureDaemonResult> 
     }
     await deps.wait(POLL_INTERVAL_MS);
   }
-  throw new EnsureDaemonError('start_timeout', `the kimi server did not start; see ${logPath}`);
+  throw new EnsureDaemonError('start_timeout', `the kiko server did not start; see ${logPath}`);
 }
 
 export async function ensureDaemon(deps: EnsureDaemonDeps): Promise<EnsureDaemonResult> {
@@ -198,7 +198,7 @@ function spawnDetachedServer(socketPath: string, logPath: string, agentSocket: s
       argv[0]!,
       [
         ...argv.slice(1),
-        'server',
+        'web',
         '--socket',
         socketPath,
         '--log-level',
@@ -215,7 +215,7 @@ function spawnDetachedServer(socketPath: string, logPath: string, agentSocket: s
     child.on('error', () => {});
     child.unref();
     if (child.pid === undefined) {
-      throw new EnsureDaemonError('start_timeout', `unable to start the kimi server; see ${logPath}`);
+      throw new EnsureDaemonError('start_timeout', `unable to start the kiko server; see ${logPath}`);
     }
   } finally {
     closeSync(log);

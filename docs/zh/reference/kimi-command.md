@@ -191,7 +191,7 @@ kiko web --host          # 在所有网卡上暴露 API（局域网）
 :::
 
 ::: info 提示
-`kiko server` 命令树已废弃：任何 `kiko server …` 调用（含全部旧子命令）只会打印弃用提示并以退出码 1 结束，请改用 `kiko web`。唯一的例外是 `kiko server kill`，它仍然可用，仅用于停止 0.28.0 之前版本启动的服务。该提示将在 Kiko 下个大版本移除。
+`kiko server` 命令树已废弃：任何 `kiko server …` 调用（含全部旧子命令）只会打印弃用提示并以退出码 1 结束，请改用 `kiko web`。面向用户的唯一例外是 `kiko server kill`，它仍然可用，仅用于停止 0.28.0 之前版本启动的服务。该提示将在 Kiko 下个大版本移除。
 :::
 
 ::: danger 警告
