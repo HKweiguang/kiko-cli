@@ -74,9 +74,18 @@ describe('server-e2e report', () => {
         caseName: 'send: prompt completes',
         direction: 'in',
         frame: {
-          type: 'event.session.work_changed',
-          session_id: 'session_1',
-          payload: { busy: false, last_turn_reason: 'completed' },
+          type: 'session',
+          change: 'updated',
+          session: {
+            id: 'session_1',
+            workspace_id: 'wd_example_000000000000',
+            cwd: '/tmp/workspace',
+            title: 'New Session',
+            created_at: '2026-06-09T00:00:00.000Z',
+            updated_at: '2026-06-09T00:00:00.000Z',
+            activity: 'idle',
+            last_turn_outcome: 'completed',
+          },
         },
       },
       { reportDir },
@@ -120,7 +129,7 @@ describe('server-e2e report', () => {
     expect(html).toContain('POST /sessions');
     expect(html).toContain('HTTP 200');
     expect(html).toContain('WS open');
-    expect(html).toContain('WS &lt;- event.session.work_changed');
+    expect(html).toContain('WS &lt;- session');
     expect(html).toContain('<span class="event-title">fresh listSessions snapshot</span>');
     expect(html).not.toContain('<span class="event-meta">');
     expect(html).toContain('session_1');

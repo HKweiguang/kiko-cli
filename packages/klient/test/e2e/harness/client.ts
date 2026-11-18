@@ -89,7 +89,7 @@ export interface SubmitAndWaitOptions {
 export interface SubmitAndWaitResult {
   prompt_id: string;
   user_message_id: string;
-  /** The `event.session.work_changed` frame that reported the session idle again. */
+  /** The `session` frame (`change: 'updated'`) that reported the session idle again. */
   finalFrame: AnyFrame;
 }
 
@@ -304,7 +304,7 @@ export class DaemonClient {
   // ── WS lifecycle ────────────────────────────────────────────────────────
   /**
    * Open the WS socket. There is no handshake: every connection receives the
-   * global events, including `event.session.work_changed`, without subscribing.
+   * global events, including `session` updates, without subscribing.
    */
   connect(): Promise<void> {
     this._connecting ??= this._open().catch((error: unknown) => {
@@ -406,7 +406,7 @@ export class DaemonClient {
   // ── High-level convenience ──────────────────────────────────────────────
   /**
    * Run `action` and wait until the session goes busy and then idle again,
-   * as reported by `event.session.work_changed`. The frame listener is
+   * as reported by `session` update frames. The frame listener is
    * attached before `action` runs, so a fast turn cannot slip past it.
    */
   async runUntilIdle<T>(
@@ -452,7 +452,7 @@ export class DaemonClient {
 
   /**
    * Submit a prompt and wait for the session to finish the resulting work.
-   * The final frame's `last_turn_reason` tells how the turn ended.
+   * The final frame's `session.last_turn_outcome` tells how the turn ended.
    */
   async submitAndWait(
     sid: string,

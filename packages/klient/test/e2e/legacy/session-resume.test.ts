@@ -133,7 +133,7 @@ describeLive('session resume + activity (live server required)', () => {
       log('subscribe accepted', { session_id: session.id });
 
       // Poll busy while the prompt is mid-flight; `runUntilIdle` resolves
-      // once `event.session.work_changed` reports the session idle again.
+      // once a `session` update frame reports the session idle again.
       let seenBusy = false;
       const busySamples: Array<{ at_ms: number; busy: boolean; activity: string }> = [];
       const startedAt = Date.now();
