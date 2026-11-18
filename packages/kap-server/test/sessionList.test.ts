@@ -564,6 +564,32 @@ describe('server /api/v1/sessions list', () => {
     expect(page2.next_page_token).toBeUndefined();
   });
 
+  it('keeps equal-timestamp sessions across a page boundary with hosts=include and no configured hosts', async () => {
+    const at = 5_000;
+    const tied: SessionSummary[] = ['s3', 's2', 's1'].map((id) => ({
+      id,
+      workspaceId: WS_A,
+      cwd: '/repo/a',
+      title: undefined,
+      lastPrompt: undefined,
+      createdAt: at,
+      updatedAt: at,
+      archived: false,
+    }));
+    await bootSeeded(tied);
+    try {
+      const page1 = await getData('?hosts=include&page_size=2');
+      expect(page1.items.map((item) => item.id)).toEqual(['s3', 's2']);
+      expect(page1.has_more).toBe(true);
+
+      const page2 = await getData(`?hosts=include&page_size=2&page_token=${page1.next_page_token}`);
+      expect(page2.items.map((item) => item.id)).toEqual(['s1']);
+      expect(page2.has_more).toBe(false);
+    } finally {
+      await bootSeeded();
+    }
+  });
+
   it('paginates every sort order with the same cursor encoding', async () => {
     for (const sort of ['updated_at_asc', 'created_at_desc']) {
       const page1 = await getData(`?sort=${sort}&page_size=2`);
@@ -642,6 +668,14 @@ describe('server /api/v1/sessions list', () => {
     expect((await getError('?before_id=s1&after_id=s3')).code).toBe(40001);
     expect((await getError('?view=by_workspace&before_id=s1')).code).toBe(40001);
     expect((await getError('?page=0')).code).toBe(40001);
+  });
+
+  it('rejects before_id and after_id with hosts=include (40001)', async () => {
+    for (const cursor of ['before_id=s1', 'after_id=s3']) {
+      const body = await getError(`?hosts=include&${cursor}`);
+      expect(body.code).toBe(40001);
+      expect(body.msg).toContain('hosts=include');
+    }
   });
 
   it('rejects a corrupted page_token (40922)', async () => {

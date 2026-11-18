@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { ErrorCode } from './error-codes';
+
 export const providerConfigResponseSchema = z.object({
   type: z.string(),
   base_url: z.string().optional(),
@@ -38,28 +40,40 @@ export const configResponseSchema = z
   .passthrough();
 export type ConfigResponse = z.infer<typeof configResponseSchema>;
 
-export const patchConfigRequestSchema = z.object({
-  providers: z.record(z.string(), z.unknown()).optional(),
-  default_provider: z.string().optional(),
-  default_model: z.string().optional(),
-  models: z.record(z.string(), z.unknown()).optional(),
-  thinking: z.unknown().optional(),
-  plan_mode: z.boolean().optional(),
-  yolo: z.boolean().optional(),
-  default_permission_mode: z.string().optional(),
-  default_plan_mode: z.boolean().optional(),
-  auto_session_title: z.boolean().optional(),
-  permission: z.unknown().optional(),
-  hooks: z.array(z.unknown()).optional(),
-  services: z.unknown().optional(),
-  merge_all_available_skills: z.boolean().optional(),
-  extra_skill_dirs: z.array(z.string()).optional(),
-  loop_control: z.unknown().optional(),
-  background: z.unknown().optional(),
-  subagent: z.unknown().optional(),
-  secondary_model: z.unknown().optional(),
-  experimental: z.record(z.string(), z.boolean()).optional(),
-  telemetry: z.boolean().optional(),
-  disable_feedback_survey: z.boolean().optional(),
-});
+export const patchConfigRequestSchema = z
+  .object({
+    providers: z.record(z.string(), z.unknown()).optional(),
+    default_provider: z.string().optional(),
+    default_model: z.string().optional(),
+    models: z.record(z.string(), z.unknown()).optional(),
+    thinking: z.unknown().optional(),
+    plan_mode: z.boolean().optional(),
+    yolo: z.boolean().optional(),
+    default_permission_mode: z.string().optional(),
+    default_plan_mode: z.boolean().optional(),
+    auto_session_title: z.boolean().optional(),
+    permission: z.unknown().optional(),
+    hooks: z.array(z.unknown()).optional(),
+    services: z.unknown().optional(),
+    merge_all_available_skills: z.boolean().optional(),
+    extra_skill_dirs: z.array(z.string()).optional(),
+    loop_control: z.unknown().optional(),
+    background: z.unknown().optional(),
+    subagent: z.unknown().optional(),
+    secondary_model: z.unknown().optional(),
+    experimental: z.record(z.string(), z.boolean()).optional(),
+    telemetry: z.boolean().optional(),
+    disable_feedback_survey: z.boolean().optional(),
+    hosts: z.unknown().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.hosts !== undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'hosts cannot be updated through the config API; edit the [hosts] tables in config.toml',
+        path: ['hosts'],
+        params: { code: ErrorCode.VALIDATION_FAILED },
+      });
+    }
+  });
 export type PatchConfigRequest = z.infer<typeof patchConfigRequestSchema>;

@@ -148,6 +148,8 @@ export function buildWebCommand(
       '--web-title <title>',
       'Set a custom browser tab title for web clients, reported in /api/v1/meta (default: "<workspace dir> | Kiko").',
     );
+  withServerOptions.addOption(new Option('--socket <path>').hideHelp());
+  withServerOptions.addOption(new Option('--managed-by <owner>').hideHelp());
   if (!forceRemoteControl) {
     withServerOptions.addOption(
       new Option(
@@ -191,6 +193,7 @@ export async function handleWebCommand(
   let remoteControl: RemoteControlHandle | undefined;
   await run(parsed, {
     onReady: async (origin, controls) => {
+      if (parsed.socketPath !== undefined) return;
       // Resolve the persistent token only once the server is up: a fresh
       // server writes `server.token` on first boot, so reading it beforehand
       // would miss first-time starts. It is printed in the ready banner so API
@@ -369,6 +372,8 @@ async function runServerInProcess(
     allowedHosts: options.allowedHosts,
     disableAuth: options.dangerousBypassAuth,
     webTitle: options.webTitle,
+    socketPath: options.socketPath,
+    managedBy: options.managedBy,
     // Attach the engine's cloud telemetry appender (still gated by the config
     // `telemetry` toggle). Complements the v1 client registered above, which
     // only covers host-level events.
@@ -376,7 +381,8 @@ async function runServerInProcess(
   });
   logger.info('serving the REST/WS API');
   running = {
-    address: `http://${v2.host}:${v2.port}`,
+    address:
+      options.socketPath === undefined ? `http://${v2.host}:${v2.port}` : `unix:${options.socketPath}`,
     logger,
     close: () => v2.close(),
   };
