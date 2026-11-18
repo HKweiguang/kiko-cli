@@ -137,7 +137,7 @@ kiko -p "List changed files" --output-format stream-json
 
 ## 子命令
 
-`kiko` 提供以下子命令：`login`（非交互式登录）、`acp`（ACP IDE 模式）、`web`（前台运行本地 REST/WebSocket/web 服务并打开 web UI）、`doctor`（校验配置文件）、`export`（导出会话）、`migrate`（迁移旧版数据）、`import-sessions`（导入 Claude Code 和 Codex 会话）、`upgrade`（检查更新）、`provider`（管理供应商）。
+`kiko` 提供以下子命令：`login`（非交互式登录）、`acp`（ACP IDE 模式）、`web`（前台运行本地 REST/WebSocket 服务）、`doctor`（校验配置文件）、`export`（导出会话）、`migrate`（迁移旧版数据）、`import-sessions`（导入 Claude Code 和 Codex 会话）、`upgrade`（检查更新）、`provider`（管理供应商）。
 
 ### `kiko login`
 
@@ -159,14 +159,14 @@ kiko acp
 
 ### `kiko web`
 
-在当前终端前台运行本地 Kiko 服务 —— 同一个进程同时挂载 REST + WebSocket API 与 web UI —— 并在服务就绪后用默认浏览器打开 web UI。命令会一直挂在终端，直到收到 `SIGINT` / `SIGTERM`（如 `Ctrl-C`）时干净退出。
+在当前终端前台运行本地 Kiko 服务。服务提供 `/api/v1` 的 REST API 和 `/api/v1/ws` 的 WebSocket 事件流；旧版本从同一地址提供的浏览器 web UI 已不再随包发布，也不再提供支持。命令会在启动横幅中打印 API 基础地址和 bearer token，一直挂在终端，直到收到 `SIGINT` / `SIGTERM`（如 `Ctrl-C`）时干净退出。
 
 服务运行时，`GET /openapi.json` 会返回 REST OpenAPI 文档，`GET /asyncapi.json` 会返回本地 WebSocket 协议的 AsyncAPI 文档。用 API 驱动会话的完整流程见[服务 API：用 API 驱动一个会话](./server-api.md#用-api-驱动一个会话)，协议细节见[服务 API](./server-api.md)。
 
 ```sh
-kiko web                 # 前台运行服务并打开浏览器
-kiko web --no-open       # 不打开浏览器
+kiko web                 # 前台运行 REST/WebSocket 服务
 kiko web --port 58628    # 指定绑定端口
+kiko web --host          # 在所有网卡上暴露 API（局域网）
 ```
 
 同一 home 目录下可以同时运行多个实例：每个实例注册到 `~/.kiko/server/instances/`，端口被占用时自动 +1 重试（58628、58629……）。
@@ -176,13 +176,19 @@ kiko web --port 58628    # 指定绑定端口
 | `--port <port>` | 绑定端口；默认 `58627`；被占用时自动 +1 重试 |
 | `--host [host]` | 绑定地址；缺省 `127.0.0.1`（仅本机），裸 `--host` 绑 `0.0.0.0`（所有网卡） |
 | `--allowed-host <host...>` | DNS 重绑定检查额外允许的 Host 头，可重复或逗号分隔 |
+| `--insecure-no-tls` | 允许非 loopback 绑定不经过 TLS 终止反向代理（默认开启） |
+| `--allow-remote-shutdown` | 在非 loopback 绑定上保留 `POST /api/v1/shutdown` |
 | `--log-level <level>` | 按所选级别开启服务日志；默认不输出 |
 | `--debug-endpoints` | 挂载 `/api/v1/debug/*` 调试路由（默认关闭） |
-| `--dangerous-bypass-auth` | 关闭所有 REST 与 WebSocket 路由的 bearer token 鉴权，使 web UI 无需 token 即可连接；仅用于可信网络或自有鉴权代理之后 |
-| `--web-title <title>` | 自定义 web UI 的浏览器标签页标题；默认为工作区目录名 |
-| `--no-open` | 就绪后不自动打开浏览器 |
+| `--dangerous-bypass-auth` | 关闭所有 REST 与 WebSocket 路由的 bearer token 鉴权，使客户端无需 token 即可连接；仅用于可信网络或自有鉴权代理之后 |
+| `--web-title <title>` | 报告给 web 客户端的浏览器标签页标题；默认为工作区目录名 |
+| `--no-open` | 已废弃；仅为兼容而接受。服务不再打开浏览器 |
 
-`kiko web` 默认只绑定本机 loopback 地址，并在启动横幅中打印 bearer token；web UI 通过 URL 的 `#token=` 片段自动完成鉴权。
+`kiko web` 默认只绑定本机 loopback 地址，并在启动横幅中打印 bearer token。REST 请求通过 `Authorization: Bearer <token>` 请求头携带，WebSocket 也可使用 `kimi-code.bearer.<token>` 子协议。token 轮换见 [`kiko web rotate-token`](#kiko-web-rotate-token)。
+
+::: warning 注意
+随包发布的浏览器界面已移除。`kiko web` 不再打开浏览器，也不再提供 HTML 页面；请直接使用 API，或使用[远程控制](../guides/remote-control.md)提供的托管网页。
+:::
 
 ::: info 提示
 `kiko server` 命令树已废弃：任何 `kiko server …` 调用（含全部旧子命令）只会打印弃用提示并以退出码 1 结束，请改用 `kiko web`。唯一的例外是 `kiko server kill`，它仍然可用，仅用于停止 0.28.0 之前版本启动的服务。该提示将在 Kiko 下个大版本移除。

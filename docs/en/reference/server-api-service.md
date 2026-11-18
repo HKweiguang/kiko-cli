@@ -1165,7 +1165,7 @@ On success, `data` is `{ deleted: true }`.
 
 ## GUI store
 
-A server-backed key/value store whose interface mirrors the browser's `localStorage`, with data persisted under the server's home directory. The web UI uses it to keep cross-client UI state. Values are opaque strings, and serialization is the caller's job.
+A server-backed key/value store whose interface mirrors the browser's `localStorage`, with data persisted under the server's home directory. Web clients such as Remote Control use it to keep cross-client UI state. Values are opaque strings, and serialization is the caller's job.
 
 | Method and path | Description |
 | --- | --- |

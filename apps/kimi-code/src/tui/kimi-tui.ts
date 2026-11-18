@@ -490,7 +490,7 @@ export class KimiTUI {
 
   public onExit?: (exitCode?: number) => Promise<void>;
 
-  /** URL opened in the browser just before exit (e.g. by `/web`); printed by onExit. */
+  /** URL to print as a hint when the TUI exits; set via {@link setExitOpenUrl}. */
   public exitOpenUrl: string | undefined;
 
   /**

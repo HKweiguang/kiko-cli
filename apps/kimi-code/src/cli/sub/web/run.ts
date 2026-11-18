@@ -1,15 +1,12 @@
 /**
- * `kiko web` — run the local server in the foreground and open the web UI.
+ * `kiko web` — run the local REST/WebSocket server in the foreground.
  *
  * The server always runs in the current process, attached to the terminal,
- * and shuts down cleanly on SIGINT/SIGTERM. `--no-open` skips the browser.
- * Multiple instances can share the home directory: each registers itself in
- * the instance registry and takes the next free port (see kap-server's
- * `startServer`).
+ * and shuts down cleanly on SIGINT/SIGTERM. No browser UI is bundled or
+ * served; the command prints the API base URL. Multiple instances can share
+ * the home directory: each registers itself in the instance registry and
+ * takes the next free port (see kap-server's `startServer`).
  */
-
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { createServerLogger, startServer, type ServerLogger } from '@moonshot-ai/kap-server';
 import { shutdownTelemetry, track } from '@moonshot-ai/kimi-telemetry';
@@ -17,7 +14,6 @@ import chalk from 'chalk';
 import { type Command, Option } from 'commander';
 
 import { CLI_MSH_PLATFORM, CLI_SHUTDOWN_TIMEOUT_MS, CLI_USER_AGENT_PRODUCT, WEB_USER_AGENT_SUFFIX } from '#/constant/app';
-import { getNativeWebAssetsDir } from '#/native/web-assets';
 import { darkColors } from '#/tui/theme/colors';
 import { openUrl as defaultOpenUrl } from '#/utils/open-url';
 import { getDataDir } from '#/utils/paths';
@@ -26,13 +22,11 @@ import { generateRemoteControlQr } from '#/utils/remote-control-qr';
 
 import { initializeServerTelemetry } from '../../telemetry';
 import { createKimiCodeHostIdentity } from '../../host-identity';
-import { getHostPackageRoot, getVersion } from '../../version';
+import { getVersion } from '../../version';
 import {
   accessUrlLines,
-  browserOpenOrigin,
-  buildOpenableUrl,
+  buildApiUrl,
   isLoopbackHost,
-  splitTokenFragment,
 } from './access-urls';
 import { type NetworkAddress } from './networks';
 import {
@@ -54,8 +48,6 @@ import {
   type ParsedServerOptions,
   type ServerCliOptions,
 } from './shared';
-
-const WEB_ASSETS_DIR = 'dist-web';
 
 /**
  * Minimal surface `runServerInProcess` needs from the server. kap-server's
@@ -93,10 +85,9 @@ export interface WebCommandDeps {
   startRemoteControl?: (options: RemoteControlOptions) => Promise<RemoteControlHandle>;
   openUrl(url: string): void;
   /**
-   * Best-effort read of the server's persistent bearer token. When it returns
-   * a token, the ready banner prints it and the opened Web UI URL carries it in
-   * the `#token=` fragment (M5.5). Optional so callers/tests that don't supply
-   * it simply print/open the plain origin.
+   * Best-effort read of the server's persistent bearer token, printed in the
+   * ready banner so API clients can authenticate. Optional so callers/tests
+   * that don't supply it simply print the origin without a token line.
    */
   resolveToken?: () => string | undefined;
   /**
@@ -107,17 +98,6 @@ export interface WebCommandDeps {
   networkAddresses?: NetworkAddress[];
   stdout: Pick<NodeJS.WriteStream, 'write'>;
   stderr: Pick<NodeJS.WriteStream, 'write'>;
-}
-
-/**
- * Build the Web UI URL, carrying the bearer token in the URL fragment.
- *
- * The token rides in `#token=<token>` — a client-side fragment that is never
- * sent to the server (so it never appears in server access logs) and is not
- * logged by proxies. The Web UI reads it from `location.hash` after load.
- */
-export function buildWebUrl(origin: string, token: string): string {
-  return buildOpenableUrl(origin, token);
 }
 
 /** Build the `web` command, mounting the runner action on `cmd` itself. */
@@ -152,7 +132,7 @@ export function buildWebCommand(
     )
     .option(
       '--dangerous-bypass-auth',
-      'Disable bearer-token auth on every REST and WebSocket route, and advertise it via /api/v1/meta so the web UI connects without a token. Only use on a trusted network or behind your own authenticating proxy.',
+      'Disable bearer-token auth on every REST and WebSocket route, and advertise it via /api/v1/meta so clients connect without a token. Only use on a trusted network or behind your own authenticating proxy.',
       false,
     )
     .option(
@@ -166,18 +146,24 @@ export function buildWebCommand(
     )
     .option(
       '--web-title <title>',
-      'Set a custom browser tab title for this web UI instance (default: "<workspace dir> | Kiko").',
+      'Set a custom browser tab title for web clients, reported in /api/v1/meta (default: "<workspace dir> | Kiko").',
     );
   if (!forceRemoteControl) {
     withServerOptions.addOption(
       new Option(
         '--rc, --remote-control',
-        'Expose the web UI through Kimi Remote Control.',
+        'Expose the local server through Kimi Remote Control.',
       ).default(false),
     );
   }
+  const openOption = forceRemoteControl
+    ? new Option('--no-open', 'Do not open the Remote Control page in the default browser.')
+    : new Option(
+        '--no-open',
+        'Deprecated: the local server no longer opens a browser. Still skips opening the Remote Control page when combined with --remote-control.',
+      );
   return withServerOptions
-    .option('--no-open', 'Do not open the web UI in the default browser.', true)
+    .addOption(openOption.default(true))
     .action(async (opts: WebCliOptions) => {
       try {
         await handleWebCommand(
@@ -207,11 +193,9 @@ export async function handleWebCommand(
     onReady: async (origin, controls) => {
       // Resolve the persistent token only once the server is up: a fresh
       // server writes `server.token` on first boot, so reading it beforehand
-      // would miss first-time starts and the browser would hit the auth gate.
-      // It is printed in the ready banner and rides in the opened Web UI
-      // URL's `#token=` fragment (M5.5); falls back to the plain origin / no
-      // token line when unavailable. When auth is bypassed, the token is
-      // meaningless and is intentionally NOT shown or carried in the URL.
+      // would miss first-time starts. It is printed in the ready banner so API
+      // clients can authenticate. When auth is bypassed, the token is
+      // meaningless and is intentionally NOT shown.
       const token = parsed.dangerousBypassAuth ? undefined : deps.resolveToken?.();
       if (opts.remoteControl === true) {
         if (token === undefined) throw new Error('Unable to read the local server token.');
@@ -253,7 +237,6 @@ export async function handleWebCommand(
           formatRemoteControlOutput({
             url: remoteControl.url,
             localOrigin: origin,
-            localServerToken: token,
             deviceName: remoteControl.deviceName,
             qrCode: qrCode.terminal,
             pngPath: qrCode.pngPath,
@@ -273,10 +256,6 @@ export async function handleWebCommand(
             })
           : formatReadyLine(origin, token, parsed.dangerousBypassAuth),
       );
-      if (opts.open === true) {
-        const openOrigin = browserOpenOrigin(origin);
-        deps.openUrl(token !== undefined ? buildWebUrl(openOrigin, token) : openOrigin);
-      }
     },
     onShutdown: async () => {
       await remoteControl?.close();
@@ -292,7 +271,8 @@ function formatReadyLine(
   const notice = dangerousBypassAuth
     ? `${formatDangerNoticeLines().join('\n')}\n`
     : '';
-  return `${notice}Kiko server: ${buildOpenableUrl(origin, token)}\n`;
+  const tokenLine = token === undefined ? '' : `Token: ${token}\n`;
+  return `${notice}Kiko server: ${buildApiUrl(origin)}\n${tokenLine}`;
 }
 
 /**
@@ -366,22 +346,16 @@ async function runServerInProcess(
   // logger, close }`, so adapt it to the `RoutedServer` surface the rest of
   // this runner consumes.
   const logger = createServerLogger({ level: options.logLevel });
-  const webAssetsDir = serverWebAssetsDir();
-  if (webAssetsDir === undefined) {
-    logger.info(
-      'dev mode: web assets not built; starting the API server without the web UI',
-    );
-  }
   const v2 = await startServer({
     host: options.host,
     port: options.port,
-    // Report the CLI's product version as `server_version` (/meta, web UI)
+    // Report the CLI's product version as `server_version` (/meta)
     // rather than kap-server's private package version.
     serverVersion: version,
     // The CLI's host identity: feeds the engine's bootstrap client identity
-    // and the derived outbound headers (User-Agent + X-Msh-*), so web-UI
+    // and the derived outbound headers (User-Agent + X-Msh-*), so web-client
     // OAuth flows and model / WebSearch requests carry the CLI identity. The
-    // `web` User-Agent suffix distinguishes web-UI traffic from direct CLI
+    // `web` User-Agent suffix distinguishes web traffic from direct CLI
     // runs upstream (same product token, same platform).
     hostIdentity: {
       ...createKimiCodeHostIdentity(version),
@@ -399,9 +373,8 @@ async function runServerInProcess(
     // `telemetry` toggle). Complements the v1 client registered above, which
     // only covers host-level events.
     telemetry: true,
-    webAssetsDir,
   });
-  logger.info('serving the REST/WS API and the bundled web UI');
+  logger.info('serving the REST/WS API');
   running = {
     address: `http://${v2.host}:${v2.port}`,
     logger,
@@ -438,31 +411,6 @@ async function runServerInProcess(
   });
 }
 
-/**
- * Resolve the web assets directory passed to kap-server. In dev mode
- * (`KIKO_DEV_SERVER=1`, set by the repo's `dev:server` / `dev:kap-server*`
- * scripts) a missing `dist-web` build is tolerated: the server starts API-only
- * and the web UI is expected to come from a Vite dev server (the web UI source lives in the code-app repo).
- * Outside dev mode the directory is always returned and kap-server keeps
- * failing fast when the assets are missing.
- */
-export function serverWebAssetsDir(
-  env: NodeJS.ProcessEnv = process.env,
-  nativeWebAssetsDir: string | null = getNativeWebAssetsDir(),
-): string | undefined {
-  const dir = resolveServerWebAssetsDir(nativeWebAssetsDir);
-  if (env['KIKO_DEV_SERVER'] === '1' && !existsSync(join(dir, 'index.html'))) {
-    return undefined;
-  }
-  return dir;
-}
-
-export function resolveServerWebAssetsDir(
-  nativeWebAssetsDir: string | null = getNativeWebAssetsDir(),
-): string {
-  return nativeWebAssetsDir ?? join(getHostPackageRoot(), WEB_ASSETS_DIR);
-}
-
 interface FormatReadyBannerOptions {
   /** Persistent bearer token to print; omitted when unresolvable. */
   token?: string;
@@ -483,12 +431,6 @@ export function formatReadyBanner(
   const muted = (text: string): string => chalk.hex(darkColors.textMuted)(text);
   const label = (text: string): string => chalk.bold.hex(darkColors.textDim)(text);
   const url = (text: string): string => chalk.hex(darkColors.accent)(text);
-  // Render the `#token=…` fragment in a de-emphasized gray so the host/port
-  // stands out while the full URL stays selectable for copying.
-  const urlWithDimToken = (href: string): string => {
-    const [base, frag] = splitTokenFragment(href);
-    return frag === '' ? url(base) : url(base) + dim(frag);
-  };
 
   const port = Number(origin.slice(origin.lastIndexOf(':') + 1));
   // Borderless header: the Kimi sprite (the little mascot with eyes) sits next
@@ -497,7 +439,7 @@ export function formatReadyBanner(
   const lines: string[] = [
     '',
     `  ${primary(logo[0])}  ${title('Kiko server ready')}  ${dim(getVersion())}`,
-    `  ${primary(logo[1])}  ${dim('Local web UI is available from this machine.')}`,
+    `  ${primary(logo[1])}  ${dim('REST + WebSocket API only — the browser UI is no longer bundled.')}`,
     '',
   ];
 
@@ -507,14 +449,13 @@ export function formatReadyBanner(
     lines.push(...formatDangerNoticeLines(), '');
   }
 
-  // Access links.
+  // REST API base URLs.
   for (const { label: text, url: href } of accessUrlLines(
     host,
     port,
-    opts.token,
     opts.networkAddresses,
   )) {
-    lines.push(`  ${label(text)}${urlWithDimToken(href)}`);
+    lines.push(`  ${label(text)}${url(href)}`);
   }
   // On a loopback bind there is no network URL; show how to enable one.
   if (isLoopbackHost(host)) {
@@ -542,7 +483,7 @@ const DEFAULT_WEB_COMMAND_DEPS: WebCommandDeps = {
   resolveToken: () => {
     // Read the persistent `<homeDir>/server.token` written on first boot
     // (M5.1). Best-effort: a missing/older server yields undefined and the
-    // caller opens the plain origin.
+    // banner prints no token line.
     return tryResolveServerToken(getDataDir());
   },
   stdout: process.stdout,

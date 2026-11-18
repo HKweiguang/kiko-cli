@@ -3,8 +3,8 @@
  *
  * These tests don't actually start the server — the foreground runner is
  * injected, so they verify option parsing, the ready banner / one-line ready
- * output, browser opening, and the rotate-token / deprecated `kiko server kill`
- * subcommands against fake deps.
+ * output, and the rotate-token / deprecated `kiko server kill` subcommands
+ * against fake deps.
  */
 
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -111,8 +111,10 @@ describe('kiko web', () => {
     expect(longs).toContain('--web-title');
     const remoteControl = web!.options.find((option) => option.long === '--remote-control');
     expect(remoteControl?.short).toBe('--rc');
-    // web opens the browser by default → the option is the negative --no-open.
-    expect(longs).toContain('--no-open');
+    // The browser UI is gone; --no-open stays accepted as a deprecated no-op.
+    const noOpen = web!.options.find((option) => option.long === '--no-open');
+    expect(noOpen?.description).toContain('Deprecated');
+    expect(noOpen?.hidden).toBeFalsy();
     // The background/daemon era flags are gone: the server always runs in the
     // foreground.
     expect(longs).not.toContain('--foreground');
@@ -176,9 +178,11 @@ describe('`kiko web` ready banner', () => {
 
     const plain = stripAnsi(readStdout());
     expect(plain).toContain('Kiko server ready');
+    expect(plain).toContain('REST + WebSocket API only');
     expect(plain).toContain('Local:');
-    expect(plain).toContain('http://127.0.0.1:58628/#token=tok');
+    expect(plain).toContain('http://127.0.0.1:58628/api/v1');
     expect(plain).toContain('Token:');
+    expect(plain).not.toContain('#token=');
     // Loopback bind shows a Network hint for enabling network access.
     expect(plain).toContain('Network:');
     expect(plain).toContain('use --host to enable');
@@ -219,7 +223,7 @@ describe('`kiko web` ready banner', () => {
     const color = new Chalk({ level: 3 });
     expect(out).toContain(color.hex(darkColors.primary)('▐█▛█▛█▌'));
     expect(out).toContain(color.bold.hex(darkColors.primary)('Kiko server ready'));
-    expect(out).toContain(color.hex(darkColors.accent)('http://127.0.0.1:58627/'));
+    expect(out).toContain(color.hex(darkColors.accent)('http://127.0.0.1:58627/api/v1'));
     expect(out).toContain(color.bold.hex(darkColors.textDim)('Local:    '));
     expect(out).toContain(color.hex(darkColors.textMuted)('off'));
   });
@@ -274,8 +278,8 @@ describe('`kiko web` ready banner', () => {
     // any URL (so it cannot leak via copy/paste of the banner).
     expect(plain).not.toContain('tok');
     expect(plain).not.toContain('#token=');
-    // The opened browser URL carries no token fragment either.
-    expect(openUrl).toHaveBeenCalledWith('http://127.0.0.1:58627');
+    // The browser UI is gone, so nothing is opened even with open=true.
+    expect(openUrl).not.toHaveBeenCalled();
   });
 });
 
@@ -304,13 +308,14 @@ describe('ready banner reflects the bind class', () => {
     expect(raw).toContain('Kiko server ready');
     expect(raw).toContain('Local:');
     expect(raw).toContain('Network:');
-    // Full token-bearing URLs are printed plainly (no box, no truncation) so
-    // they are easy to copy.
-    expect(raw).toContain('http://localhost:58627/#token=tok-xyz');
-    expect(raw).toContain('http://192.0.2.66:58627/#token=tok-xyz');
-    expect(raw).toContain('http://198.51.100.216:58627/#token=tok-xyz');
+    // Full API URLs are printed plainly (no box, no truncation) so they are
+    // easy to copy.
+    expect(raw).toContain('http://localhost:58627/api/v1');
+    expect(raw).toContain('http://192.0.2.66:58627/api/v1');
+    expect(raw).toContain('http://198.51.100.216:58627/api/v1');
     expect(raw).toContain('Token:');
     expect(raw).toContain('tok-xyz');
+    expect(raw).not.toContain('#token=');
     expect(raw).not.toContain('╭');
   });
 
@@ -335,9 +340,10 @@ describe('ready banner reflects the bind class', () => {
     const raw = stripAnsi(readStdout());
     expect(raw).toContain('Kiko server ready');
     expect(raw).toContain('Local:');
-    expect(raw).toContain('http://127.0.0.1:58627/#token=tok-loop');
+    expect(raw).toContain('http://127.0.0.1:58627/api/v1');
     expect(raw).toContain('Token:');
     expect(raw).toContain('tok-loop');
+    expect(raw).not.toContain('#token=');
     // No network URLs on a loopback bind — just the "off" hint.
     expect(raw).toContain('use --host to enable');
     expect(raw).not.toContain('Network:  http');
@@ -346,90 +352,37 @@ describe('ready banner reflects the bind class', () => {
   });
 });
 
-describe('`kiko web` opens the browser', () => {
+describe('`kiko web` never opens a local browser', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     resetCapabilitiesCache();
   });
 
-  it('opens the Web UI URL with the #token= fragment by default', async () => {
+  it('does not open a browser even when open is true', async () => {
     const { handleWebCommand } = await import('#/cli/sub/web/run');
-    const { runner } = makeRunner();
-    const { stdout, stderr } = makeIo();
-    const openUrl = vi.fn();
 
-    await handleWebCommand(
-      { port: '58627', open: true },
-      {
-        startServerForeground: runner,
-        resolveToken: () => 'tok-xyz',
-        openUrl,
-        stdout,
-        stderr,
-      },
-    );
+    for (const [host, origin] of [
+      ['127.0.0.1', 'http://127.0.0.1:58627'],
+      ['0.0.0.0', 'http://0.0.0.0:58627'],
+      ['::', 'http://:::58627'],
+    ] as const) {
+      const { runner } = makeRunner(origin);
+      const { stdout, stderr } = makeIo();
+      const openUrl = vi.fn();
 
-    expect(openUrl).toHaveBeenCalledWith('http://127.0.0.1:58627/#token=tok-xyz');
-  });
+      await handleWebCommand(
+        { host, open: true },
+        {
+          startServerForeground: runner,
+          resolveToken: () => 'tok-xyz',
+          openUrl,
+          stdout,
+          stderr,
+        },
+      );
 
-  it('opens the plain origin when no token is resolvable', async () => {
-    const { handleWebCommand } = await import('#/cli/sub/web/run');
-    const { runner } = makeRunner();
-    const { stdout, stderr } = makeIo();
-    const openUrl = vi.fn();
-
-    await handleWebCommand(
-      { port: '58627', open: true },
-      {
-        startServerForeground: runner,
-        resolveToken: () => undefined,
-        openUrl,
-        stdout,
-        stderr,
-      },
-    );
-
-    expect(openUrl).toHaveBeenCalledWith('http://127.0.0.1:58627');
-  });
-
-  it('opens localhost rather than the wildcard bind address', async () => {
-    const { handleWebCommand } = await import('#/cli/sub/web/run');
-    const { runner } = makeRunner('http://0.0.0.0:58627');
-    const { stdout, stderr } = makeIo();
-    const openUrl = vi.fn();
-
-    await handleWebCommand(
-      { host: '0.0.0.0', open: true },
-      {
-        startServerForeground: runner,
-        resolveToken: () => 'tok-xyz',
-        openUrl,
-        stdout,
-        stderr,
-      },
-    );
-
-    expect(openUrl).toHaveBeenCalledWith('http://localhost:58627/#token=tok-xyz');
-  });
-
-  it('opens localhost for a wildcard IPv6 bind', async () => {
-    const { handleWebCommand } = await import('#/cli/sub/web/run');
-    const { runner } = makeRunner('http://:::58627');
-    const { stdout, stderr } = makeIo();
-    const openUrl = vi.fn();
-
-    await handleWebCommand(
-      { host: '::', open: true },
-      {
-        startServerForeground: runner,
-        resolveToken: () => undefined,
-        openUrl,
-        stdout,
-        stderr,
-      },
-    );
-
-    expect(openUrl).toHaveBeenCalledWith('http://localhost:58627');
+      expect(openUrl).not.toHaveBeenCalled();
+    }
   });
 
   it('does not open the browser when open is false', async () => {
@@ -620,8 +573,8 @@ describe('kiko web/rc help copy', () => {
       .commands.filter((command) => command.name() === 'web' || command.name() === 'rc')
       .map((command) => command.description());
     expect(descriptions).toEqual([
-      'Run the local Kiko server and open the web UI.',
-      'Run the local Kiko server and open the web UI through Remote Control.',
+      'Run the local Kiko REST/WebSocket server.',
+      'Run the local Kiko server and expose it through Remote Control.',
     ]);
   });
 });
@@ -758,7 +711,8 @@ describe('`kiko web` option threading', () => {
     );
 
     const plain = stripAnsi(readStdout());
-    expect(plain).toContain('Kiko server: http://127.0.0.1:58627/#token=tok');
+    expect(plain).toContain('Kiko server: http://127.0.0.1:58627/api/v1');
+    expect(plain).toContain('Token: tok');
     expect(plain).not.toContain('Kiko server ready');
     expect(plain).not.toContain('Local:');
   });
@@ -786,50 +740,6 @@ describe('shared parsers stay strict', () => {
     expect(() => parseLogLevel('shout')).toThrow(/invalid --log-level/);
     expect(parseLogLevel(undefined)).toBe('info');
     expect(parseLogLevel('debug')).toBe('debug');
-  });
-});
-
-describe('server web asset directory resolution', () => {
-  it('uses extracted SEA web assets when available', async () => {
-    const { resolveServerWebAssetsDir } = await import('#/cli/sub/web/run');
-    expect(resolveServerWebAssetsDir('/cache/kimi/dist-web')).toBe('/cache/kimi/dist-web');
-  });
-
-  it('falls back to package dist-web outside SEA mode', async () => {
-    const { resolveServerWebAssetsDir } = await import('#/cli/sub/web/run');
-    expect(resolveServerWebAssetsDir(null)).toMatch(/[/\\]dist-web$/);
-  });
-
-  it('returns the assets dir when it is built, dev mode or not', async () => {
-    const { serverWebAssetsDir } = await import('#/cli/sub/web/run');
-    const dir = mkdtempSync(join(tmpdir(), 'kimi-web-assets-'));
-    try {
-      writeFileSync(join(dir, 'index.html'), '<html></html>');
-      expect(serverWebAssetsDir({}, dir)).toBe(dir);
-      expect(serverWebAssetsDir({ KIKO_DEV_SERVER: '1' }, dir)).toBe(dir);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it('requires built assets outside dev mode', async () => {
-    const { serverWebAssetsDir } = await import('#/cli/sub/web/run');
-    const dir = mkdtempSync(join(tmpdir(), 'kimi-web-assets-'));
-    try {
-      expect(serverWebAssetsDir({}, dir)).toBe(dir);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it('tolerates missing assets in dev mode (API-only server)', async () => {
-    const { serverWebAssetsDir } = await import('#/cli/sub/web/run');
-    const dir = mkdtempSync(join(tmpdir(), 'kimi-web-assets-'));
-    try {
-      expect(serverWebAssetsDir({ KIKO_DEV_SERVER: '1' }, dir)).toBeUndefined();
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
   });
 });
 
@@ -1097,72 +1007,34 @@ describe('authHeaders', () => {
   });
 });
 
-describe('buildWebUrl', () => {
-  it('carries the token in the URL fragment (not path or query)', async () => {
-    const { buildWebUrl } = await import('#/cli/sub/web/run');
-    const url = buildWebUrl('http://127.0.0.1:58627', 'abc123');
-    expect(url).toBe('http://127.0.0.1:58627/#token=abc123');
-    const parsed = new URL(url);
-    expect(parsed.hash).toBe('#token=abc123');
-    // The token is client-side only: it must NOT appear in the path or query
-    // (which WOULD be sent to the server and logged).
-    expect(parsed.pathname).not.toContain('abc123');
-    expect(parsed.search).not.toContain('abc123');
-  });
-
-  it('normalizes a trailing slash', async () => {
-    const { buildWebUrl } = await import('#/cli/sub/web/run');
-    expect(buildWebUrl('http://127.0.0.1:58627/', 't')).toBe(
-      'http://127.0.0.1:58627/#token=t',
-    );
-  });
-});
-
 describe('accessUrlLines', () => {
-  it('returns Local + Network lines for a wildcard bind', async () => {
+  it('returns Local + Network API URLs for a wildcard bind', async () => {
     const { accessUrlLines } = await import('#/cli/sub/web/access-urls');
-    const lines = accessUrlLines('0.0.0.0', 58627, 'tok', [
+    const lines = accessUrlLines('0.0.0.0', 58627, [
       { address: '192.168.1.5', family: 'IPv4' },
     ]);
     expect(lines).toEqual([
-      { label: 'Local:    ', url: 'http://localhost:58627/#token=tok' },
-      { label: 'Network:  ', url: 'http://192.168.1.5:58627/#token=tok' },
+      { label: 'Local:    ', url: 'http://localhost:58627/api/v1' },
+      { label: 'Network:  ', url: 'http://192.168.1.5:58627/api/v1' },
     ]);
   });
 
-  it('returns a single Local line for a loopback bind', async () => {
+  it('returns a single Local API URL for a loopback bind', async () => {
     const { accessUrlLines } = await import('#/cli/sub/web/access-urls');
-    const lines = accessUrlLines('127.0.0.1', 58627, 'tok');
+    const lines = accessUrlLines('127.0.0.1', 58627);
     expect(lines).toEqual([
-      { label: 'Local:    ', url: 'http://127.0.0.1:58627/#token=tok' },
+      { label: 'Local:    ', url: 'http://127.0.0.1:58627/api/v1' },
     ]);
   });
 
-  it('returns a single URL line for a specific host (no token)', async () => {
+  it('returns a single URL line for a specific host, bracket-wrapping IPv6', async () => {
     const { accessUrlLines } = await import('#/cli/sub/web/access-urls');
-    const lines = accessUrlLines('192.168.1.5', 58627, undefined);
-    expect(lines).toEqual([{ label: 'URL:      ', url: 'http://192.168.1.5:58627/' }]);
-  });
-
-  it('splitTokenFragment splits off the #token= fragment', async () => {
-    const { splitTokenFragment } = await import('#/cli/sub/web/access-urls');
-    expect(splitTokenFragment('http://h:1/#token=abc')).toEqual(['http://h:1/', '#token=abc']);
-    expect(splitTokenFragment('http://h:1/')).toEqual(['http://h:1/', '']);
-  });
-});
-
-describe('browserOpenOrigin', () => {
-  it('rewrites wildcard bind hosts to localhost on the same port', async () => {
-    const { browserOpenOrigin } = await import('#/cli/sub/web/access-urls');
-    expect(browserOpenOrigin('http://0.0.0.0:58627')).toBe('http://localhost:58627');
-    expect(browserOpenOrigin('http://:::58627')).toBe('http://localhost:58627');
-  });
-
-  it('keeps navigable origins unchanged', async () => {
-    const { browserOpenOrigin } = await import('#/cli/sub/web/access-urls');
-    expect(browserOpenOrigin('http://127.0.0.1:58627')).toBe('http://127.0.0.1:58627');
-    expect(browserOpenOrigin('http://192.168.1.5:58627')).toBe('http://192.168.1.5:58627');
-    expect(browserOpenOrigin('http://[::1]:58627')).toBe('http://[::1]:58627');
+    expect(accessUrlLines('192.168.1.5', 58627)).toEqual([
+      { label: 'URL:      ', url: 'http://192.168.1.5:58627/api/v1' },
+    ]);
+    expect(accessUrlLines('2001:db8::1', 58627)).toEqual([
+      { label: 'URL:      ', url: 'http://[2001:db8::1]:58627/api/v1' },
+    ]);
   });
 });
 
@@ -1235,15 +1107,15 @@ describe('`kiko web rotate-token`', () => {
     await program.parseAsync(['node', 'kimi', 'web', 'rotate-token']);
     writeSpy.mockRestore();
 
-    const token = readFileSync(join(dir, 'server.token'), 'utf8').trim();
     expect(stdout).toContain('New server token');
-    expect(stdout).toContain(`http://127.0.0.1:58627/#token=${token}`);
+    expect(stdout).toContain('http://127.0.0.1:58627/api/v1');
+    expect(stdout).not.toContain('#token=');
     // Token line sits between the note and the links.
     expect(stdout.indexOf('picks up the new token')).toBeLessThan(
       stdout.indexOf('New server token'),
     );
     expect(stdout.indexOf('New server token')).toBeLessThan(
-      stdout.indexOf(`http://127.0.0.1:58627/#token=${token}`),
+      stdout.indexOf('http://127.0.0.1:58627/api/v1'),
     );
   });
 });

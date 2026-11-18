@@ -32,13 +32,12 @@ Multiple instances can run under the same home directory at once. Running instan
 
 ## Authentication
 
-All `/api/*` paths, plus `/openapi.json` and `/asyncapi.json`, require the bearer token. The only exceptions are these three kinds of requests:
+All `/api/*` paths, plus `/openapi.json` and `/asyncapi.json`, require the bearer token. The only exceptions are:
 
 - `OPTIONS` preflight requests;
-- `GET /api/v1/healthz` (liveness probe);
-- static web assets (paths outside `/api/`).
+- `GET /api/v1/healthz` (liveness probe).
 
-REST requests carry the token in the `Authorization: Bearer <token>` header. The WebSocket upgrade request accepts the same header or the subprotocol `kimi-code.bearer.<token>`. Token generation and rotation are covered in [Using Kiko in the browser](../guides/web.md#getting-started).
+REST requests carry the token in the `Authorization: Bearer <token>` header. The WebSocket upgrade request accepts the same header or the subprotocol `kimi-code.bearer.<token>`. Token generation and rotation are covered in [Run the local server](../guides/web.md#getting-started).
 
 Failed authentication returns HTTP 401 with envelope `code` `40101`. When the server binds a non-loopback address, a source that fails authentication 10 times within 60 seconds is banned for 60 seconds. During the ban, every request gets HTTP 429 with `code` `42901`.
 
@@ -168,5 +167,5 @@ This walkthrough runs the minimal flow with curl: check the server, create a ses
 ## Next steps
 
 - [Sessions and conversations](./server-api-conversation.md): the WebSocket protocol and the client flow
-- [Using Kiko in the browser](../guides/web.md): start the server and use Kiko in a browser
+- [Run the local server](../guides/web.md): start the server and print its API address and token
 - [kiko command](./kimi-command.md#kiko-web): all `kiko web` command-line options

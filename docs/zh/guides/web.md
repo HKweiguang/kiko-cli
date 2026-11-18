@@ -1,109 +1,83 @@
-# 在网页中使用
+# 运行本地服务
 
-Kiko Web 是 Kiko CLI 内置的浏览器图形界面：在终端运行 `kiko web`，就能在浏览器里新建会话、对话、处理审批、查看文件改动——界面更易读，会话和数据仍全部保存在你的本机。
+`kiko web` 在当前终端的前台运行本地 Kiko 服务。它在同一端口上提供两个接口：`/api/v1` 的 REST API 和 `/api/v1/ws` 的 WebSocket 事件流。旧版本从这个地址提供的浏览器 web UI 已不再随包发布，也不再提供支持——客户端直接连接 API，[远程控制](./remote-control.md) 则提供托管的网页用于远程会话。
 
-![Kiko Web 界面](../../media/kimi-web-ui.jpg)
+::: warning 注意
+`kiko web` 不再打开浏览器，也不再提供 HTML 页面。启动横幅会打印 API 基础地址和 bearer token。要在浏览器中使用 Kiko，请使用 [远程控制](./remote-control.md)。
+:::
 
 ## 开始使用
 
-<div class="step">
-<span class="step-num">1</span> <strong>安装并登录 Kiko CLI</strong>
+在终端运行 `kiko web`：
 
-`kiko web` 是 CLI 的内置命令，未安装 CLI 时不可用。安装与登录见 [开始使用](./getting-started.md)。
-</div>
-
-<div class="step">
-<span class="step-num">2</span> <strong>在终端运行 <code>kiko web</code></strong>
-
-如果你已经在 CLI 里，也可以输入 `/web`，把当前会话交接到浏览器。
-</div>
-
-<div class="step">
-<span class="step-num">3</span> <strong>服务就绪后自动用默认浏览器打开 Web 界面</strong>
-
-启动横幅会打印访问地址，浏览器没有自动打开时，手动复制这行地址打开即可：
-
-```text
-Local:   http://127.0.0.1:58627/#token=...
-Token:   ...
-Stop:    Ctrl+C
+```sh
+kiko web
 ```
 
-::: warning 注意
-地址里的 `#token=` 是访问凭证，请勿外发，停止服务在终端按 `Ctrl+C`。
-:::
-</div>
+命令会附着在当前终端前台运行，收到 `SIGINT` / `SIGTERM`（例如 `Ctrl-C`）时干净退出。服务就绪后，横幅会打印 API 地址和 token：
+
+```text
+Kiko server ready
+REST + WebSocket API only — the browser UI is no longer bundled.
+
+Local:    http://127.0.0.1:58627/api/v1
+Token:    <token>
+
+Logs:     off  use --log-level info to enable
+Stop:     Ctrl+C
+```
+
+服务还会发布 `GET /openapi.json`（REST）和 `GET /asyncapi.json`（WebSocket）用于查询 schema，两者同样需要 bearer token。完整的接口参考和请求示例见 [服务 API](../reference/server-api.md)。
+
+在 CLI 中，`/web` 会完成同样的交接：TUI 退出，当前进程变成前台服务。
 
 ### 启动选项
 
 | 选项 | 说明 |
 | --- | --- |
-| `--port <port>` | 绑定端口；默认 `58627`，被占用时自动 +1 重试 |
-| `--host [host]` | 实现同一局域网下的手机、平板或其他电脑都能用 web 地址访问，也可指定 IP，如 `--host 192.168.1.10` |
-| `--no-open` | 就绪后不自动打开浏览器 |
+| `--port <port>` | 绑定端口；默认 `58627`，被占用时自动用 `port + 1` 重试 |
+| `--host [host]` | 绑定地址；省略时为 `127.0.0.1`（仅本机），裸写 `--host` 为 `0.0.0.0`（所有网卡），也可指定具体地址 |
+| `--allowed-host <host...>` | DNS 重绑定检查额外放行的 Host 头；可重复或逗号分隔 |
 | `--log-level <level>` | 按所选级别开启服务日志；默认不输出 |
+| `--debug-endpoints` | 挂载 `/api/v1/debug/*` 内省路由（默认关闭） |
+| `--dangerous-bypass-auth` | 关闭所有 REST 与 WebSocket 路由的 bearer token 鉴权；仅在可信网络或自有鉴权代理之后使用 |
+| `--web-title <title>` | 报告给 web 客户端的浏览器标签页标题；默认为工作区目录名 |
+| `--no-open` | 已废弃；仅为兼容而接受。`kiko web` 不再打开浏览器 |
 
-### 常用斜杠命令
+多个实例可以共享同一个 home 目录：每个实例都会注册到 `~/.kiko/server/instances/`，端口被占用时自动改用下一个空闲端口。
 
-| 斜杠命令 | 说明 |
-| --- | --- |
-| `/new` | 新开会话 |
-| `/goal` | 进入目标模式，跨轮次持续推进同一目标 |
-| `/compact` | 压缩当前会话上下文 |
-| `/tower` | [Tower 多 Agent 协作](./tower.md)（实验功能）；`/tower <base-branch>` 指定基准分支，但不发送任务目标 |
-| `/export` | 导出会话内容与故障排查日志为 ZIP |
-| `/remote-control` | 开启远程控制，从远程访问本地 Web 会话 |
+## 鉴权
 
+所有 `/api/*` 路由都要求在 `Authorization: Bearer <token>` 请求头中携带 bearer token。WebSocket 升级请求可以使用同样的请求头，也可以使用子协议 `kimi-code.bearer.<token>`。token 保存在 `~/.kiko/server.token`，并在启动时打印。
 
-## 与 CLI 的关系
-
-Web 界面和 CLI 共享同一份登录态、配置（`config.toml`）和会话数据。
-
-Web 支持的斜杠命令见上文 [常用斜杠命令](#常用斜杠命令)，与 CLI 不完全一致；部分 CLI 指令在 Web 里有对应的图形入口（设置页、模型选择器、账户菜单、任务面板）。
-
-两端能力对照如下：
-
-<div class="feature-compare-table">
-
-| 功能 | CLI | Web | 说明 |
-| --- | --- | --- | --- |
-| 流式对话 | ✓ | ✓ | Web 为富格式增量渲染（表格、代码高亮、diff、工具卡片） |
-| 会话管理 | ✓ | ✓ | Web 可把不常用的会话归档收起，在已归档页按时间排序、随时恢复；Open / Done / Workspaces 标签页为 Lab 实验特性，默认关闭，需在设置的 Lab 页开启 |
-| 审批处理 | ✓ | ✓ | Web 可在图形页面中点击处理，无需指令 |
-| 后台任务 | ✓ | ✓ | Web 为任务面板实时展示进度 |
-| 文件与改动 | ✓ | ✓ | Web 有改动文件摘要卡与逐文件 diff |
-| 设置 | ✓ | ✓ | Web 另有图形化设置页（供应商、账号与用量、Lab 实验特性） |
-| 全局搜索 | — | ✓ | 需先在 `config.toml` 中设置 `[database] global_search = true`，之后 Web 可实现跨会话、跨工作区搜索 |
-| 移动端适配 | — | ✓ | `--host` 开启局域网共享后，可实现在同一局域网下的手机浏览器中使用 |
-
-</div>
+运行 `kiko web rotate-token` 可以轮换 token。旧 token 立即失效，所有运行中的实例会在下一次鉴权检查时自动换用新 token，无需重启。
 
 ## 安全注意
 
-- **建议设置并列凭证**：绑定局域网地址后，额外设置 `KIKO_PASSWORD` 环境变量，服务端会对鉴权失败自动限流。
-- **不要彻底关闭鉴权**：`--dangerous-bypass-auth` 会关闭所有鉴权，任何能访问该端口的人都能控制你的会话、文件系统和 shell。仅在可信网络或自有鉴权代理之后使用，详见 [kiko 命令参考](../reference/kimi-command.md#kiko-web)。
-
+- `kiko web` 默认只绑定 loopback。`--host` 会把 API 暴露到局域网；非 loopback 绑定前应在前置反向代理上终止 TLS。
+- 绑定到 loopback 之外时，还可以设置 `KIKO_PASSWORD` 作为并列凭证——见 [环境变量](../configuration/env-vars.md)。
+- `--dangerous-bypass-auth` 会完全关闭鉴权。任何能访问该端口的人都能控制你的会话、文件系统和 shell；仅在可信网络或自有鉴权代理之后使用。
 
 ## 常见问题
 
 ### 端口被占用了怎么办
 
-不用处理。`kiko web` 会自动用下一个端口重试（58628、58629……），以启动横幅里实际打印的地址为准。
+不用处理。服务会自动用下一个端口重试（58628、58629……），以启动横幅里实际打印的地址为准。
 
-### 浏览器打不开地址
+### token 丢失或泄露了怎么办
 
-先确认终端里的服务还在运行（它前台挂在这个终端上）。地址必须完整复制，包含 `#token=` 部分；只输 `http://127.0.0.1:58627` 会停在输入 token 的页面，手动粘贴横幅里的 `Token` 值也可以进入。
+运行 `kiko web rotate-token` 生成新 token。所有运行中的实例会自动换用新 token，API 客户端用新值重新连接即可。
 
-### token 失效了怎么恢复
+### 浏览器界面去哪了
 
-运行 `kiko web rotate-token` 生成新 token，然后用启动横幅里的新地址重新打开。所有运行中的实例会自动换用新 token，无需重启。
+随包发布的浏览器界面已移除，`kiko web` 只提供 API。[远程控制](./remote-control.md) 仍提供托管的网页，通过 Kimi 中转连接本机。
 
-### 同一 WiFi 下其他设备访问不到
+### 同一局域网的其他设备能访问吗
 
-确认启动时带了 `--host`（裸写即可），并用横幅中局域网地址（形如 `http://192.168.x.x:58627/#token=...`）访问。仍不通时检查电脑防火墙是否放行了该端口，以及两台设备是否真的在同一网段（访客 WiFi、VPN、4G/5G 热点切换都会造成隔离）。
+启动时带上 `--host`，并使用横幅中打印的 `Network:` API 地址。每个客户端都必须携带 bearer token。确认电脑防火墙已放行该端口。
 
 ## 下一步
 
-- [服务 API](../reference/server-api.md) — 面向脚本与第三方集成的 REST / WebSocket 接口（实验性）
+- [服务 API](../reference/server-api.md) — 面向脚本与第三方客户端的 REST / WebSocket 接口
+- [远程控制](./remote-control.md) — 通过托管的网页在手机或另一台电脑上使用 Kiko
 - [kiko 命令](../reference/kimi-command.md#kiko-web) — `kiko web` 的全部命令行选项
-- [远程控制](./remote-control.md) — 从公网任意设备远程查看和接管本机会话

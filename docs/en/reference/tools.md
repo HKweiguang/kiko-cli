@@ -105,9 +105,9 @@ Collaboration tools handle inter-Agent coordination, user interaction, and Skill
 
 In the TUI, updates appear in the `Updates` panel above the input box, grouped by agent. Press `Ctrl-N` (or click the panel in fullscreen mode) to browse them. The panel folds when the turn ends and resets for the next main-agent turn.
 
-In the desktop app and the web UI (`kiko web`), each update appears in the conversation as a progress row showing its title; click it to read the message.
+In the desktop app and Remote Control's web page, each update appears in the conversation as a progress row showing its title; click it to read the message.
 
-The feature is off by default. To enable it, set `KIKO_EXPERIMENTAL_NOTIFY_USER=1`, put `[experimental] notify_user = true` in `config.toml`, or turn it on in `/experiments` (in the TUI) or in the settings' Lab section (in the desktop app and web UI); this applies to sessions created afterwards. Sessions created while it is disabled have neither the tool nor its prompt guidance.
+The feature is off by default. To enable it, set `KIKO_EXPERIMENTAL_NOTIFY_USER=1`, put `[experimental] notify_user = true` in `config.toml`, or turn it on in `/experiments` (in the TUI) or in the settings' Lab section (in the desktop app and Remote Control's web page); this applies to sessions created afterwards. Sessions created while it is disabled have neither the tool nor its prompt guidance.
 
 Existing sessions keep their notification tool availability and prompt unchanged, including after reopening. Turning the feature off hides the panel and disables its shortcuts; any existing `NotifyUser` calls finish normally and report that the update was not displayed. Turning it back on restores display for sessions that already have the tool. If a session was created with the feature disabled, start a new session to use updates. Changing only this flag in `/experiments` does not reload the session.
 

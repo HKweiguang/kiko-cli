@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Press-Enter-to-restart wrapper for the local server. No file watcher.
 //
-// Spawns `tsx ./src/main.ts web --no-open …extraArgs` once, then on each
+// Spawns `tsx ./src/main.ts web …extraArgs` once, then on each
 // newline read from stdin SIGTERMs the child and respawns after it has
 // cleanly exited. SIGTERM triggers the server's own `shutdown()` handler
 // (apps/kimi-code/src/cli/sub/web/run.ts) which releases the instance
@@ -32,7 +32,6 @@ const tsxArgs = [
   '../../build/register-raw-text-loader.mjs',
   './src/main.ts',
   'web',
-  '--no-open',
   ...cliArgs,
 ];
 
@@ -45,7 +44,7 @@ function start() {
   console.error('[dev:server:restart] starting server…');
   child = spawn(tsxBin, tsxArgs, {
     cwd: APP_ROOT,
-    env: { ...process.env, KIKO_DEV_SERVER: '1' },
+    env: process.env,
     // Server does not read stdin; keep ours free for the Enter trigger.
     stdio: ['ignore', 'inherit', 'inherit'],
   });

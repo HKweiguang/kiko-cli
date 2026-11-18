@@ -7,7 +7,6 @@ import type { SlashCommandHost } from '#/tui/commands/dispatch';
 import {
   handleRemoteControlCommand,
   handleWebCommand,
-  webSessionUrl,
 } from '#/tui/commands/web';
 import { renderTerminalQr } from '#/utils/remote-control-qr';
 
@@ -95,15 +94,15 @@ describe('handleWebCommand', () => {
     mocks.getDataDir.mockReturnValue('/tmp/kimi-home');
   });
 
-  it('shows an error and does nothing when there is no active session', async () => {
+  it('starts the server even without an active session', async () => {
     const host = makeHost();
     host.session = undefined;
 
     await handleWebCommand(host);
 
-    expect(host.showError).toHaveBeenCalledOnce();
-    expect(host.setExitForegroundTask).not.toHaveBeenCalled();
-    expect(host.stop).not.toHaveBeenCalled();
+    expect(host.showError).not.toHaveBeenCalled();
+    expect(host.setExitForegroundTask).toHaveBeenCalledOnce();
+    expect(host.stop).toHaveBeenCalledOnce();
   });
 
   it('registers a foreground takeover and stops the TUI without opening a URL yet', async () => {
@@ -117,7 +116,7 @@ describe('handleWebCommand', () => {
     expect(mocks.openUrl).not.toHaveBeenCalled();
   });
 
-  it('starts the new server on takeover, printing the banner and opening the deep link', async () => {
+  it('starts the new server on takeover, printing the API banner without opening a URL', async () => {
     mocks.tryResolveServerToken.mockReturnValue('tok-1');
     const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     mocks.startServerForeground.mockImplementation(
@@ -134,13 +133,14 @@ describe('handleWebCommand', () => {
     await task(0);
 
     expect(mocks.startServerForeground).toHaveBeenCalledOnce();
-    expect(mocks.openUrl).toHaveBeenCalledWith(
-      'http://127.0.0.1:58627/sessions/ses-1#token=tok-1',
-    );
+    expect(mocks.openUrl).not.toHaveBeenCalled();
     const written = writeSpy.mock.calls.map((call) => String(call[0])).join('');
     expect(written).toContain('Kiko server ready');
+    expect(written).toContain('http://127.0.0.1:58627/api/v1');
     expect(written).toContain('Ctrl+C');
-    expect(written).toContain('/sessions/ses-1');
+    expect(written).toContain('no longer bundled');
+    expect(written).not.toContain('/sessions/');
+    expect(written).not.toContain('#token=');
     writeSpy.mockRestore();
   });
 });
@@ -246,7 +246,7 @@ describe('handleRemoteControlCommand', () => {
       expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
       expect(png).toEqual(await QRCode.toBuffer(sessionUrl));
       expect(written).toContain(
-        'Local UI: http://127.0.0.1:58627/#token=local-server-token',
+        'Local API: http://127.0.0.1:58627/api/v1',
       );
       expect(written).not.toContain(`${entryUrl}#token=`);
       expect(written).not.toContain(`${sessionUrl}#token=`);
@@ -318,37 +318,5 @@ describe('handleRemoteControlCommand', () => {
       writeSpy.mockRestore();
       rmSync(tempRoot, { recursive: true, force: true });
     }
-  });
-});
-
-describe('webSessionUrl', () => {
-  it('deep-links to the session under the origin', () => {
-    expect(webSessionUrl('http://127.0.0.1:58627', 'abc123')).toBe(
-      'http://127.0.0.1:58627/sessions/abc123',
-    );
-  });
-
-  it('strips a trailing slash from the origin', () => {
-    expect(webSessionUrl('http://127.0.0.1:58627/', 'abc123')).toBe(
-      'http://127.0.0.1:58627/sessions/abc123',
-    );
-  });
-
-  it('encodes session ids so the web UI can decode them', () => {
-    expect(webSessionUrl('http://127.0.0.1:58627', 'a/b c')).toBe(
-      'http://127.0.0.1:58627/sessions/a%2Fb%20c',
-    );
-  });
-
-  it('carries the bearer token in the fragment so the browser authenticates on load', () => {
-    expect(webSessionUrl('http://127.0.0.1:58627', 'abc123', 'tok-1')).toBe(
-      'http://127.0.0.1:58627/sessions/abc123#token=tok-1',
-    );
-  });
-
-  it('omits the fragment when no token is available', () => {
-    expect(webSessionUrl('http://127.0.0.1:58627', 'abc123', undefined)).toBe(
-      'http://127.0.0.1:58627/sessions/abc123',
-    );
   });
 });

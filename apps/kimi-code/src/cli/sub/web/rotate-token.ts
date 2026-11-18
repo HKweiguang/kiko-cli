@@ -13,7 +13,7 @@ import type { Command } from 'commander';
 import { darkColors } from '#/tui/theme/colors';
 import { getDataDir } from '#/utils/paths';
 
-import { accessUrlLines, splitTokenFragment } from './access-urls';
+import { accessUrlLines } from './access-urls';
 
 export function registerRotateTokenCommand(server: Command): void {
   server
@@ -32,20 +32,15 @@ export function registerRotateTokenCommand(server: Command): void {
         // highlight), so it is easy to spot without dominating the output.
         process.stdout.write(`\n  ${chalk.bold('New server token:')} ${token}\n\n`);
 
-        // Re-print the access links with the new token so the user can
-        // reconnect immediately. When a server is running its bind host/port
-        // come from the instance registry; otherwise there is nothing to
-        // connect to yet.
+        // Re-print the API base URLs with the new token so the user can reconnect
+        // immediately. When a server is running its bind host/port come from
+        // the instance registry; otherwise there is nothing to connect to yet.
         const instance = await getLiveServerInstance();
         if (instance !== undefined) {
-          for (const { label, url: href } of accessUrlLines(instance.host, instance.port, token)) {
-            // De-emphasize the `#token=…` fragment so the host/port stands out.
-            const [base, frag] = splitTokenFragment(href);
-            const rendered =
-              frag === ''
-                ? chalk.hex(darkColors.accent)(base)
-                : chalk.hex(darkColors.accent)(base) + chalk.hex(darkColors.textDim)(frag);
-            process.stdout.write(`  ${chalk.dim(label)}${rendered}\n`);
+          for (const { label, url } of accessUrlLines(instance.host, instance.port)) {
+            process.stdout.write(
+              `  ${chalk.dim(label)}${chalk.hex(darkColors.accent)(url)}\n`,
+            );
           }
         }
       } catch (error) {

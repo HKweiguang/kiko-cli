@@ -1,56 +1,30 @@
 /**
- * Build the clickable/copyable access URLs for the running server.
+ * Build the copyable API URLs for the running server.
  *
  * Shared by the `kiko web` ready banner and `kiko web rotate-token` so both
- * show the same Local/Network links. When a token is known it rides in the
- * `#token=` fragment (never sent to the server, so never logged), letting a
- * user open the link on another device and be authenticated automatically.
+ * show the same Local/Network REST base URLs. The server no longer serves a
+ * bundled browser UI, so these are API endpoints rather than pages.
  */
 
 import { formatHostForUrl, listNetworkAddresses, type NetworkAddress } from './networks';
 
-/**
- * Build a directly-openable server URL. When the token is known it is appended
- * as `#token=<token>`; otherwise the bare origin (with a trailing slash) is
- * returned.
- */
-export function buildOpenableUrl(bareOrigin: string, token: string | undefined): string {
-  const base = bareOrigin.endsWith('/') ? bareOrigin.slice(0, -1) : bareOrigin;
-  return token === undefined ? `${base}/` : `${base}/#token=${token}`;
-}
+/** Base path of the REST API (the WebSocket stream lives at `${API_BASE_PATH}/ws`). */
+export const API_BASE_PATH = '/api/v1';
 
-/**
- * Split a full URL into the part before `#token=` and the `#token=…` fragment
- * itself, so callers can render the fragment in a de-emphasized color. Returns
- * `[fullUrl, '']` when there is no token fragment.
- */
-export function splitTokenFragment(fullUrl: string): [string, string] {
-  const marker = '#token=';
-  const idx = fullUrl.indexOf(marker);
-  return idx < 0 ? [fullUrl, ''] : [fullUrl.slice(0, idx), fullUrl.slice(idx)];
+/** Append the REST base path to a server origin. */
+export function buildApiUrl(origin: string): string {
+  return `${origin.replace(/\/+$/, '')}${API_BASE_PATH}`;
 }
 
 export interface AccessUrlLine {
   /** Fixed-width label including trailing padding, e.g. `"Local:    "`. */
   label: string;
-  /** Full URL, carrying `#token=` when a token is known. */
+  /** REST API base URL for that address. */
   url: string;
 }
 
 function isWildcard(host: string): boolean {
   return host === '' || host === '0.0.0.0' || host === '::';
-}
-
-/**
- * Rewrite a bound origin for browser auto-open. A wildcard bind host
- * (`0.0.0.0` / `::` / empty) is not navigable, so open localhost on the same
- * port instead — the same address the ready banner's `Local:` line shows.
- */
-export function browserOpenOrigin(origin: string): string {
-  const separator = origin.lastIndexOf(':');
-  const host = origin.slice(origin.indexOf('://') + 3, separator);
-  if (!isWildcard(host)) return origin;
-  return `http://localhost${origin.slice(separator)}`;
 }
 
 /** True when `host` is a loopback address (this host only). */
@@ -64,7 +38,7 @@ function hostOrigin(host: string, port: number): string {
 }
 
 /**
- * Compute the access-URL lines for a bind host/port.
+ * Compute the API URL lines for a bind host/port.
  *
  * - wildcard (`0.0.0.0` / `::` / empty): a `Local:` line (localhost) plus one
  *   `Network:` line per non-loopback interface.
@@ -74,24 +48,23 @@ function hostOrigin(host: string, port: number): string {
 export function accessUrlLines(
   host: string,
   port: number,
-  token: string | undefined,
   networkAddresses?: NetworkAddress[],
 ): AccessUrlLine[] {
   if (isWildcard(host)) {
     const lines: AccessUrlLine[] = [
-      { label: 'Local:    ', url: buildOpenableUrl(`http://localhost:${port}`, token) },
+      { label: 'Local:    ', url: buildApiUrl(`http://localhost:${port}`) },
     ];
     const addrs = networkAddresses ?? listNetworkAddresses();
     for (const addr of addrs) {
       lines.push({
         label: 'Network:  ',
-        url: buildOpenableUrl(`http://${formatHostForUrl(addr.address, addr.family)}:${port}`, token),
+        url: buildApiUrl(`http://${formatHostForUrl(addr.address, addr.family)}:${port}`),
       });
     }
     return lines;
   }
   if (isLoopbackHost(host)) {
-    return [{ label: 'Local:    ', url: buildOpenableUrl(hostOrigin(host, port), token) }];
+    return [{ label: 'Local:    ', url: buildApiUrl(hostOrigin(host, port)) }];
   }
-  return [{ label: 'URL:      ', url: buildOpenableUrl(hostOrigin(host, port), token) }];
+  return [{ label: 'URL:      ', url: buildApiUrl(hostOrigin(host, port)) }];
 }

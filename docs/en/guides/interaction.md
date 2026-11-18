@@ -126,7 +126,7 @@ Common management commands:
 
 A goal stops in three ways: **complete** — achieved, cleared, and summarized; **paused** — you paused it, interrupted a turn, or an error occurred; **blocked** — the agent can't continue as stated and writes a short message explaining why. The time budget only ticks while the goal is active and the session is open — closing the session or pausing the goal stops the clock, and `/goal resume` continues with the remaining budget after you reopen the session.
 
-In the web UI, the goal bar below the conversation lets you pause, resume, or cancel the goal directly; click it to expand details, including budget progress when a token budget is configured.
+In Remote Control's web page, the goal bar below the conversation lets you pause, resume, or cancel the goal directly; click it to expand details, including budget progress when a token budget is configured.
 
 Use `/goal next <objective>` to line up follow-up work without interrupting the current goal — queued goals stay invisible to the agent until the current one completes, then the first starts automatically. `/goal next manage` opens an interactive manager to reorder, edit, or delete queued goals (arrow keys to browse, `Space` to select, `E` to edit, `D` to delete, `Esc` to cancel). Queued goals never start while the current goal is paused, cancelled, or blocked.
 

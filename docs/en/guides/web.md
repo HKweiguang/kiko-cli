@@ -1,107 +1,83 @@
-# Using Kiko in the browser
+# Run the local server
 
-Kiko Web is the browser-based graphical interface built into Kiko CLI: run `kiko web` in a terminal, and you can start sessions, chat, handle approvals, and review file changes in a browser — a friendlier interface, while sessions and data still live entirely on your machine.
+`kiko web` runs the local Kiko server in the foreground of the current terminal. It exposes two interfaces on the same port: a REST API at `/api/v1` and a WebSocket event stream at `/api/v1/ws`. The browser web UI that older versions served from this address is no longer bundled or supported — clients connect to the API directly, and [Remote Control](./remote-control.md) provides a hosted web page for remote sessions.
 
-![Kiko Web UI](../../media/kimi-web-ui.jpg)
+::: warning
+`kiko web` no longer opens a browser or serves HTML. The startup banner prints the API base URL and the bearer token instead. To use Kiko in a browser, use [Remote Control](./remote-control.md).
+:::
 
 ## Getting started
 
-<div class="step">
-<span class="step-num">1</span> <strong>Install Kiko CLI and log in</strong>
+Run `kiko web` in a terminal:
 
-`kiko web` is a built-in CLI command — it isn't available without the CLI. See [Getting started](./getting-started.md) for installation and login.
-</div>
-
-<div class="step">
-<span class="step-num">2</span> <strong>Run <code>kiko web</code> in a terminal</strong>
-
-If you're already in the CLI, you can also type `/web` to hand the current session off to the browser.
-</div>
-
-<div class="step">
-<span class="step-num">3</span> <strong>The web UI opens in your default browser once ready</strong>
-
-The startup banner prints the access URL — if the browser doesn't open by itself, copy this URL and open it manually:
-
-```text
-Local:   http://127.0.0.1:58627/#token=...
-Token:   ...
-Stop:    Ctrl+C
+```sh
+kiko web
 ```
 
-::: warning
-The `#token=` fragment is the access credential — don't share it. Stop the server with `Ctrl+C` in the terminal.
-:::
-</div>
+The command stays attached to the terminal and shuts down cleanly on `SIGINT` / `SIGTERM` (e.g. `Ctrl-C`). Once the server is listening, the banner prints the API address and token:
+
+```text
+Kiko server ready
+REST + WebSocket API only — the browser UI is no longer bundled.
+
+Local:    http://127.0.0.1:58627/api/v1
+Token:    <token>
+
+Logs:     off  use --log-level info to enable
+Stop:     Ctrl+C
+```
+
+The server also publishes `GET /openapi.json` (REST) and `GET /asyncapi.json` (WebSocket) for schema discovery; both require the same bearer token. For the endpoint reference and a complete request walkthrough, see [Server API](../reference/server-api.md).
+
+Inside the CLI, `/web` performs the same handoff: the TUI exits and this process becomes the foreground server.
 
 ### Startup options
 
 | Option | Description |
 | --- | --- |
-| `--port <port>` | Bind port; defaults to `58627`, auto-increments when taken |
-| `--host [host]` | Let phones, tablets, or other computers on the same LAN access the web address; you can also specify an IP, e.g. `--host 192.168.1.10` |
-| `--no-open` | Don't open the browser when ready |
-| `--log-level <level>` | Enable server logs at the given level; off by default |
+| `--port <port>` | Bind port; defaults to `58627`, and a busy port is retried with `port + 1` |
+| `--host [host]` | Bind host; omit for `127.0.0.1` (this machine only), pass a bare `--host` for `0.0.0.0` (all interfaces), or pass a specific address |
+| `--allowed-host <host...>` | Extra Host header values allowed through the DNS-rebinding check; repeatable or comma-separated |
+| `--log-level <level>` | Enable server logs at the selected level; omitted by default |
+| `--debug-endpoints` | Mount `/api/v1/debug/*` introspection routes (off by default) |
+| `--dangerous-bypass-auth` | Disable bearer-token auth on every REST and WebSocket route; only for trusted networks or behind an authenticating proxy |
+| `--web-title <title>` | Custom browser tab title reported to web clients; defaults to the workspace directory name |
+| `--no-open` | Deprecated; accepted for compatibility. `kiko web` no longer opens a browser |
 
-### Common slash commands
+Multiple instances can share one home directory: each registers itself under `~/.kiko/server/instances/`, and a busy port is retried with the next free one.
 
-| Slash command | Description |
-| --- | --- |
-| `/new` | Start a new session |
-| `/goal` | Enter Goal mode and keep working toward the same objective across turns |
-| `/compact` | Compact the current session's context |
-| `/tower` | [Tower multi-agent collaboration](./tower.md) (experimental); `/tower <base-branch>` sets the base branch without sending an objective |
-| `/export` | Export the session content and troubleshooting logs as a ZIP |
-| `/remote-control` | Enable remote control to access the local web session remotely |
+## Authentication
 
-## Relationship with the CLI
+All `/api/*` routes require the bearer token in the `Authorization: Bearer <token>` header. The WebSocket upgrade request accepts the same header or the subprotocol `kimi-code.bearer.<token>`. The token is stored in `~/.kiko/server.token` and printed at startup.
 
-The web UI and the CLI share the same login state, configuration (`config.toml`), and session data.
-
-The web UI supports only a subset of the CLI's slash commands — see [Common slash commands](#common-slash-commands) above. Everything else usually has a point-and-click equivalent in the UI (the settings page, the model picker, the account menu, the task panel).
-
-How the two sides compare:
-
-<div class="feature-compare-table">
-
-| Feature | CLI | Web | Notes |
-| --- | --- | --- | --- |
-| Streaming chat | ✓ | ✓ | Web renders rich formats incrementally (tables, code highlighting, diffs, tool cards) |
-| Session management | ✓ | ✓ | Web lets you archive less-used sessions away; the archive page sorts them by time and you can restore them anytime; the Open / Done / Workspaces tabs are a Lab experiment (off by default) — enable them on the settings Lab page |
-| Approvals | ✓ | ✓ | Web handles them with clicks in the UI — no commands needed |
-| Background tasks | ✓ | ✓ | Web shows live progress in the task panel |
-| Files and changes | ✓ | ✓ | Web has a changed-files summary card and per-file diffs |
-| Settings | ✓ | ✓ | Web adds a settings UI (providers, account & usage, Lab experiments) |
-| Global search | — | ✓ | Set `[database] global_search = true` in `config.toml` first; Web then searches across sessions and workspaces |
-| Mobile layout | — | ✓ | With LAN sharing on (`--host`), it works in phone browsers on the same network |
-
-</div>
+Rotate it with `kiko web rotate-token`. The previous token stops working immediately, and every running instance picks up the new token on its next auth check — no restart needed.
 
 ## Security notes
 
-- **Set a parallel credential**: when binding a LAN address, also set the `KIKO_PASSWORD` environment variable; the server then rate-limits authentication failures automatically.
-- **Don't disable authentication entirely**: `--dangerous-bypass-auth` turns off all authentication — anyone who can reach the port can control your sessions, file system, and shell. Only use it on trusted networks or behind your own authenticating proxy. See the [kiko command reference](../reference/kimi-command.md#kiko-web).
+- `kiko web` binds to loopback only by default. `--host` exposes the API to your network; put a TLS-terminating reverse proxy in front of any non-loopback bind.
+- When binding beyond loopback, you can also set `KIKO_PASSWORD` as a parallel credential — see [Environment variables](../configuration/env-vars.md).
+- `--dangerous-bypass-auth` disables authentication entirely. Anyone who can reach the port gets full access to your sessions, filesystem, and shell; only use it on a trusted network or behind your own authenticating proxy.
 
 ## FAQ
 
-### The port is already taken
+### The port is already in use
 
-Nothing to do. `kiko web` automatically retries with the next port (58628, 58629, …) — just use the address printed in the startup banner.
+Nothing to do. The server automatically retries with the next port (58628, 58629, …); use the address printed in the startup banner.
 
-### The URL won't open in the browser
+### I lost or leaked the token
 
-First check the server is still running in the terminal (it runs in the foreground there). Copy the full URL including the `#token=` part; opening only `http://127.0.0.1:58627` lands on a token input page, where pasting the `Token` value from the banner also works.
+Run `kiko web rotate-token` to generate a new token. All running instances switch to it automatically, so reconnect API clients with the new value.
 
-### How to recover from an invalid token
+### Where did the browser UI go?
 
-Run `kiko web rotate-token` to generate a new token, then open the new banner URL. All running instances switch to the new token automatically — no restart needed.
+The bundled browser UI was removed; `kiko web` is API-only. [Remote Control](./remote-control.md) still provides a hosted web page that connects to this machine over the Kimi relay.
 
-### Other devices on the same Wi-Fi can't connect
+### Can I reach the server from another device on my network?
 
-Make sure you started with `--host` (bare is fine), and use the LAN URL from the banner (like `http://192.168.x.x:58627/#token=...`). If it still fails, check that the machine's firewall allows the port, and that both devices are really on the same network segment — guest Wi-Fi, VPNs, and switching to a 4G/5G hotspot all isolate devices.
+Start with `--host` and use one of the `Network:` API URLs printed in the banner. The bearer token is required from every client. Make sure the machine's firewall allows the port.
 
 ## Next steps
 
-- [Server API](../reference/server-api.md) — REST / WebSocket APIs for scripts and third-party integrations (experimental)
+- [Server API](../reference/server-api.md) — REST and WebSocket endpoints for scripts and third-party clients
+- [Remote Control](./remote-control.md) — use Kiko from a phone or another computer through the hosted web page
 - [kiko command](../reference/kimi-command.md#kiko-web) — all `kiko web` command-line options
-- [Remote Control](./remote-control.md) — remotely view and take over local sessions from any device over the public internet

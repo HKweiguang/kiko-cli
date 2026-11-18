@@ -43,7 +43,7 @@
 | `/import-sessions` | — | 将最近 15 天或 30 天的 Claude Code 和 Codex 会话导入为普通会话（与 [`kiko import-sessions`](./kimi-command.md#kiko-import-sessions) 行为一致） | 否 |
 | `/copy` | — | 将最后一条 AI 回复复制到剪贴板 | 否 |
 | `/add-dir [<path>]` | — | 为当前会话添加额外的工作目录。不带路径（或传入 `list`）运行时列出已配置的目录。添加时可选择是否将目录记入工作区注册表（持久保留） | 否 |
-| `/web` | — | 在 web UI 中打开当前会话：选择一个运行中的实例进行连接，或在 TUI 退出后新开一个前台服务器。参见 [`kiko web`](./kimi-command.md#kiko-web) | 是 |
+| `/web` | — | 在 TUI 退出后前台启动本地 REST/WebSocket 服务。浏览器界面已不再随包发布。参见 [`kiko web`](./kimi-command.md#kiko-web) | 是 |
 | `/desktop` | `/install-desktop` | 在浏览器中打开 Kiko 桌面端页面（地址随当前区域而定：`https://www.kimi.com/code` 或 `https://www.kimi.ai/code`）。参见 [`kiko install-desktop`](./kimi-command.md#kiko-install-desktop) | 是 |
 
 ## 模式与运行控制
