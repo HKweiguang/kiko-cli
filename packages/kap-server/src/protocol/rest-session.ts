@@ -151,6 +151,17 @@ export const listSessionsQuerySchema = z
         params: { code: ErrorCode.VALIDATION_FAILED },
       });
     }
+    if (
+      value.hosts === 'include' &&
+      (value.before_id !== undefined || value.after_id !== undefined)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'before_id and after_id are not supported with hosts=include; use page_token or page',
+        path: [value.before_id !== undefined ? 'before_id' : 'after_id'],
+        params: { code: ErrorCode.VALIDATION_FAILED },
+      });
+    }
     for (const domain of parseSessionIncludeDomains(value.include)) {
       if (!KNOWN_INCLUDE_DOMAINS.has(domain)) {
         ctx.addIssue({

@@ -77,7 +77,9 @@ export function daemonSocketPath(homeDir: string): string {
   const direct = join(homeDir, 'server', SOCKET_FILE);
   if (Buffer.byteLength(direct) <= 100) return direct;
   const hash = createHash('sha256').update(homeDir).digest('hex').slice(0, 16);
-  return join(tmpdir(), `kimi-daemon-${hash}.sock`);
+  // Private directory: startUnixRpcServer tightens it to 0700, which a shared
+  // tmpdir root would not allow.
+  return join(tmpdir(), `kimi-daemon-${hash}`, SOCKET_FILE);
 }
 
 function pidAlive(pid: number): boolean {

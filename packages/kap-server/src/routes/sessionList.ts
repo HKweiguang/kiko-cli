@@ -592,7 +592,7 @@ export function registerSessionListAndBatchRoutes(
         [ErrorCode.HOST_UNAVAILABLE]: {},
       },
       description:
-        "List sessions with filtering, sorting, optional workspace grouping (view=by_workspace), optional git branch/PR metadata (include=git), or lightweight id projection (fields=id,archived; page_size ceiling relaxed to 10000). Paginate with page_token, 1-based page, or flat before_id/after_id cursors. hosts=include merges sessions from the app-created projects on every SSH host.",
+        "List sessions with filtering, sorting, optional workspace grouping (view=by_workspace), optional git branch/PR metadata (include=git), or lightweight id projection (fields=id,archived; page_size ceiling relaxed to 10000). Paginate with page_token, 1-based page, or flat before_id/after_id cursors (the flat cursors are not supported with hosts=include). hosts=include merges sessions from the app-created projects on every SSH host.",
       tags: ['sessions'],
     },
     async (req, reply) => {

@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -125,6 +125,24 @@ describe('server-v2 /api/v1/config', () => {
     await boot();
     const cfg = await getConfig();
     expect(cfg.auto_session_title).toBeUndefined();
+  });
+
+  it('rejects POST { hosts } instead of silently ignoring it', async () => {
+    await boot('[hosts."dev"]\nhost = "example.com"\n');
+
+    const res = await authedFetch(server as RunningServer, base, '/api/v1/config', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ hosts: { dev: { host: 'other.example.com' } } }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Envelope<ConfigResponse>;
+    expect(body.code).toBe(ErrorCode.VALIDATION_FAILED);
+    expect(body.msg).toContain('hosts');
+
+    expect(await readFile(join(home as string, 'config.toml'), 'utf8')).toContain('host = "example.com"');
+    const cfg = await getConfig();
+    expect(cfg['hosts']).toEqual({ dev: { host: 'example.com' } });
   });
 
   it('POST { disable_feedback_survey: true } persists and GET echoes it', async () => {

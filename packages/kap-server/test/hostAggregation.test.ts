@@ -27,25 +27,26 @@ interface FakeProject {
 
 type Query = Partial<Record<string, string | string[]>>;
 
-function after(a: [number, string], b: [number, string]): boolean {
-  return a[0] === b[0] ? a[1] < b[1] : a[0] < b[0];
+function after(a: [number, string], b: [number, string], ascending = false): boolean {
+  if (a[0] === b[0]) return ascending ? a[1] > b[1] : a[1] < b[1];
+  return ascending ? a[0] > b[0] : a[0] < b[0];
 }
 
 function serve(sessions: readonly FakeSession[], query: Query): Record<string, unknown> {
   const filter = query['workspace_id'] === undefined ? undefined : [query['workspace_id']].flat();
+  const ascending = query['sort'] === 'updated_at_asc';
   const sorted = sessions
     .filter((session) => filter === undefined || filter.includes(session.workspace))
-    .toSorted((a, b) => (after([a.updated, a.id], [b.updated, b.id]) ? 1 : -1));
+    .toSorted((a, b) => (after([a.updated, a.id], [b.updated, b.id], ascending) ? 1 : -1));
   const pageSize = Number(query['page_size'] ?? 50);
   if (query['fields'] === undefined && (pageSize > 100 || Number(query['group_page_size'] ?? 5) > 100)) {
     throw new HostSourceError(ErrorCode.VALIDATION_FAILED, 'full session pages are limited to 100');
   }
-  if (query['sort'] === 'updated_at_asc') sorted.reverse();
   let start = 0;
   if (query['page'] !== undefined) start = (Number(query['page']) - 1) * pageSize;
   else if (query['page_token']) {
     const cursor = JSON.parse(String(query['page_token'])) as [number, string];
-    start = sorted.findIndex((session) => after([session.updated, session.id], cursor));
+    start = sorted.findIndex((session) => after([session.updated, session.id], cursor, ascending));
     if (start === -1) start = sorted.length;
   }
   const window = sorted.slice(start, start + pageSize);
@@ -195,6 +196,31 @@ describe('sessions across hosts', () => {
     expect(await collectIds({ page_size: 2 }, hosts, local.slice(0, 1))).toEqual([['l1', 'r1'], ['r2', 'r3'], ['r4']]);
   });
 
+  it('keeps equal-timestamp sessions across a page boundary when only the local source is listed', async () => {
+    const tied: FakeSession[] = [
+      { id: 'c', workspace: 'wd_local', updated: 90 },
+      { id: 'b', workspace: 'wd_local', updated: 90 },
+      { id: 'a', workspace: 'wd_local', updated: 90 },
+    ];
+    const noHosts = sourcesOf([]);
+
+    expect((await collectIds({ page_size: 2 }, noHosts, tied)).flat()).toEqual(['c', 'b', 'a']);
+    expect((await collectIds({ sort: 'updated_at_asc', page_size: 2 }, noHosts, tied)).flat()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('keeps a tied session on a later source page when another host entry shares its timestamp', async () => {
+    const tiedLocal: FakeSession[] = [
+      { id: 'x', workspace: 'wd_local', updated: 100 },
+      { id: 'l_hi', workspace: 'wd_local', updated: 90 },
+      { id: 'l_b', workspace: 'wd_local', updated: 90 },
+      { id: 'l_a', workspace: 'wd_local', updated: 50 },
+    ];
+    const tiedRemote: FakeSession[] = [{ id: 'r_z', workspace: 'wm_dev', updated: 90 }];
+    const hosts = sourcesOf([{ id: 'dev', session: fakeHost(projects, tiedRemote) }]);
+
+    expect((await collectIds({ page_size: 2 }, hosts, tiedLocal)).flat()).toEqual(['x', 'r_z', 'l_hi', 'l_b', 'l_a']);
+  });
+
   it('serves a numbered page of the merged order', async () => {
     const page = await list({ page: 2, page_size: 3 }, hosts, local);
     expect(page).toMatchObject({ total: 8, has_more: true, next_page_token: undefined });
@@ -242,7 +268,7 @@ describe('sessions across hosts', () => {
     const groups = await list({ view: 'by_workspace', page_size: 1 }, hosts, []);
     expect((groups['groups'] as Array<{ workspace_id: string }>).map((group) => group.workspace_id)).toEqual(['wm_a']);
 
-    expect((await collectIds({ fields: 'id,archived', page_size: 2 }, hosts, local)).flat()).toEqual(['l1', 's2', 'l2', 'l3', 'l4']);
+    expect((await collectIds({ fields: 'id,archived', page_size: 2 }, hosts, local)).flat()).toEqual(['s2', 's1', 'l1', 'l2', 'l3', 'l4']);
   });
 
   it.each([3, 150, 10000])('collects projected ids with page_size=%i through bounded source pages', async (pageSize) => {
@@ -304,7 +330,7 @@ describe('sessions across hosts', () => {
       { id: 'r1', archived: false, host_id: 'dev' },
       { id: 'l1', archived: false },
     ]));
-    expect(ids(await all({ sort: 'created_at_desc' }))).toEqual(['l1', 'r1', 'r2']);
+    expect(ids(await all({ sort: 'created_at_desc' }))).toEqual(['r2', 'r1', 'l1']);
     expect(ids(await all({}))).toEqual(['r1', 'l1', 'r2']);
   });
 

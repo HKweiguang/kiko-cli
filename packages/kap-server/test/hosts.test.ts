@@ -1,4 +1,4 @@
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { createConnection } from 'node:net';
 import { Duplex } from 'node:stream';
@@ -870,6 +870,27 @@ function rpcClient(socketPath: string) {
 }
 
 describe('stdio rpc transport', () => {
+  it.skipIf(process.platform === 'win32')('tightens a pre-existing socket directory before listening and keeps the socket private', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'kimi-rpc-perm-'));
+    const dir = join(root, 'server');
+    mkdirSync(dir, { recursive: true, mode: 0o755 });
+    chmodSync(dir, 0o755);
+    const socketPath = join(dir, 'daemon.sock');
+    const app = Fastify();
+    await app.ready();
+    const wssV1 = new WebSocketServer({ noServer: true });
+
+    const rpcServer = await startUnixRpcServer(socketPath, { app, wssV1 });
+    try {
+      expect(statSync(dir).mode & 0o777).toBe(0o700);
+      expect(statSync(socketPath).mode & 0o777).toBe(0o600);
+    } finally {
+      await rpcServer.close();
+      await app.close();
+      wssV1.close();
+    }
+  });
+
   it.skipIf(process.platform === 'win32')('routes HTTP requests and WebSocket frames over a unix domain socket', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'kimi-rpc-sock-'));
     const socketPath = join(dir, 'daemon.sock');

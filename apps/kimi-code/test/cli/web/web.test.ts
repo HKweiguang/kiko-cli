@@ -9,7 +9,7 @@
 
 import { lstatSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { PassThrough } from 'node:stream';
 
 import chalk, { Chalk } from 'chalk';
@@ -1079,6 +1079,15 @@ describe('`kiko server ensure-daemon`', () => {
 
   afterEach(() => {
     rmSync(homeDir, { recursive: true, force: true });
+  });
+
+  it('moves an over-long socket path into a private directory under the temp root', () => {
+    const deepHome = join('/very/long/path', 'x'.repeat(80));
+    const socketPath = daemonSocketPath(deepHome);
+
+    expect(socketPath.startsWith(join(tmpdir(), 'kimi-daemon-'))).toBe(true);
+    expect(dirname(socketPath)).not.toBe(tmpdir());
+    expect(basename(socketPath)).toBe('daemon.sock');
   });
 
   function connection(overrides: Partial<DaemonConnection> = {}): DaemonConnection {

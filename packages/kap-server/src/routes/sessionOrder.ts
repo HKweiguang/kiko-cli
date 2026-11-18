@@ -12,9 +12,9 @@ export function compareSessionGroups(sort: SessionsSort, a: SessionPosition, b: 
 }
 
 export function compareSessionPositions(sort: SessionsSort, a: SessionPosition, b: SessionPosition): number {
-  return sort === 'updated_at_asc'
-    ? compareSessionGroups(sort, a, b)
-    : compareSessionGroups(sort, a, { key: b.key, id: a.id }) || compareSessionGroups(sort, b, { key: a.key, id: b.id });
+  if (a.key !== b.key) return sort === 'updated_at_asc' ? a.key - b.key : b.key - a.key;
+  const order = a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  return sort === 'updated_at_asc' ? order : -order;
 }
 
 export function sessionPositionOf(groups: boolean, sort: SessionsSort, entry: Record<string, unknown>): SessionPosition {

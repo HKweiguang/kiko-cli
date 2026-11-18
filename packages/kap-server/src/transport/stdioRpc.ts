@@ -261,7 +261,12 @@ export async function startUnixRpcServer(
   socketPath: string,
   opts: RpcStreamOptions,
 ): Promise<{ close(): Promise<void> }> {
-  await mkdir(dirname(socketPath), { recursive: true, mode: 0o700 });
+  const socketDir = dirname(socketPath);
+  await mkdir(socketDir, { recursive: true, mode: 0o700 });
+  // mkdir's mode only applies to a new directory; tighten a pre-existing one
+  // before the socket exists so no other local user can reach it during the
+  // window before the socket's own chmod.
+  await chmod(socketDir, 0o700).catch(() => {});
   await rm(socketPath, { force: true });
   const clients = new Set<Socket>();
   const server = createServer((socket) => {
