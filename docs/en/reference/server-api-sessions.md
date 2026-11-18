@@ -631,7 +631,6 @@ A prompt is one unit of user input. A submitted prompt enters the queue of the s
 | `POST /api/v1/sessions/{session_id}/steer` | Steer message content directly into the active turn |
 | `POST /api/v1/sessions/{session_id}/prompts:steer` | Steer queued prompts into the active turn |
 | `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:abort` | Abort a running or queued prompt |
-| `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:steer` | Steer one queued prompt |
 
 #### `GET /api/v1/sessions/{session_id}/prompts`
 
@@ -760,7 +759,7 @@ Aborts one of the main agent's prompts:
 - When the prompt is queued, it is removed from the queue; no turn is produced and no frame is sent.
 - When the prompt has ended or the id is unknown, `40402` is returned.
 
-This endpoint and `:steer` below go through one route, `POST /api/v1/sessions/{session_id}/prompts/{tail}`: `{tail}` is parsed as `{prompt_id}:{action}`, and a missing or unknown action returns `40001` (`unsupported action: ...`).
+This endpoint goes through `POST /api/v1/sessions/{session_id}/prompts/{tail}`: `{tail}` is parsed as `{prompt_id}:{action}`. `:abort` is the only supported action, and a missing or unknown action returns `40001` (`unsupported action: ...`).
 
 | Parameter | In | Type | Description |
 | --- | --- | --- | --- |
@@ -771,20 +770,6 @@ On success, `data` is `{ aborted: true }`.
 
 - `40401`: the session does not exist
 - `40402`: the prompt has ended, or there is no prompt with that id
-
-#### `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:steer`
-
-Steers one queued prompt into the active turn; the single-prompt form of [`POST /api/v1/sessions/{session_id}/prompts:steer`](#post-api-v1-sessions-session-id-prompts-steer). It is also available only when the main agent has a running turn.
-
-| Parameter | In | Type | Description |
-| --- | --- | --- | --- |
-| `session_id` | path | string | Required. Session id |
-| `prompt_id` | path | string | Required. Queued prompt id |
-
-On success, `data` is `{ steered: true, prompt_ids: [prompt_id] }`.
-
-- `40401`: the session does not exist
-- `40402`: the main agent has no running turn, or there is no queued prompt with that id
 
 ### Approvals and questions
 

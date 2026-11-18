@@ -631,7 +631,6 @@ main agent 正在运行时，激活不会开启新轮次，而是作为插话插
 | `POST /api/v1/sessions/{session_id}/steer` | 直接把消息内容插入进行中的轮次 |
 | `POST /api/v1/sessions/{session_id}/prompts:steer` | 把排队的提示词插入进行中的轮次 |
 | `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:abort` | 中止运行中或排队中的提示词 |
-| `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:steer` | 插入单条排队的提示词 |
 
 #### `GET /api/v1/sessions/{session_id}/prompts`
 
@@ -760,7 +759,7 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 - 提示词在队列中时，把它移出队列，不产生轮次，也不发送任何帧。
 - 提示词已结束或 id 未知时，返回 `40402`。
 
-本接口与下面的 `:steer` 走同一条路由 `POST /api/v1/sessions/{session_id}/prompts/{tail}`：`{tail}` 解析为 `{prompt_id}:{action}`，动作缺失或未知时返回 `40001`（`unsupported action: ...`）。
+本接口走 `POST /api/v1/sessions/{session_id}/prompts/{tail}`：`{tail}` 解析为 `{prompt_id}:{action}`。只支持 `:abort`，动作缺失或未知时返回 `40001`（`unsupported action: ...`）。
 
 | 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
@@ -771,20 +770,6 @@ schema 还接受共享消息格式中的 `tool_use`、`tool_result` 和 `thinkin
 
 - `40401`：会话不存在
 - `40402`：提示词已结束，或不存在该 id 的提示词
-
-#### `POST /api/v1/sessions/{session_id}/prompts/{prompt_id}:steer`
-
-把单条排队的提示词插入进行中的轮次，是 [`POST /api/v1/sessions/{session_id}/prompts:steer`](#post-api-v1-sessions-session-id-prompts-steer) 的单提示词形式。同样只在 main agent 有正在运行的轮次时可用。
-
-| 参数 | 位置 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `session_id` | path | string | 必填。会话 id |
-| `prompt_id` | path | string | 必填。排队中的提示词 id |
-
-成功时 `data` 为 `{ steered: true, prompt_ids: [prompt_id] }`。
-
-- `40401`：会话不存在
-- `40402`：main agent 没有正在运行的轮次，或没有该 id 的排队提示词
 
 ### 审批与提问
 

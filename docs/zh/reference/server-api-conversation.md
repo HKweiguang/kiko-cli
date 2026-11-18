@@ -290,7 +290,7 @@ curl -s -X POST http://127.0.0.1:58627/api/v1/sessions/<session_id>/prompts \
 agent 正在运行时，排队的输入要等当前这一轮结束才会开启下一轮。要让运行中的轮次立即读到新的内容，有两种做法：
 
 - **直接插话**：用 [`POST /api/v1/sessions/{session_id}/steer`](./server-api-sessions.md#post-api-v1-sessions-session-id-steer) 提交内容，请求体和提交输入相同。有运行中的轮次时，响应要等这条内容在下一个插入点真正插进这一轮才返回；如果这一轮先结束了，就等它开启的下一轮开始后返回。没有运行中的轮次时，等同于普通提交。
-- **把排队的输入改为插话**：用 [`POST /api/v1/sessions/{session_id}/prompts:steer`](./server-api-sessions.md#post-api-v1-sessions-session-id-prompts-steer)（多条）或 `prompts/{prompt_id}:steer`（单条）。只在 main agent 有运行中的轮次时可用，没有时返回 `40402`。多条一起改时先整体校验，任何一个 id 不在队列中或有重复，全部不处理并返回 `40402`。
+- **把排队的输入改为插话**：用 [`POST /api/v1/sessions/{session_id}/prompts:steer`](./server-api-sessions.md#post-api-v1-sessions-session-id-prompts-steer) 并在 `prompt_ids` 中传入排队的提示词 id。只在 main agent 有运行中的轮次时可用，没有时返回 `40402`。id 先整体校验，任何一个不在队列中或有重复，全部不处理并返回 `40402`。
 
 插入的输入在对话里是 `placement` 为 `steer` 的 `user_message`。用 Skill 激活接口激活 Skill 时，如果 main agent 正在运行，它不开启新的一轮，而是作为插话插入当前这一轮，插入后才响应。
 
