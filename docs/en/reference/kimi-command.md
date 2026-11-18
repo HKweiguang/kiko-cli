@@ -137,7 +137,7 @@ In `stream-json` mode, regular replies produce an Assistant message; when the mo
 
 ## Subcommands
 
-`kiko` provides the following subcommands: `login` (non-interactive login), `acp` (ACP IDE mode), `web` (run the local REST/WebSocket/web service in the foreground and open the web UI), `doctor` (validate configuration files), `export` (export a session), `migrate` (migrate legacy data), `import-sessions` (import Claude Code and Codex sessions), `upgrade` (check for updates), and `provider` (manage providers).
+`kiko` provides the following subcommands: `login` (non-interactive login), `acp` (ACP IDE mode), `web` (run the local REST/WebSocket server in the foreground), `doctor` (validate configuration files), `export` (export a session), `migrate` (migrate legacy data), `import-sessions` (import Claude Code and Codex sessions), `upgrade` (check for updates), and `provider` (manage providers).
 
 ### `kiko login`
 
@@ -159,14 +159,14 @@ kiko acp
 
 ### `kiko web`
 
-Run the local Kiko server in the foreground of the current terminal — a single process that exposes the REST + WebSocket API and serves the web UI from the same origin — and open the web UI in the default browser once it is ready. The command stays attached to the terminal and shuts down cleanly on `SIGINT` / `SIGTERM` (e.g. `Ctrl-C`).
+Run the local Kiko server in the foreground of the current terminal. The server exposes the REST API at `/api/v1` and the WebSocket event stream at `/api/v1/ws`; the browser web UI that older versions served from the same origin is no longer bundled or supported. The command prints the API base URL and bearer token in the startup banner, stays attached to the terminal, and shuts down cleanly on `SIGINT` / `SIGTERM` (e.g. `Ctrl-C`).
 
 When the server is running, `GET /openapi.json` returns the REST OpenAPI document and `GET /asyncapi.json` returns the local WebSocket AsyncAPI document. For an end-to-end walkthrough of driving sessions over the API, see [Server API: Drive a session over the API](./server-api.md#drive-a-session-over-the-api); for the protocol details, see the [Server API](./server-api.md) reference.
 
 ```sh
-kiko web                 # run the server in the foreground and open the browser
-kiko web --no-open       # don't open the browser
+kiko web                 # run the REST/WebSocket server in the foreground
 kiko web --port 58628    # pick a specific bind port
+kiko web --host          # expose the API on all interfaces (LAN)
 ```
 
 Multiple instances can share one home directory: each registers itself under `~/.kiko/server/instances/`, and a busy port is retried with `port + 1` (58628, 58629, …).
@@ -176,13 +176,19 @@ Multiple instances can share one home directory: each registers itself under `~/
 | `--port <port>` | Bind port; defaults to `58627`; a busy port is retried with `+1` |
 | `--host [host]` | Bind host; omit for `127.0.0.1` (this machine only), pass a bare `--host` for `0.0.0.0` (all interfaces) |
 | `--allowed-host <host...>` | Extra Host header values allowed through the DNS-rebinding check; repeatable or comma-separated |
+| `--insecure-no-tls` | Allow a non-loopback bind without a TLS-terminating reverse proxy (defaults to true) |
+| `--allow-remote-shutdown` | Keep `POST /api/v1/shutdown` enabled on a non-loopback bind |
 | `--log-level <level>` | Enable server logs at the selected level; omitted by default |
 | `--debug-endpoints` | Mount `/api/v1/debug/*` routes (off by default) |
-| `--dangerous-bypass-auth` | Disable bearer-token auth on all REST and WebSocket routes so the web UI connects without a token; only for trusted networks or behind an authenticating proxy |
-| `--web-title <title>` | Custom browser tab title for the web UI; defaults to the workspace directory name |
-| `--no-open` | Do not open the browser once the server is ready |
+| `--dangerous-bypass-auth` | Disable bearer-token auth on all REST and WebSocket routes so clients connect without a token; only for trusted networks or behind an authenticating proxy |
+| `--web-title <title>` | Custom browser tab title reported to web clients; defaults to the workspace directory name |
+| `--no-open` | Deprecated; accepted for compatibility. The server no longer opens a browser |
 
-`kiko web` binds to local loopback only by default and prints the bearer token in the startup banner; the web UI authenticates automatically via the `#token=` URL fragment.
+`kiko web` binds to local loopback only by default and prints the bearer token in the startup banner. Send it as `Authorization: Bearer <token>` on REST requests, or use the `kimi-code.bearer.<token>` WebSocket subprotocol. Token rotation is covered in [`kiko web rotate-token`](#kiko-web-rotate-token).
+
+::: warning
+The bundled browser UI has been removed. `kiko web` no longer opens a browser or serves HTML; use the API directly or [Remote Control](../guides/remote-control.md) for a hosted web page.
+:::
 
 ::: info
 The `kiko server` command tree is deprecated: any `kiko server …` invocation (including all legacy subcommands) only prints a deprecation notice and exits with code 1 — use `kiko web` instead. The one exception is `kiko server kill`, which stays functional for stopping servers started by a version before 0.28.0. The notice will be removed in the next major version of Kiko.

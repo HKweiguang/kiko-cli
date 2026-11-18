@@ -432,7 +432,7 @@ export const BUILTIN_SLASH_COMMANDS = [
   {
     name: 'web',
     aliases: [],
-    description: 'Open the current session in the Web UI by starting a new server',
+    description: 'Start the local REST/WebSocket server in the foreground',
     priority: 40,
     availability: 'always',
   },

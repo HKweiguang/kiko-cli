@@ -504,7 +504,6 @@ export const SHARED_EXCLUDED_PATTERNS = [
   /(^|\/)\.git\//,
   /(^|\/)\.tower\//,
   /(^|\/)dist\//,
-  /(^|\/)dist-web\//,
   /(^|\/)coverage\//,
   /(^|\/)scripts\/kiko-sync\//,
   /(^|\/)\.agents\//,

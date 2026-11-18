@@ -32,13 +32,12 @@ onMounted(() => redirectLegacyServerApiAnchor('zh'))
 
 ## 鉴权
 
-所有 `/api/*` 路径，以及 `/openapi.json` 和 `/asyncapi.json`，都需要 bearer token，只有下面三种请求例外：
+所有 `/api/*` 路径，以及 `/openapi.json` 和 `/asyncapi.json`，都需要 bearer token，只有下面两类请求例外：
 
 - `OPTIONS` 预检请求；
-- `GET /api/v1/healthz`（探活）；
-- 静态网页资源（不在 `/api/` 下的路径）。
+- `GET /api/v1/healthz`（探活）。
 
-REST 请求用 `Authorization: Bearer <token>` 请求头携带 token。WebSocket 升级请求可以用同样的请求头，也可以用子协议 `kimi-code.bearer.<token>`。token 的生成和轮换见 [在网页中使用](../guides/web.md#开始使用)。
+REST 请求用 `Authorization: Bearer <token>` 请求头携带 token。WebSocket 升级请求可以用同样的请求头，也可以用子协议 `kimi-code.bearer.<token>`。token 的生成和轮换见 [运行本地服务](../guides/web.md#开始使用)。
 
 鉴权失败时返回 HTTP 401，信封 `code` 为 `40101`。服务绑定在非 loopback 地址时，同一来源 60 秒内鉴权失败 10 次会被封禁 60 秒，封禁期间每个请求都返回 HTTP 429，`code` 为 `42901`。
 
@@ -168,5 +167,5 @@ HTTP 状态码几乎总是 200，业务结果以 `code` 为准。例外情况如
 ## 下一步
 
 - [会话与对话](./server-api-conversation.md)：WebSocket 协议和客户端流程
-- [在网页中使用](../guides/web.md)：启动服务并在浏览器中使用 Kiko
+- [运行本地服务](../guides/web.md)：启动服务并打印 API 地址和 token
 - [kiko 命令](./kimi-command.md#kiko-web)：`kiko web` 的全部命令行选项

@@ -43,7 +43,7 @@ Some commands are only available in the idle state. Executing these commands whi
 | `/import-sessions` | — | Import Claude Code and Codex sessions from the last 15 or 30 days as regular sessions (same behavior as [`kiko import-sessions`](./kimi-command.md#kiko-import-sessions)) | No |
 | `/copy` | — | Copy the last assistant message to the clipboard | No |
 | `/add-dir [<path>]` | — | Add an extra workspace directory to the current session. Run without a path (or with `list`) to list configured directories. When adding, choose whether to remember the directory in the workspace registry | No |
-| `/web` | — | Open the current session in the web UI: pick a running server to connect to, or start a new foreground server after the TUI exits. See [`kiko web`](./kimi-command.md#kiko-web) | Yes |
+| `/web` | — | Start the local REST/WebSocket server in the foreground after the TUI exits. The browser UI is no longer bundled. See [`kiko web`](./kimi-command.md#kiko-web) | Yes |
 | `/desktop` | `/install-desktop` | Open the Kiko desktop app page in your browser (URL follows the active region: `https://www.kimi.com/code` or `https://www.kimi.ai/code`). See [`kiko install-desktop`](./kimi-command.md#kiko-install-desktop) | Yes |
 
 ## Modes & Run Control

@@ -13,7 +13,6 @@ describe('Remote Control output', () => {
   const outputOptions = {
     url: 'https://example.test/devices/example-device/?rc=1&from=kimi_code_cli',
     localOrigin: 'http://127.0.0.1:1234',
-    localServerToken: 'example-token',
     deviceName: 'example-device',
     qrCode: 'QR\n',
     pngPath: '/tmp/example-qr.png',
@@ -33,8 +32,8 @@ describe('Remote Control output', () => {
       .replaceAll(/\u001B\[[0-9;]*m/g, '');
     expect(plain).toContain(`open ${url}`);
     expect(plain).not.toContain('exampl…');
-    expect(plain).toContain('http://127.0.0.1:1234/#token=example-token');
-    expect(output).toContain('#token=example-token');
+    expect(plain).toContain('Local API: http://127.0.0.1:1234/api/v1');
+    expect(output).not.toContain('#token=');
     expect(output).toContain('Connected to example.test');
     expect(output).toContain('This device:');
     expect(output).not.toContain('Manage devices');
@@ -51,7 +50,8 @@ describe('Remote Control output', () => {
     vi.stubEnv('FORCE_HYPERLINK', '0');
     const output = formatRemoteControlOutput(outputOptions);
     expect(output).toContain(`open ${outputOptions.url}`);
-    expect(output).toContain('#token=example-token');
+    expect(output).toContain('Local API: http://127.0.0.1:1234/api/v1');
+    expect(output).not.toContain('#token=');
     expect(output).not.toContain('exampl…vice');
     expect(output).not.toContain('Manage devices');
   });

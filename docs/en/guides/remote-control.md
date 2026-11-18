@@ -17,7 +17,7 @@ Before turning on Remote Control, make sure your machine meets the following con
 Start it on your machine in any of the following ways — they are equivalent: each starts a foreground process and prints the remote access info.
 
 - **`kiko rc`** (alias `kiko remote`): start Remote Control directly
-- **`kiko web --remote-control`**: equivalent to `kiko rc` — starts the local web interface and exposes it to the public internet at the same time
+- **`kiko web --remote-control`**: equivalent to `kiko rc` — starts the local Kiko server and exposes it through the Kimi relay at the same time
 - **`/remote-control`** (alias `/rc`): use while already in a CLI session to hand the current session over to the remote interface
 
 Once started, the terminal prints the access URL (like `https://code-rc.kimi.com/devices/<device ID>/` for a mainland-cn login, or `https://code-rc.kimi.ai/devices/<device ID>/` after `kiko login --region global`), a QR code, and the device name (the machine's hostname), and the default browser opens the URL automatically (use `--no-open` to skip). Besides the terminal rendering, the QR code is also saved as a PNG file (the path is printed in the startup output) — if the QR code doesn't render properly in your terminal, open that file instead.
@@ -88,19 +88,20 @@ Remote Control is only a remote window — all computation and file operations s
 - **Local process exits**: pressing `Ctrl+C` or closing the terminal stops Remote Control and takes the device off the remote list. Restart it to recover
 - **End the remote connection but keep the local task**: just close the web page — the local task is unaffected
 
-## What's the difference between Remote Control and Kiko Web?
+## What's the difference between Remote Control and the local server?
 
-[Kiko Web](../guides/web.md) is the graphical interface on your machine or LAN; Remote Control extends it to any device on the public internet:
+[The local server](../guides/web.md) exposes the REST/WebSocket API on your machine; Remote Control adds a hosted web page that connects to it from any device on the public internet:
 
-| | Kiko Web | Remote Control |
+| | Local server | Remote Control |
 | --- | --- | --- |
 | Access scope | `localhost`, or the LAN with `--host` | Any device on the public internet (via the Kimi relay) |
 | How to start | Run `kiko web` in a terminal | `kiko rc`, `kiko web --remote-control`, or `/remote-control` in the CLI |
-| Authentication | Local token | Log in with the same Kimi account |
+| Authentication | Local bearer token | Log in with the same Kimi account |
+| Interface | REST API and WebSocket stream | Browser web page (hosted) |
 | Where data and execution live | Your machine | Your machine (the web page is just a remote window) |
-| Typical scenario | GUI in a local browser | Following up remotely from a phone, tablet, or another computer |
+| Typical scenario | Scripts and API clients on this machine or LAN | Following up remotely from a phone, tablet, or another computer |
 
-For the web interface's features, see [Using Kiko in the browser](../guides/web.md).
+For the server's API and command-line options, see [Run the local server](../guides/web.md).
 
 ## Security and permissions
 
@@ -144,4 +145,4 @@ Check in this order:
 
 ## Next steps
 
-- [Using Kiko in the browser](../guides/web.md) — Remote Control opens the same web interface; learn what the interface itself can do
+- [Run the local server](../guides/web.md) — the REST/WebSocket API behind Remote Control
